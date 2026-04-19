@@ -55,7 +55,7 @@ impl MultipleChoiceAnswer {
     }
 
     pub fn retrieve(conn: &Connection) -> Result<Vec<MultipleChoiceAnswer>> {
-        let mut stmt = conn.prepare("SELECT * FROM OPEN_MULTIPLE_CHOICE_ANSWER")?;
+        let mut stmt = conn.prepare("SELECT * FROM MULTIPLE_CHOICE_ANSWER")?;
 
         let multiple_choice_answers: Result<Vec<MultipleChoiceAnswer>> = stmt
             .query_map([], |row| {
