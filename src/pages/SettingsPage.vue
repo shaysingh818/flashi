@@ -1,5 +1,7 @@
 <template>
-  <h1> Settings Page </h1> 
+  <div class="page-container">
+    <h1> Settings Page </h1> 
+  </div>
 </template>
 
 <style scoped>

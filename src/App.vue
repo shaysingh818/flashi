@@ -7,7 +7,7 @@ import NavigationBar from "./components/shared/NavigationBar.vue";
   <NavigationBar />
 
   <main>
-    <h1> Testing </h1> 
+    <RouterView /> 
   </main>
 </template>
 

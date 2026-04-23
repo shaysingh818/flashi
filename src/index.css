@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
+
 body {
   height: 100%;
   margin: 0;
@@ -11,7 +12,22 @@ body {
 
 main {
   display: flex; 
-  border: 1px solid white;
   margin-left: 55px;
   padding: 20px; 
 }
+
+.page-container {
+  display: flex;
+  flex-direction: column; 
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 5%;
+  padding: 5px;
+  width: 100%; 
+}
+
+h1 {
+  color: white;
+  font-weight: normal; 
+}
+ 

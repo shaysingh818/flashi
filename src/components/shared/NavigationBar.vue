@@ -8,6 +8,26 @@
 
     <div class="navigation-items">
 
+      <RouterLink to="/" >
+        <NavigationItem icon="house" navTitle="home" />
+      </RouterLink>
+
+      <RouterLink to="/subjects">
+        <NavigationItem icon="clone" navTitle="subjects" />
+      </RouterLink>
+
+      <RouterLink to="/sessions">
+        <NavigationItem icon="calendar" navTitle="sessions" />
+      </RouterLink>
+
+      <RouterLink to="/sessions">
+        <NavigationItem icon="chart-bar" navTitle="metrics" />
+      </RouterLink>
+
+      <RouterLink to="/settings">
+        <NavigationItem icon="sun" navTitle="settings" />
+      </RouterLink>
+
     </div> 
     
   </div> 
@@ -16,6 +36,7 @@
 
 <script setup>
 import Logo from '../../assets/flashi.svg?component'
+import NavigationItem from './NavigationItem.vue'
 </script>
 
 <style scoped>
@@ -32,23 +53,29 @@ import Logo from '../../assets/flashi.svg?component'
 }
 
 .navigation-logo {
-  height: auto;
+  height: 15%;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 2px; 
+  padding: 2px;
 }
 
 .navigation-items {
   display: flex; 
   flex-direction: column;
   padding: 10px;
-  height: auto; 
+  height: 75%;
+  gap: 1.0rem;
+  align-items: center;
 }
 
 
 .navigation-logo svg {
   width: 100%; 
   height: auto;
+}
+
+a {
+  text-decoration: none; 
 }
 </style> 
