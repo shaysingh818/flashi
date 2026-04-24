@@ -1,31 +1,34 @@
-import { createMemoryHistory, createRouter, RouteRecordRaw } from 'vue-router'
+import { createMemoryHistory, createRouter, RouteRecordRaw } from "vue-router";
 
-import HomePage from './pages/HomePage.vue'
-import SubjectsPage from './pages/subject/SubjectsPage.vue'
-import CreateSubjects from './pages/subject/CreateSubjects.vue'
-import SessionsPage from './pages/SessionsPage.vue'
-import SettingsPage from './pages/SettingsPage.vue'
+import HomePage from "./pages/HomePage.vue";
+import SubjectsPage from "./pages/subject/SubjectsPage.vue";
+import CreateSubjects from "./pages/subject/CreateSubjects.vue";
+import EditSubjects from "./pages/subject/EditSubjects.vue";
+import SessionsPage from "./pages/SessionsPage.vue";
+import SettingsPage from "./pages/SettingsPage.vue";
+import SubjectsDetail from "./pages/subject/SubjectsDetail.vue";
 
-const routes: Array<RouteRecordRaw> =  [
-
+const routes: Array<RouteRecordRaw> = [
   // home
-  { path: '/', component: HomePage },
+  { path: "/", component: HomePage },
 
   // subjects
-  { path: '/subjects', component: SubjectsPage },
-  { path: '/subjects/create', component: CreateSubjects },
+  { path: "/subjects", component: SubjectsPage },
+  { path: "/subjects/create", component: CreateSubjects },
+  { path: "/subjects/edit", component: EditSubjects },
+  { path: "/subjects/detail", component: SubjectsDetail },
+
 
   // sessions
-  { path: '/sessions', component: SessionsPage },
+  { path: "/sessions", component: SessionsPage },
 
   // sessions
-  { path: '/settings', component: SettingsPage },
-
-]
+  { path: "/settings", component: SettingsPage },
+];
 
 const router = createRouter({
   history: createMemoryHistory(),
   routes,
-})
+});
 
-export default router
+export default router;

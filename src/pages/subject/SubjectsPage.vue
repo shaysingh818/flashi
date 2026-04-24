@@ -1,6 +1,7 @@
 <template>
   <div class="page-container">
 
+    <br> 
    <SearchComponent 
       text="Search Subjects" 
       :onClick="search"
@@ -17,6 +18,8 @@
     <HoverButton icon="fa-solid fa-plus" :onClickHandler="createSubject" />
 
   </div>
+  
+  
 
 </template>
 

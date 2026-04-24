@@ -1,19 +1,19 @@
 <template>
-    <div class="search-container">
-        <FormInputField text="Search Subjects" />
-        <PrimaryButton :onClickHandler="onClick" text="Search" />
-    </div>
+  <div class="search-container">
+    <FormInputField :text="`${text}`" />
+    <PrimaryButton :onClickHandler="onClick" text="Search" />
+  </div>
 </template>
 
 <script>
-import FormInputField from './FormInputField.vue';
-import PrimaryButton from './PrimaryButton.vue';
+import FormInputField from "./FormInputField.vue";
+import PrimaryButton from "./PrimaryButton.vue";
 
 export default {
-  name: 'SearchComponent',
+  name: "SearchComponent",
   components: {
     FormInputField,
-    PrimaryButton
+    PrimaryButton,
   },
   props: {
     text: {
@@ -25,20 +25,17 @@ export default {
       required: true,
     },
   },
-}
-
+};
 </script>
 
 <style scoped>
-
 .search-container {
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  height: 35px;
+  height: 40px;
+  width: 90%;
   gap: 0.5rem;
-  padding: 5px; 
 }
-
 </style>
