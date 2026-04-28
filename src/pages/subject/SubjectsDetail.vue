@@ -1,19 +1,19 @@
 <template>
-  <div class="page-container">
+  <div class="container col-center">
     <BackBar text="Subject Name" />
     <br> </br>
     <div class="metrics-section">
       <div class="metrics-grid">
-        <MetricCard metric="Daily Hours Reviewed" numeric="20" />
-        <MetricCard metric="Questions Reviewed" numeric="20" />
-        <MetricCard metric="Accuracy Rate" numeric="20" />
+        <MetricCard metric="Daily Hours Reviewed" numeric=20 />
+        <MetricCard metric="Questions Reviewed" numeric=20 />
+        <MetricCard metric="Accuracy Rate" numeric=20 />
       </div>
     </div>
     <br />
     <SearchComponent text="Search Decks" :onClick="search" />
     <br></br>
     <DeckListView />
-     <HoverButton icon="fa-solid fa-plus" :onClickHandler="createSubject" />
+    <HoverButton icon="fa-solid fa-plus" :onClickHandler="createDeck" />
   </div>
 </template>
 
@@ -28,12 +28,12 @@ export default {
   name: "SubjectDetail",
   components: { BackBar, SearchComponent, MetricCard, HoverButton, DeckListView },
   methods: {
-    closeDialog() {
-      this.$emit("close");
+    createDeck() {
+      this.$router.push({ path: "/deck/create" });
     },
-    submitHandler() {
-      this.$emit("confirm");
-    },
+    search() {
+      console.log("search"); 
+    }
   },
 };
 </script>

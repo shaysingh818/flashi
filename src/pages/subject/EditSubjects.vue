@@ -1,5 +1,5 @@
 <template>
-  <div class="page-container">
+  <div class="container col-center">
     <br></br>
     <FormHeader
       header="Edit subject"

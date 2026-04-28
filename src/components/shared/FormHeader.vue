@@ -1,6 +1,6 @@
 <template>
-  <div class="create-subject-header">
-    <div class="header-text">
+  <div class="header">
+    <div class="text">
       <h1>{{ header }}</h1>
       <p>{{ description }}</p>
     </div>
@@ -24,13 +24,13 @@ export default {
 </script>
 
 <style scoped>
-.create-subject-header {
+.header {
   width: 85%;
   border-radius: 10px;
   background-color: rgb(28 25 23);
 }
 
-.header-text {
+.text {
   padding: 10px;
 }
 

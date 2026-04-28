@@ -5,7 +5,7 @@
     </div>
 
     <div class="text-section">
-      <h1>Subject Name</h1>
+      <h1>{{ text }}</h1>
       <p>Last Updated: 04/02/2026</p>
     </div>
 

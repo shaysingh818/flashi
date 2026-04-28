@@ -1,22 +1,22 @@
 <template>
   <div class="deck-list-item">
-    <div class="list-item" @click="subjectDetail">
-      <div class="list-item-leading">
+    <div class="container row centered g-1" @click="deckDetail">
+      <div class="container centered align-center leading">
         <font-awesome-icon
           icon="fa-solid fa-list-check"
           class="list-item-icon-style"
         />
       </div>
 
-      <div class="list-item-content">
+      <div class="container col left content">
         <h1>{{ title }}</h1>
         <p>{{ description }}</p>
-        <div class="tag-section">
+        <div class="container left row g-1 p-5" style="height: 20px">
           <Tag v-for="(item, index) in tags" :key="index" :title="item" />
         </div>
       </div>
 
-      <div class="list-item-trailing">
+      <div class="container trailing centered align-center g-1">
         <p :style="{ color: '#F97316' }">{{ dateUpdated }}</p>
         <font-awesome-icon
           @click.stop="showDropdown"
@@ -25,22 +25,18 @@
         />
 
         <div v-if="isDropdownOpen" class="dropdown-content">
-          <div @click.stop="editSubject" class="dropdown-item">
-            <font-awesome-icon
-              icon="fa-solid fa-pen-to-square"
-              class="dropdown-icon-style"
-            />
-            <p>Edit Subject</p>
-          </div>
-
-          <div @click.stop="deleteSubject" class="dropdown-item">
-            <font-awesome-icon
-              icon="fa-solid fa-x"
-              class="dropdown-icon-style"
-            />
-            <p>Delete Subject</p>
-          </div>
+          <DropDownItem
+            icon="fa-solid fa-pen-to-square"
+            text="Edit Deck"
+            :onClickHandler="editDeck"
+          />
+          <DropDownItem
+            icon="fa-solid fa-x"
+            text="Delete Deck"
+            :onClickHandler="deleteDeck"
+          />
         </div>
+
         <Teleport to="body">
           <ConfirmDialog
             v-if="showDialog"
@@ -58,10 +54,11 @@
 import { svgPathData } from "@fortawesome/free-solid-svg-icons/faRotateRight";
 import ConfirmDialog from "../shared/ConfirmDialog.vue";
 import Tag from "../shared/Tag.vue";
+import DropDownItem from "../shared/DropDownItem.vue";
 
 export default {
   name: "DeckListItem",
-  components: { ConfirmDialog, Tag },
+  components: { ConfirmDialog, Tag, DropDownItem },
   props: {
     title: {
       type: String,
@@ -92,15 +89,15 @@ export default {
       console.log("Show dropdown", this.isDropdownOpen);
       this.isDropdownOpen = !this.isDropdownOpen;
     },
-    deleteSubject() {
+    deleteDeck() {
       this.isDropdownOpen = false; // close the dropdown too
       this.showDialog = true;
     },
-    editSubject() {
-      this.$router.push({ path: "/subjects/edit" });
+    editDeck() {
+      this.$router.push({ path: "/deck/edit" });
     },
-    subjectDetail() {
-      this.$router.push({ path: "/subjects/detail" });
+    deckDetail() {
+      this.$router.push({ path: "/deck/detail" });
     },
   },
 };
@@ -116,11 +113,11 @@ export default {
   background-color: rgb(28 25 23);
 }
 
-.trailing-content svg:hover {
+.list-item-trailing svg:hover {
   background-color: gray;
 }
 
-.list-item-leading svg {
+.container.leading svg {
   width: 35px;
   height: 35px;
   color: #f97316;
@@ -128,10 +125,6 @@ export default {
 
 .trailing-icon-style {
   color: #b5b3b3;
-}
-
-.dropdown-icon-style {
-  color: #f97316;
 }
 
 .dropdown-content {
@@ -142,15 +135,7 @@ export default {
   padding: 10px;
   gap: 0.5rem;
   background-color: rgb(28 25 23);
-  transform: translateX(50%) translateY(80%);
-}
-
-.dropdown-item {
-  display: flex;
-  flex-direction: row;
-  justify-content: left;
-  align-items: left;
-  gap: 0.5rem;
+  transform: translateX(25%) translateY(60%);
 }
 
 .tag-section {

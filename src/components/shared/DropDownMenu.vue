@@ -21,9 +21,27 @@
 </template>
 
 <script>
+import DropDownItem from './DropDownItem.vue';
 
+export default {
+  name: "DropDownMenu",
+  props: {
+    icon: {
+      type: String,
+      required: true,
+    },
+    text: {
+      type: String,
+      required: true,
+    },
+  },
+  methods: {
+    closeDialog() {
+      this.$emit("close");
+    },
+    submitHandler() {
+      this.$emit("confirm");
+    },
+  },
+};
 </script>
-
-<style scoped>
-
-</style>

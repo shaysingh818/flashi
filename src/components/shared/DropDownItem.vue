@@ -1,7 +1,11 @@
 <template>
-  <div @click.stop="editSubject" class="dropdown-item">
-    <font-awesome-icon :icon="`${icon}`" class="dropdown-icon-style" />
-    <p>{{ text }}</p>
+  <div @click.stop="handleClick" class="dropdown-item">
+    <div class="leading-icon">
+      <font-awesome-icon :icon="`${icon}`" />
+    </div>
+    <div class="content">
+      <p>{{ text }}</p>
+    </div>
   </div>
 </template>
 
@@ -17,28 +21,58 @@ export default {
       type: String,
       required: true,
     },
+    onClickHandler: {
+      type: Function,
+      required: true,
+    },
   },
   methods: {
-    closeDialog() {
-      this.$emit("close");
-    },
-    submitHandler() {
-      this.$emit("confirm");
+    handleClick() {
+      this.onClickHandler();
     },
   },
 };
 </script>
 
 <style scoped>
+
 .dropdown-item {
   display: flex;
   flex-direction: row;
   justify-content: left;
   align-items: left;
+  height: 30px;
   gap: 0.5rem;
 }
 
-.dropdown-icon-style {
+.dropdown-item:hover {
+  background-color: gray;
+}
+
+.leading-icon {
+  display: flex;
+  flex: 0 0 25%;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.content {
+  display: flex;
+  flex: 1 1 auto;
+  justify-content: left;
+  align-items: center;
+  width: 75%;
+}
+
+.leading-icon svg {
   color: #f97316;
+  height: 20px;
+  width: 20px;
+}
+
+p {
+  color: #b5b3b3;
+  font-size: 10px;
 }
 </style>

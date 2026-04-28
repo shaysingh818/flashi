@@ -7,6 +7,10 @@ import EditSubjects from "./pages/subject/EditSubjects.vue";
 import SessionsPage from "./pages/SessionsPage.vue";
 import SettingsPage from "./pages/SettingsPage.vue";
 import SubjectsDetail from "./pages/subject/SubjectsDetail.vue";
+import CreateDeck from "./pages/deck/CreateDeck.vue";
+import EditDeck from "./pages/deck/EditDeck.vue";
+import DeckDetail from "./pages/deck/DeckDetail.vue";
+import CreateQuestion from "./pages/question/CreateQuestion.vue";
 
 const routes: Array<RouteRecordRaw> = [
   // home
@@ -18,7 +22,15 @@ const routes: Array<RouteRecordRaw> = [
   { path: "/subjects/edit", component: EditSubjects },
   { path: "/subjects/detail", component: SubjectsDetail },
 
+  // decks
+  { path: "/deck/create", component: CreateDeck },
+  { path: "/deck/edit", component: EditDeck },
+  { path: "/deck/detail", component: DeckDetail },
+  
+  // questions
+  { path: "/question/create", component: CreateQuestion },
 
+  
   // sessions
   { path: "/sessions", component: SessionsPage },
 

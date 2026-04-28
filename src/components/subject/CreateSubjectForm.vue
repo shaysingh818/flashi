@@ -10,7 +10,6 @@
 
     <div class="subject-form-button-section">
       <SecondaryButton :onClickHandler="goBack" text="Discard" />
-
       <PrimaryButton :onClickHandler="submitHandler" :text="`${submitText}`" />
     </div>
   </div>

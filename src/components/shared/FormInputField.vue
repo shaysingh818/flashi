@@ -1,9 +1,11 @@
 <template>
   <input
     type="text"
+    :value="text"
     id="search-term"
     name="search-item"
-    :placeholder="text"
+    :placeholder="placeholder"
+    @input="$emit('update:text', $event.target.value)"
     class="focus:outline-none focus:ring-0 focus:shadow-none"
   />
 </template>
@@ -16,12 +18,16 @@ export default {
       type: String,
       required: true,
     },
+    placeholder: {
+      type: String,
+      required: true,
+    },
   },
+  emits: ["update:text"],
 };
 </script>
 
 <style scoped>
-
 input {
   border-radius: 3px;
   width: 100%;

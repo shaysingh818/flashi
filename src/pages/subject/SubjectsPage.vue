@@ -1,7 +1,7 @@
 <template>
-  <div class="page-container">
+  <div class="container col-center">
 
-    <br> 
+  <br /> 
    <SearchComponent 
       text="Search Subjects" 
       :onClick="search"
