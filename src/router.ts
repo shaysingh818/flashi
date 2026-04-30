@@ -11,6 +11,8 @@ import CreateDeck from "./pages/deck/CreateDeck.vue";
 import EditDeck from "./pages/deck/EditDeck.vue";
 import DeckDetail from "./pages/deck/DeckDetail.vue";
 import CreateQuestion from "./pages/question/CreateQuestion.vue";
+import ViewQuestion from "./pages/question/ViewQuestion.vue";
+import EditQuestion from "./pages/question/EditQuestion.vue";
 
 const routes: Array<RouteRecordRaw> = [
   // home
@@ -29,6 +31,9 @@ const routes: Array<RouteRecordRaw> = [
   
   // questions
   { path: "/question/create", component: CreateQuestion },
+  { path: "/question/view", component: ViewQuestion },
+  { path: "/question/edit", component: EditQuestion },
+
 
   
   // sessions

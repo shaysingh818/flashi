@@ -1,6 +1,6 @@
 <template>
 
-  <div class="container col-center g-1">
+  <div class="container col-center w-75 g-1">
     
     <div class="container p-5">
       <FormTextField description="Type open ended answers" />

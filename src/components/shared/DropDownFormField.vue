@@ -6,7 +6,7 @@
       </div>
       <div
         class="container centered w-25"
-        style="background-color: rgb(28 25 23); border-radius: 10px"
+        style="background-color: rgb(28 25 23); border-radius: 10px;"
         @click="showDropdown"
       >
         <p>{{ selected || "Select an option" }}</p>

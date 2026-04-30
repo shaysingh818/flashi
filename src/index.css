@@ -41,6 +41,10 @@ main {
 
 /* padding */ 
 
+.container.p-20 {
+  padding: 20px;
+}
+
 .container.p-10 {
   padding: 10px;
 }
@@ -115,6 +119,10 @@ main {
 
 .container.fw-25 {
   flex: 0 0 25%;
+}
+
+.container.fw-25 {
+  flex: 0 0 10%;
 }
 
 .container.fw-75 {

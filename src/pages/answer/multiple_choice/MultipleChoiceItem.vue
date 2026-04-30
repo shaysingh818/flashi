@@ -31,6 +31,7 @@ export default {
 </script>
 
 <style scoped>
+
 label {
   display: flex;
   padding: 10px;

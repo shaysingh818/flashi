@@ -19,7 +19,9 @@
 
     <CreateMultipleChoiceForm v-if="selectedOption == 'multiple choice'" />
     <CreateOpenEndedForm v-if="selectedOption == 'open ended'" />
+    <CreateOrderedSequenceForm v-if="selectedOption == 'ordered sequence'" />
 
+    
     <br />
     <div class="container row-center g-1" style="height: 35px">
       <SecondaryButton :onClickHandler="goBack" text="Discard" />
@@ -37,6 +39,7 @@ import Tag from "../shared/Tag.vue";
 import DropDownFormField from "../shared/DropDownFormField.vue";
 import CreateMultipleChoiceForm from "../../pages/answer/multiple_choice/CreateMultipleChoiceForm.vue";
 import CreateOpenEndedForm from "../../pages/answer/open_ended/CreateOpenEndedForm.vue";
+import CreateOrderedSequenceForm from "../../pages/answer/ordered_sequence/CreateOrderedSequenceForm.vue";
 
 export default {
   name: "CreateQuestionForm",
@@ -46,9 +49,10 @@ export default {
     PrimaryButton,
     SecondaryButton,
     DropDownFormField,
-    Tag,
     CreateMultipleChoiceForm,
     CreateOpenEndedForm,
+    CreateOrderedSequenceForm,
+    Tag
   },
   props: {
     questionText: {

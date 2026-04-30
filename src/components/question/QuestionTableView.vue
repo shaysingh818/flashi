@@ -7,11 +7,10 @@
           <th>Date Updated</th>
           <th>Question</th>
         </tr>
-        <tr>
+        <tr @click="questionDetail">
           <td class="tag-column"><Tag title="multiple choice" height="10px" /></td>
           <td class="date-column">04/22/2026</td>
           <td class="content-column">What are the main compounds that make up your pysio</td>
-  
         </tr>
         <tr>
           <td class="tag-column"><Tag title="open ended" height="10px" /></td>
@@ -33,7 +32,12 @@ import Tag from '../shared/Tag.vue';
 
 export default {
   name: "QuestionTableView",
-  components: {Tag}
+  components: {Tag},
+  methods: {
+    questionDetail() {
+      this.$router.push({ path: "/question/view" });
+    }
+  }
 };
 </script>
 
