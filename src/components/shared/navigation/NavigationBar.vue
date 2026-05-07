@@ -20,7 +20,7 @@
         <NavigationItem icon="calendar" navTitle="sessions" />
       </RouterLink>
 
-      <RouterLink to="/sessions">
+      <RouterLink to="/metrics">
         <NavigationItem icon="chart-bar" navTitle="metrics" />
       </RouterLink>
 

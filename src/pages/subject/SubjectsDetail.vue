@@ -1,17 +1,14 @@
 <template>
-  <div class="flex col-center w-100">
+  <div class="flex col-center gap-2 w-100">
     <BackBar text="Subject Name" />
-    <br> </br>
-    <div class="metrics-section">
-      <div class="metrics-grid">
-        <MetricCard metric="Daily Hours Reviewed" numeric=20 />
-        <MetricCard metric="Questions Reviewed" numeric=20 />
-        <MetricCard metric="Accuracy Rate" numeric=20 />
-      </div>
+
+    <div class="grid cols-3 w-90 gap-6 place-center p-6">
+      <MetricCard metric="Daily hours reviewed" numeric="20" />
+      <MetricCard metric="Questions reviewed" numeric="20" />
+      <MetricCard metric="Accuracy rate" numeric="20" />
     </div>
-    <br />
+    
     <SearchComponent text="Search Decks" :onClick="search" />
-    <br></br>
     <DeckListView />
     <HoverButton icon="fa-solid fa-plus" :onClickHandler="createDeck" />
   </div>
@@ -20,9 +17,9 @@
 <script>
 import BackBar from "../../components/shared/navigation/BackBar.vue";
 import SearchComponent from "../../components/shared/forms/SearchComponent.vue";
-import MetricCard from "../../components/shared/MetricCard.vue";
 import HoverButton from "../../components/shared/buttons/HoverButton.vue";
 import DeckListView from "../../components/deck/DeckListView.vue";
+import MetricCard from "../../components/shared/analytics/MetricCard.vue";
 
 export default {
   name: "SubjectDetail",

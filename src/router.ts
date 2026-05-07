@@ -17,6 +17,7 @@ import SessionDetail from "./pages/session/SessionDetail.vue";
 import CreateSession from "./pages/session/CreateSession.vue";
 import EditSession from "./pages/session/EditSession.vue";
 import AddDeckToSession from "./pages/session/AddDeckToSession.vue";
+import MetricsPage from "./pages/MetricsPage.vue";
 
 const routes: Array<RouteRecordRaw> = [
   // home
@@ -44,6 +45,9 @@ const routes: Array<RouteRecordRaw> = [
   { path: "/sessions/create", component: CreateSession },
   { path: "/sessions/edit", component: EditSession },
   { path: "/sessions/deck/add", component: AddDeckToSession },
+
+  // metrics
+  { path: "/metrics", component: MetricsPage },
 
   // sessions
   { path: "/settings", component: SettingsPage },

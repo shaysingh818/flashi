@@ -282,15 +282,15 @@ main {
 .w-85 {
   width: 85%;
 }
-
+.w-90 {
+  width: 90%;
+}
 .w-95 {
   width: 95%;
 }
-
 .w-100 {
   width: 100%;
 }
-
 .w-auto {
   width: auto;
 }

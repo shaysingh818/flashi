@@ -25,7 +25,7 @@ export default {
 
 <style scoped>
 .header {
-  width: 85%;
+  width: 95%;
   border-radius: 10px;
   background-color: rgb(28 25 23);
 }

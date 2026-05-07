@@ -1,5 +1,5 @@
 <template>
-  <div class="flex row-center gap-2" style="height: 50px;">
+  <div class="flex row-center gap-4" style="height: 50px;">
     <Tag :title="`${correct}/${totalAttempts}`" height="10px" /> 
       <p> {{ questionText }}</p>
   </div>

@@ -23,22 +23,30 @@ export default {
     labels: {
       type: Array,
       default: () => ['Correct', 'Incorrect'],
+    },    
+    label: {
+      type: String,
+      default: () => "Accuracy of questions",
     },
     values: {
       type: Array,
       default: () => [45, 55],
+    },    
+    valueColors: {
+      type: Array,
+      default: () => ['#F97316', '#3D3D3D'],
     },
   },
   computed: {
     chartData() {
       return {
-        label: "Chart title",
+        label: this.title,
         labels: this.labels,
         datasets: [
           {
-            label: "Accuracy of questions",
+            label: this.label,
             data: this.values,
-            backgroundColor: ['#F97316', '#3D3D3D'],
+            backgroundColor: this.valueColors,
             borderWidth: 0,
           },
         ],

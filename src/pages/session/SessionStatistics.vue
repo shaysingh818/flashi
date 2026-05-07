@@ -19,9 +19,12 @@
     <br />
 
     <div class="grid cols-2 cols-responsive w-95 gap-4">
-      <DataView />
-      <DataView />
+      <DataView title="Most incorrect questions" />
+      <DataView title="Most correct question" />
     </div>
+
+    <br />
+    <br />
   </div>
 </template>
 

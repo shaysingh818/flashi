@@ -24,6 +24,26 @@ export default {
     labels: {
       type: Array,
       default: () => ["Open Ended", "Multiple Choice", "Ordered Sequence"],
+    },        
+    label: {
+      type: String,
+      default: () => "Question Types",
+    },
+    values: {
+      type: Array,
+      default: () => [40, 20, 35],
+    },       
+    pieColors: {
+      type: Array,
+      default: () => ["#F97316", "#FB923C", "#FDBA74"],
+    },       
+    legendColor: {
+      type: String,
+      default: () => "#ffffff",
+    },    
+    titleColor: {
+      type: String,
+      default: () => "#ffffff",
     },
   },
   computed: {
@@ -32,9 +52,9 @@ export default {
         labels: this.labels,
         datasets: [
           {
-            label: "Question Types",
-            data: [40, 20, 35],
-            backgroundColor: ["#F97316", "#FB923C", "#FDBA74"],
+            label: this.label,
+            data: this.values,
+            backgroundColor: this.pieColors,
             border: 'none'
           },
         ],
@@ -47,13 +67,13 @@ export default {
           title: {
             display: true,
             text: this.title,
-            color: "#ffffff",
+            color: this.titleColor,
             font: { size: 16, weight: "bold" },
             padding: { bottom: 10 }, 
           },
           legend: {
             position: "bottom",
-            labels: { color: "#ffffff" },
+            labels: { color: this.legendColor },
           },
         },
       };

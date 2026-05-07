@@ -27,35 +27,21 @@ export default {
     datasets: {
       type: Array,
       default: () => [
-        { label: "Accuracy",       data: [40, 55, 30, 70, 60, 85] },
-        { label: "Completion Rate", data: [60, 50, 75, 65, 80, 70] },
-        { label: "Avg Score",       data: [30, 45, 55, 40, 65, 60] },
+        { label: "Accuracy",       data: [40, 55, 30, 70, 60, 85], color: "#F97316" },
+        { label: "Completion Rate", data: [60, 50, 75, 65, 80, 70] ,color: "#38BDF8" },
+        { label: "Avg Score",       data: [30, 45, 55, 40, 65, 60], color: "#34D399" },
       ],
     },
-  },
-  data() {
-    return {
-      palette: [
-        { border: "#F97316" },
-        { border: "#38BDF8" },
-        { border: "#A78BFA" },
-        { border: "#34D399" },
-        { border: "#FB7185" },
-      ],
-    };
   },
   computed: {
     chartData() {
       return {
         labels: this.labels,
         datasets: this.datasets.map((ds, i) => {
-          const color = this.palette[i % this.palette.length];
           return {
             label: ds.label,
             data: ds.data,
-            borderColor: color.border,
-            backgroundColor: color.background,
-            pointBackgroundColor: color.border,
+            borderColor: ds.color,
             pointRadius: 4,
             tension: 0.4,
             fill: true,
