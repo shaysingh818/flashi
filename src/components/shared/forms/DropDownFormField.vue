@@ -1,11 +1,11 @@
 <template>
-  <div class="container col-center w-75 g-1">
-    <div class="container row-center">
-      <div class="container">
+  <div class="flex col-center w-100 g-1">
+    <div class="flex row-center gap-4">
+      <div class="flex">
         <label>Choose an answer type:</label>
       </div>
       <div
-        class="container centered w-25"
+        class="flex centered-all w-50"
         style="background-color: rgb(28 25 23); border-radius: 10px;"
         @click="showDropdown"
       >
@@ -17,13 +17,13 @@
       <div
         v-if="isDropdownOpen"
         style="background-color: rgb(28 25 23); border-radius: 10px"
-        class="container col-center body-fixed w-50 p-10 g-1"
+        class="flex col-center centered-overlay w-50 p-4 g-1"
       >
-        <div class="container centered align-center">
+        <div class="flex centered-all">
           <h1>Choose Answer Type</h1>
         </div>
 
-        <div class="container col-center">
+        <div class="flex col-center">
           <p
             v-for="(item, index) in options"
             :key="index"
@@ -35,7 +35,8 @@
           </p>
         </div>
 
-        <div class="container row-center g-1 p-10" style="height: 30px">
+        <br/>
+        <div class="flex row-center gap-4 p-10" style="height: 30px">
           <SecondaryButton :onClickHandler="showDropdown" text="Discard" />
           <PrimaryButton :onClickHandler="showDropdown" text="Submit" />
         </div>
@@ -45,9 +46,9 @@
 </template>
 
 <script>
-import DropDownItem from "./DropDownItem.vue";
-import PrimaryButton from "./PrimaryButton.vue";
-import SecondaryButton from "./SecondaryButton.vue";
+import DropDownItem from "../navigation/DropDownItem.vue";
+import PrimaryButton from "../buttons/PrimaryButton.vue";
+import SecondaryButton from "../buttons/SecondaryButton.vue";
 
 export default {
   name: "DropDownFormField",
@@ -83,6 +84,7 @@ export default {
 </script>
 
 <style scoped>
+
 label {
   padding: 10px;
   color: #b5b3b3;

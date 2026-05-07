@@ -1,12 +1,12 @@
 <template>
-  <div class="container row-center g-1" style="height: 35px;">
+  <div class="flex row-center gap-2 w-100" style="height: 35px;">
     <p>{{ index }}. </p>
     <FormInputField placeholder="" @update:text="newItem = $event" />
   </div>
 </template>
 
 <script>
-import FormInputField from "../../../components/shared/FormInputField.vue";
+import FormInputField from "../../../components/shared/forms/FormInputField.vue";
 
 export default {
   name: "OrderedSequencePreviewItem",

@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import FormInputField from "../../../components/shared/FormInputField.vue";
+import FormInputField from "../../../components/shared/forms/FormInputField.vue";
 
 export default {
   name: "MultipleChoiceItem",
@@ -31,7 +31,6 @@ export default {
 </script>
 
 <style scoped>
-
 label {
   display: flex;
   padding: 10px;

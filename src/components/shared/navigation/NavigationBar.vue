@@ -35,7 +35,7 @@
 </template>
 
 <script setup>
-import Logo from '../../assets/flashi.svg?component'
+import Logo from '../../../assets/flashi.svg?component'
 import NavigationItem from './NavigationItem.vue'
 </script>
 

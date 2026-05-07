@@ -1,31 +1,34 @@
 <template>
-  <div class="container col-center g-1 w-75 p-10">
-    <MultipleChoicePreviewItem
+  <div class="flex col-center gap-4 w-75 p-2">
+    <OrderedSequencePreviewItem
       v-for="(item, index) in items"
       :key="index"
-      :text="item"
+      :index="index+1"
     />
-  </div> 
-
+  </div>
 </template>
 
 <script>
-import MultipleChoicePreviewItem from './MultipleChoicePreviewItem.vue';
-
+import OrderedSequencePreviewItem from "./OrderedSequencePreviewItem.vue";
 
 export default {
-  name: "MultipleChoicePreview",
-  components: { MultipleChoicePreviewItem },
-  props: {},
+  name: "OrderedSequencePreview",
+  components: { OrderedSequencePreviewItem },
+  props: {
+    questionText: {
+      type: String,
+      required: true,
+    },
+    answerType: {
+      type: String,
+      required: true,
+    },
+  },
   data() {
     return {
       isDropdownOpen: false,
       selected: null,
-      items: [
-        "option 1, go through the blank", 
-        "option 2, go through the ranks with anks with danks", 
-        "option 3"
-      ],
+      items: [1, 2, 3, 4, 5, 6],
     };
   },
   methods: {

@@ -7,7 +7,7 @@
 
 <script>
 import FormInputField from "./FormInputField.vue";
-import PrimaryButton from "./PrimaryButton.vue";
+import PrimaryButton from "../buttons/PrimaryButton.vue";
 
 export default {
   name: "SearchComponent",

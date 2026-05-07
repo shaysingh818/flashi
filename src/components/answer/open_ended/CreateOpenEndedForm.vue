@@ -1,20 +1,20 @@
 <template>
 
-  <div class="container col-center w-75 g-1">
+  <div class="flex col-center w-75 gap-2">
     
-    <div class="container p-5">
+    <div class="flex p-4 w-100">
       <FormTextField description="Type open ended answers" />
     </div>
     
-    <div class="container row-center g-1" style="height: 35px;">
+    <div class="flex row-center gap-2 w-100" style="height: 35px;">
       <FormInputField
         placeholder="Add keyword for open ended answer"
         @update:text="newKeyword = $event"
       />
       <font-awesome-icon icon="fa-solid fa-plus" @click="addKeyword" />
     </div>
-    
-    <div class="container row-center align-left wrap g-1">
+
+    <div class="flex row-center align-left wrap gap-2 p-2">
       <Tag
         v-for="(item, index) in keywords"
         :key="index"
@@ -27,8 +27,8 @@
 </template>
 
 <script>
-import FormInputField from "../../../components/shared/FormInputField.vue";
-import FormTextField from "../../../components/shared/FormTextField.vue";
+import FormInputField from "../../../components/shared/forms/FormInputField.vue";
+import FormTextField from "../../../components/shared/forms/FormTextField.vue";
 import Tag from "../../../components/shared/Tag.vue";
 
 export default {

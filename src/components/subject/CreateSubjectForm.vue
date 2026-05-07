@@ -1,14 +1,14 @@
 <template>
-  <div class="create-subject-form">
-    <div class="subject-input">
+  <div class="flex col-center gap-4 w-100">
+    <div class="flex w-75" style="height: 40px;">
       <FormInputField :text="`${subjectNameText}`" />
     </div>
 
-    <div class="subject-text-input">
+    <div class="flex w-75" style="height: 100px;">
       <FormTextField :description="`${subjectDescriptionText}`" />
     </div>
 
-    <div class="subject-form-button-section">
+    <div class="flex row-center w-75 gap-4" style="height: 40px;">
       <SecondaryButton :onClickHandler="goBack" text="Discard" />
       <PrimaryButton :onClickHandler="submitHandler" :text="`${submitText}`" />
     </div>
@@ -16,10 +16,10 @@
 </template>
 
 <script>
-import FormInputField from "../../components/shared/FormInputField.vue";
-import FormTextField from "../../components/shared/FormTextField.vue";
-import PrimaryButton from "../../components/shared/PrimaryButton.vue";
-import SecondaryButton from "../../components/shared/SecondaryButton.vue";
+import FormInputField from "../../components/shared/forms/FormInputField.vue";
+import FormTextField from "../../components/shared/forms/FormTextField.vue";
+import PrimaryButton from "../../components/shared/buttons/PrimaryButton.vue";
+import SecondaryButton from "../../components/shared/buttons/SecondaryButton.vue";
 
 export default {
   name: "CreateSubjectForm",
@@ -56,24 +56,7 @@ export default {
 </script>
 
 <style scoped>
-.create-subject-form {
-  display: flex;
-  flex-direction: column;
-  padding: 10px;
-  justify-content: center;
-  align-items: center;
-  width: 80%;
-  gap: 2rem;
-}
 
-.subject-input {
-  width: 100%;
-  height: 40px;
-}
-
-.subject-text-input {
-  width: 100%;
-}
 
 .subject-form-button-section {
   width: 100%;

@@ -13,8 +13,8 @@
 </template>
 
 <script>
-import PrimaryButton from "../../components/shared/PrimaryButton.vue";
-import SecondaryButton from "../../components/shared/SecondaryButton.vue";
+import PrimaryButton from "../../components/shared/buttons/PrimaryButton.vue";
+import SecondaryButton from "../../components/shared/buttons/SecondaryButton.vue";
 
 export default {
   name: "ConfirmDialog",

@@ -1,6 +1,6 @@
 <template>
   <div
-    class="container centered align-center p-5"
+    class="flex centered-all p-4 tag"
     :style="{width: width, height: height }"
   >
     <p>{{ title }}</p>
@@ -28,7 +28,7 @@ export default {
 </script>
 
 <style scoped>
-.container {
+.tag {
   border-radius: 5px;
   background-color: #f97316;
   padding: 5px;

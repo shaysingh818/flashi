@@ -1,11 +1,7 @@
 <template>
-  <div @click.stop="handleClick" class="dropdown-item">
-    <div class="leading-icon">
-      <font-awesome-icon :icon="`${icon}`" />
-    </div>
-    <div class="content">
-      <p>{{ text }}</p>
-    </div>
+  <div @click.stop="handleClick" class="flex row items-center gap-2">
+    <font-awesome-icon :icon="`${icon}`" />
+    <p>{{ text }}</p>
   </div>
 </template>
 
@@ -65,7 +61,7 @@ export default {
   width: 75%;
 }
 
-.leading-icon svg {
+svg {
   color: #f97316;
   height: 20px;
   width: 20px;

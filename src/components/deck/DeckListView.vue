@@ -5,6 +5,7 @@
       description="Notes and studying for study of the human body"
       dateUpdated="04/20/2026"
       :tags="['muscular', 'skeletal', 'organ system']"
+      :actionType="actionType"
     />
 
     <DeckListItem
@@ -12,6 +13,7 @@
       description="Notes and studying for study of the human body"
       dateUpdated="04/20/2026"
       :tags="['muscular', 'skeletal', 'organ system']"
+      :actionType="actionType"
     />
 
     <DeckListItem
@@ -19,6 +21,7 @@
       description="Notes and studying for study of the human body"
       dateUpdated="04/20/2026"
       :tags="['muscular', 'skeletal', 'organ system']"
+      :actionType="actionType"
     />
   </div>
 </template>
@@ -30,6 +33,13 @@ export default {
   components: {
     DeckListItem,
   },
+  props: {
+    actionType: {
+      type: String,
+      required: false,
+      default: 'view'
+    },
+  }
 };
 </script>
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="container centered">
+  <div class="flex centered-all">
     <table>
       <tbody>
         <tr>

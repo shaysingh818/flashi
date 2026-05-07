@@ -13,146 +13,387 @@ main {
   margin-left: 55px;
 }
 
-.container {
+/* debug outline */ 
+.outline {
+  border: 1px solid white; 
+}
+
+/* ── Display ────────────────────────────────────────────────── */
+.flex {
   display: flex;
 }
-
-/* alignment */ 
-
-.container.align-center {
-  align-items: center;
+.inline-flex {
+  display: inline-flex;
 }
 
-.container.align-stretch {
-  align-items: stretch;
+/* ── Direction ──────────────────────────────────────────────── */
+.row {
+  flex-direction: row;
+}
+.row-reverse {
+  flex-direction: row-reverse;
+}
+.col {
+  flex-direction: column;
+}
+.col-reverse {
+  flex-direction: column-reverse;
 }
 
-.container.as-center {
-  align-self: center;
+/* ── Justify Content ────────────────────────────────────────── */
+.justify-start {
+  justify-content: flex-start;
 }
-
-.container.as-fs {
-  align-self: flex-start;
+.justify-end {
+  justify-content: flex-end;
 }
-
-.container.align-fs {
-  align-items: flex-start;
-}
-
-/* padding */ 
-
-.container.p-20 {
-  padding: 20px;
-}
-
-.container.p-10 {
-  padding: 10px;
-}
-
-.container.p-5 {
-  padding: 5px;
-}
-
-/* content justify */ 
-.container.centered {
+.justify-center {
   justify-content: center;
 }
-
-.container.left {
+.justify-between {
+  justify-content: space-between;
+}
+.justify-around {
+  justify-content: space-around;
+}
+.justify-evenly {
+  justify-content: space-evenly;
+}
+.justify-left {
   justify-content: left;
 }
 
-.container.right {
-  justify-content: right;
+/* ── Justify Items (horizontal alignment of cells) ──────────── */
+.justify-items-start   { justify-items: start; }
+.justify-items-end     { justify-items: end; }
+.justify-items-center  { justify-items: center; }
+.justify-items-stretch { justify-items: stretch; }
+
+
+/* ── Align Items ────────────────────────────────────────────── */
+.items-start {
+  align-items: flex-start;
+}
+.items-end {
+  align-items: flex-end;
+}
+.items-center {
+  align-items: center;
+}
+.items-stretch {
+  align-items: stretch;
+}
+.items-baseline {
+  align-items: baseline;
 }
 
-.container.body-fixed {
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  position: fixed;
+/* ── Align Text ────────────────────────────────────────────── */
+.text-center {
+  text-align: center;
 }
 
-/* row column layout */ 
-
-.container.col {
-  flex-direction: column;
+.text-left {
+  text-align: left;
 }
 
-.container.col-center {
+.text-right {
+  text-align: right;
+}
+
+/* ── Align Self (for children / flex items) ─────────────────── */
+.self-start {
+  align-self: flex-start;
+}
+.self-end {
+  align-self: flex-end;
+}
+.self-center {
+  align-self: center;
+}
+.self-stretch {
+  align-self: stretch;
+}
+.self-baseline {
+  align-self: baseline;
+}
+
+/* Shortcuts for all alignment, items, and content justification */
+.centered-all {
+  align-items: center;
+  justify-content: center;
+}
+
+.left-all {
+  align-items: left;
+  justify-content: left;
+}
+
+/* ── Shorthand combos ───────────────────────────────────────── */
+.row-center {
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+.col-center {
   flex-direction: column;
   justify-content: center;
   align-items: center;
 }
 
-.container.row {
-  flex-direction: row;
+/* ── Place Items (shorthand for align + justify) ────────────── */
+.place-center { place-items: center; }
+.place-start  { place-items: start; }
+.place-end    { place-items: end; }
+
+/* ── Wrap ───────────────────────────────────────────────────── */
+.wrap {
+  flex-wrap: wrap;
+}
+.wrap-reverse {
+  flex-wrap: wrap-reverse;
+}
+.nowrap {
+  flex-wrap: nowrap;
 }
 
-.container.row-center {
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
+/* ── Flex Grow / Shrink / Basis ─────────────────────────────── */
+.grow {
+  flex: 1 1 auto;
+}
+.shrink {
+  flex: 0 1 auto;
+}
+.none {
+  flex: none;
 }
 
-/* position */ 
-.container.relative {
-  position: relative;
+/* flex layout */
+.fw-25 {
+  flex: 0 0 25%;
+}
+.fw-33 {
+  flex: 0 0 33.333%;
+}
+.fw-50 {
+  flex: 0 0 50%;
+}
+.fw-66 {
+  flex: 0 0 66.666%;
+}
+.fw-75 {
+  flex: 0 0 75%;
 }
 
-.container.absolute {
-  position: relative;
+/* ── Grid Display ───────────────────────────────────────────── */
+.grid {
+  display: grid;
+  overflow: hidden; 
+}
+.inline-grid {
+  display: inline-grid;
 }
 
-/* width control */ 
-.container.w-100 {
+/* ── Grid Template Columns ──────────────────────────────────── */
+.cols-1 {
+  grid-template-columns: repeat(1, 1fr);
+}
+.cols-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+.cols-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+.cols-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+.cols-6 {
+  grid-template-columns: repeat(6, 1fr);
+}
+.cols-12 {
+  grid-template-columns: repeat(12, 1fr);
+}
+.cols-auto {
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+}
+.cols-auto-min-200 {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+@media (max-width: 768px) {
+  .cols-responsive {
+    grid-template-columns: 1fr;
+  }
+}
+/* ── Grid Template Rows ─────────────────────────────────────── */
+.rows-1 {
+  grid-template-rows: repeat(1, 1fr);
+}
+.rows-2 {
+  grid-template-rows: repeat(2, 1fr);
+}
+.rows-3 {
+  grid-template-rows: repeat(3, 1fr);
+}
+.rows-4 {
+  grid-template-rows: repeat(4, 1fr);
+}
+
+/* ── Column / Row Span ──────────────────────────────────────── */
+.col-span-1  { grid-column: span 1; }
+.col-span-2  { grid-column: span 2; }
+.col-span-3  { grid-column: span 3; }
+.col-span-4  { grid-column: span 4; }
+.col-span-6  { grid-column: span 6; }
+.col-span-full { grid-column: 1 / -1; }
+
+.row-span-1  { grid-row: span 1; }
+.row-span-2  { grid-row: span 2; }
+.row-span-3  { grid-row: span 3; }
+.row-span-4  { grid-row: span 4; }
+.row-span-full { grid-row: 1 / -1; }
+
+/* ── Gap ────────────────────────────────────────────────────── */
+.gap-1 {
+  gap: 0.25rem;
+}
+.gap-2 {
+  gap: 0.5rem;
+}
+.gap-4 {
+  gap: 1rem;
+}
+.gap-6 {
+  gap: 1.5rem;
+}
+.gap-8 {
+  gap: 2rem;
+}
+
+/* ── Width ──────────────────────────────────────────────────── */
+.w-25 {
+  width: 25%;
+}
+.w-50 {
+  width: 50%;
+}
+.w-75 {
+  width: 75%;
+}
+.w-85 {
+  width: 85%;
+}
+
+.w-95 {
+  width: 95%;
+}
+
+.w-100 {
   width: 100%;
 }
 
-.container.w-75 {
-  width: 75%;
+.w-auto {
+  width: auto;
 }
 
-.container.w-50 {
-  width: 50%;
+/* ── Height ──────────────────────────────────────────────────── */
+.h-25 {
+  height: 25%;
+}
+.h-50 {
+  height: 50%;
+}
+.h-75 {
+  height: 75%;
+}
+.h-100 {
+  height: 100%;
 }
 
-.container.fw-25 {
-  flex: 0 0 25%;
+.h-auto {
+  height: auto;
 }
 
-.container.fw-25 {
+/* ── Padding (all sides) ────────────────────────────────────── */
+.p-1 {
+  padding: 0.25rem;
+}
+.p-2 {
+  padding: 0.5rem;
+}
+.p-4 {
+  padding: 1rem;
+}
+.p-6 {
+  padding: 1.5rem;
+}
+.p-8 {
+  padding: 2rem;
+}
+
+/* ── Border Radius ───────────────────────────────────────────── */
+.rounded-1 {
+  border-radius: 0.25rem;
+}
+.rounded-2 {
+  border-radius: 0.5rem;
+}
+.rounded-4 {
+  border-radius: 1rem;
+}
+.rounded-6 {
+  border-radius: 1.5rem;
+}
+.rounded-8 {
+  border-radius: 2rem;
+}
+.rounded-full {
+  border-radius: 9999px; /* pill / circle */
+}
+
+/* ── Position ───────────────────────────────────────────────── */
+.relative {
+  position: relative;
+}
+.absolute {
+  position: absolute;
+}
+.fixed {
+  position: fixed;
+}
+.sticky {
+  position: sticky;
+}
+
+/* ── Centering overlay (modal / splash) ─────────────────────── */
+.centered-overlay {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* ── Layout regions (semantic flex slots) ───────────────────── */
+.leading {
   flex: 0 0 10%;
 }
-
-.container.fw-75 {
-  flex: 1 1 75%;
+.trailing {
+  flex: 0 0 15%;
 }
-
-.container.outline {
-  border: 1px solid white;
-}
-
-.container.g-1 {
-  gap: 1rem;
-}
-
-.container.wrap {
-  flex-wrap: wrap;
-}
-
-.container.leading {
-  width: 10%;
-}
-
-.container.trailing {
-  width: 15%;
-}
-
-.container.content {
+.content {
   flex: 1 1 auto;
 }
 
+/* ── Debug ──────────────────────────────────────────────────── */
+.outline {
+  outline: 1px solid white;
+}
+
+/* transform */
+.transform-50-80 {
+   transform: translateX(50%) translateY(80%)
+}
+
+/* ── Typography ─────────────────────────────────────────────── */
 h1 {
   color: white;
   font-weight: normal;

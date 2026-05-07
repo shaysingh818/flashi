@@ -1,6 +1,6 @@
 <template>
 
-  <div class="container col-center">
+  <div class="flex col-center w-100">
     <h1> Home Page </h1> 
   </div>
 </template>

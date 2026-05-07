@@ -1,6 +1,6 @@
 <template>
-  <div class="subject-list-item" @click="subjectDetail">
-    <div class="list-item-icon">
+  <div class="flex row w-100 list-item" style="height: 50px;" @click="subjectDetail">
+    <div class="flex leading centered-all">
       <font-awesome-icon
         icon="fa-regular fa-clone"
         class="list-item-icon-style"
@@ -12,7 +12,7 @@
       <p>{{ description }}</p>
     </div>
 
-    <div class="trailing-content">
+    <div class="flex row gap-4 trailing centered-all">
       <p :style="{ color: '#F97316' }">{{ dateUpdated }}</p>
       <font-awesome-icon
         @click.stop="showDropdown"
@@ -20,19 +20,19 @@
         class="trailing-icon-style"
       />
 
-      <div v-if="isDropdownOpen" class="dropdown-content">
-        <div @click.stop="editSubject" class="dropdown-item">
-          <font-awesome-icon
-            icon="fa-solid fa-pen-to-square"
-            class="dropdown-icon-style"
-          />
-          <p>Edit Subject</p>
-        </div>
+      <div v-if="isDropdownOpen" class="flex col absolute gap-2 p-2 transform-50-80 rounded-1" style="background-color: rgb(28 25 23);">
 
-        <div @click.stop="deleteSubject" class="dropdown-item">
-          <font-awesome-icon icon="fa-solid fa-x" class="dropdown-icon-style" />
-          <p>Delete Subject</p>
-        </div>
+        <DropDownItem
+          icon="fa-solid fa-pen-to-square"
+          text="Edit Subject"
+          :onClickHandler="editSubject"
+        />
+        <DropDownItem
+          icon="fa-solid fa-x"
+          text="Delete Subject"
+          :onClickHandler="deleteSubject"
+        />
+        
       </div>
       <Teleport to="body">
         <ConfirmDialog
@@ -49,10 +49,11 @@
 <script>
 import { svgPathData } from "@fortawesome/free-solid-svg-icons/faRotateRight";
 import ConfirmDialog from "../shared/ConfirmDialog.vue";
+import DropDownItem from "../shared/navigation/DropDownItem.vue";
 
 export default {
   name: "SubjectListItem",
-  components: { ConfirmDialog },
+  components: { ConfirmDialog, DropDownItem },
   props: {
     title: {
       type: String,
@@ -93,35 +94,17 @@ export default {
 </script>
 
 <style scoped>
-.subject-list-item {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  height: 50px;
-}
 
-.subject-list-item:hover {
+.list-item:hover {
   background-color: rgb(28 25 23);
-}
-
-.list-item-icon {
-  flex: none;
-  width: 50px;
-  height: 50px;
-}
-
-.trailing-content svg:hover {
-  background-color: gray;
-}
-
-.list-item-icon svg {
-  width: 80%;
-  height: auto;
 }
 
 .list-item-icon-style {
   color: #f97316;
+  width: 25px; 
+  height: 25px;
 }
+
 
 .trailing-icon-style {
   color: #b5b3b3;
@@ -129,44 +112,6 @@ export default {
 
 .dropdown-icon-style {
   color: #f97316;
-}
-
-.content {
-  display: flex;
-  flex-direction: column;
-  justify-content: left;
-  white-space: nowrap;
-  overflow: hidden;
-  width: 60%;
-  padding: 5px;
-}
-
-.trailing-content {
-  display: flex;
-  flex-direction: row;
-  width: 30%;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-}
-
-.dropdown-content {
-  position: absolute;
-  display: flex;
-  flex-direction: column;
-  border-radius: 4px;
-  padding: 10px;
-  gap: 0.5rem;
-  background-color: rgb(28 25 23);
-  transform: translateX(50%) translateY(80%);
-}
-
-.dropdown-item {
-  display: flex;
-  flex-direction: row;
-  justify-content: left;
-  align-items: left;
-  gap: 0.5rem;
 }
 
 h1 {

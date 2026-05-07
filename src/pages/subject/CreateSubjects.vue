@@ -1,5 +1,5 @@
 <template>
- <div class="container col-center">
+ <div class="flex col-center">
    <br></br>
 
     <FormHeader
@@ -23,7 +23,7 @@
 
 <script>
 import CreateSubjectForm from "../../components/subject/CreateSubjectForm.vue";
-import FormHeader from "../../components/shared/FormHeader.vue";
+import FormHeader from "../../components/shared/forms/FormHeader.vue";
 
 export default {
   name: "CreateSubjects",
@@ -38,46 +38,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-.create-subject-header {
-  width: 85%;
-  border-radius: 10px;
-  background-color: rgb(28 25 23);
-}
-
-.create-subject-form {
-  display: flex;
-  flex-direction: column;
-  padding: 10px;
-  justify-content: center;
-  align-items: center;
-  width: 85%;
-  gap: 2rem;
-}
-
-.subject-input {
-  width: 100%;
-  height: 30px;
-}
-
-.subject-text-input {
-  width: 100%;
-}
-
-.subject-form-button-section {
-  width: 100%;
-  height: 40px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 10px;
-}
-
-input {
-  width: 100%;
-  height: 100%;
-}
-</style>

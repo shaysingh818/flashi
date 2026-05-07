@@ -1,7 +1,7 @@
 <template>
-<div class="container row-center g-1">
+<div class="flex row-center gap-2">
 
-  <p class="container fw-75">{{ text }}</p>
+  <p class="flex fw-75">{{ text }}</p>
   
   <label class="switch">
     <input type="checkbox" checked>

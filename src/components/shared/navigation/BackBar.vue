@@ -1,15 +1,15 @@
 <template>
-  <div class="back-bar">
-    <div class="back-button">
+  <div class="flex row w-100 rounded-2 gap-2" style="background-color: rgb(28, 25,23); height: 60px;">
+    <div class="flex centered-all" style="width: 10%">
       <font-awesome-icon icon="fa-solid fa-arrow-left" @click="goBack" />
     </div>
 
-    <div class="text-section">
+    <div class="flex col-center w-75 h-100">
       <h1>{{ text }}</h1>
       <p>Last Updated: 04/02/2026</p>
     </div>
 
-    <div class="trailing">
+    <div class="flex centered-all" style="width: 10%;">
       <font-awesome-icon icon="fa-regular fa-pen-to-square" @click="goBack" />
     </div>
   </div>
@@ -39,46 +39,11 @@ export default {
 </script>
 
 <style scoped>
-.back-bar {
-  display: flex;
-  flex-direction: row;
-  background-color: rgb(28 25 23);
-  width: 100%;
-  height: 60px;
-  border-radius: 5px;
-  gap: 1rem;
-}
-
-.back-button {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 10%;
-}
 
 svg {
   color: #f97316;
   width: 20px;
   height: 20px;
-}
-
-.text-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 75%;
-  height: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  gap: 0.1rem;
-}
-
-.trailing {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 10%;
 }
 
 h1 {

@@ -1,12 +1,12 @@
 <template>
-  <div class="container w-75 p-10">
+  <div class="flex w-75 p-4" style="height: 100px;">
    <FormTextField :description="placeholderText" />
   </div>
 
 </template>
 
 <script>
-import FormTextField from '../../../components/shared/FormTextField.vue';
+import FormTextField from '../../../components/shared/forms/FormTextField.vue';
 
 export default {
   name: "ViewQuestion",

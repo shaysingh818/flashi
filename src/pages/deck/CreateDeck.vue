@@ -1,5 +1,5 @@
 <template>
-  <div class="container centered align-center col">
+  <div class="flex col-center w-100">
     <br />
      <FormHeader
       header="Create a deck"
@@ -22,7 +22,7 @@
 </template>
 
 <script>
-import FormHeader from '../../components/shared/FormHeader.vue';
+import FormHeader from '../../components/shared/forms/FormHeader.vue';
 import CreateDeckForm from '../../components/deck/CreateDeckForm.vue';
 
 export default {
@@ -39,8 +39,3 @@ export default {
 };
 
 </script>
-
-<style scoped>
-
-
-</style>

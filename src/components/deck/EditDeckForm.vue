@@ -1,13 +1,13 @@
 <template>
   <div
-    class="container centered align-center col g-1 w-75 p-10"
+    class="flex col-center gap-4 w-75 p-4"
     style="height: auto"
   >
-    <div class="container" style="height: 40px">
+    <div class="flex w-100" style="height: 40px">
       <FormInputField :text="`${deckName}`" />
     </div>
 
-    <div class="container">
+    <div class="flex w-100" style="height: 100px;">
       <FormTextField :description="`${deckDescription}`" />
     </div>
 
@@ -43,10 +43,10 @@
 </template>
 
 <script>
-import FormInputField from "../../components/shared/FormInputField.vue";
-import FormTextField from "../../components/shared/FormTextField.vue";
-import PrimaryButton from "../../components/shared/PrimaryButton.vue";
-import SecondaryButton from "../../components/shared/SecondaryButton.vue";
+import FormInputField from "../../components/shared/forms/FormInputField.vue";
+import FormTextField from "../../components/shared/forms/FormTextField.vue";
+import PrimaryButton from "../../components/shared/buttons/PrimaryButton.vue";
+import SecondaryButton from "../../components/shared/buttons/SecondaryButton.vue";
 import Tag from "../shared/Tag.vue";
 
 export default {

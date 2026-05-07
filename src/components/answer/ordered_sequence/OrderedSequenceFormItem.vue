@@ -1,10 +1,10 @@
 <template>
-  <div class="container row-center g-1 w-75">
-    <div class="container row align-left fw-75 g-1">
+  <div class="flex row-center gap-2 w-75">
+    <div class="flex row align-left fw-75 gap-2">
       <p class="number-index">{{ index }}.</p>
       <p class="indice-content">{{ content }}</p>
     </div>
-    <div class="container row-center fw-25">
+    <div class="flex row-center fw-25">
       <font-awesome-icon icon="fa-solid fa-x" @click="addKeyword" />
     </div>
   </div>

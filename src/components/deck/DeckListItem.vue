@@ -1,30 +1,45 @@
 <template>
-  <div class="deck-list-item">
-    <div class="container row centered g-1" @click="deckDetail">
-      <div class="container centered align-center leading">
+  <div class="flex row w-100 list-item">
+    <div class="flex row-center w-100" @click="deckDetail">
+      <div class="flex leading centered-all">
         <font-awesome-icon
           icon="fa-solid fa-list-check"
           class="list-item-icon-style"
         />
       </div>
 
-      <div class="container col left content">
+      <div class="content">
         <h1>{{ title }}</h1>
         <p>{{ description }}</p>
-        <div class="container left row g-1 p-5" style="height: 20px">
+        <div class="flex items-left row gap-2 p-2" style="height: 20px">
           <Tag v-for="(item, index) in tags" :key="index" :title="item" />
         </div>
       </div>
 
-      <div class="container trailing centered align-center g-1">
+      <div class="flex row gap-4 trailing centered-all">
         <p :style="{ color: '#F97316' }">{{ dateUpdated }}</p>
         <font-awesome-icon
+          v-if="actionType === 'view'"
           @click.stop="showDropdown"
           icon="fa-solid fa-ellipsis-vertical"
           class="trailing-icon-style"
         />
 
-        <div v-if="isDropdownOpen" class="dropdown-content">
+        <font-awesome-icon
+          v-if="actionType === 'add'"
+          @click.stop="showDropdown"
+          icon="fa-solid fa-plus"
+          class="trailing-icon-style"
+        />
+
+        <font-awesome-icon
+          v-if="actionType === 'remove'"
+          @click.stop="showDropdown"
+          icon="fa-solid fa-x"
+          class="trailing-icon-style"
+        />
+
+        <div v-if="isDropdownOpen" class="flex col absolute gap-2 p-2 transform-50-80 rounded-1" style="background-color: rgb(28 25 23);">
           <DropDownItem
             icon="fa-solid fa-pen-to-square"
             text="Edit Deck"
@@ -35,6 +50,7 @@
             text="Delete Deck"
             :onClickHandler="deleteDeck"
           />
+          
         </div>
 
         <Teleport to="body">
@@ -54,7 +70,7 @@
 import { svgPathData } from "@fortawesome/free-solid-svg-icons/faRotateRight";
 import ConfirmDialog from "../shared/ConfirmDialog.vue";
 import Tag from "../shared/Tag.vue";
-import DropDownItem from "../shared/DropDownItem.vue";
+import DropDownItem from "../shared/navigation/DropDownItem.vue";
 
 export default {
   name: "DeckListItem",
@@ -76,6 +92,11 @@ export default {
     dateUpdated: {
       type: String,
       required: true,
+    },
+    actionType: {
+      type: String,
+      required: false,
+      default: 'view'
     },
   },
   data() {
@@ -113,36 +134,19 @@ export default {
   background-color: rgb(28 25 23);
 }
 
-.list-item-trailing svg:hover {
-  background-color: gray;
-}
 
-.container.leading svg {
-  width: 35px;
-  height: 35px;
+.list-item-icon-style {
   color: #f97316;
+  width: 25px; 
+  height: 25px;
 }
 
 .trailing-icon-style {
   color: #b5b3b3;
 }
 
-.dropdown-content {
-  position: absolute;
-  display: flex;
-  flex-direction: column;
-  border-radius: 4px;
-  padding: 10px;
-  gap: 0.5rem;
-  background-color: rgb(28 25 23);
-  transform: translateX(25%) translateY(60%);
-}
-
-.tag-section {
-  display: flex;
-  flex-direction: row;
-  gap: 0.5rem;
-  height: 20px;
+.dropdown-icon-style {
+  color: #f97316;
 }
 
 h1 {

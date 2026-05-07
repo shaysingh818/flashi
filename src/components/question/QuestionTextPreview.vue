@@ -1,6 +1,6 @@
 <template>
-  <div class="container centered align-center" style="background-color: rgb(28 25 23); margin: 20px; border-radius: 10px; height: 75%;">
-    <p class="container p-20">{{ text }} </p>
+  <div class="flex centered-all" style="background-color: rgb(28 25 23); margin: 20px; border-radius: 10px; height: 75%;">
+    <p class="flex p-6">{{ text }} </p>
   </div>
 
 </template>

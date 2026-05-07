@@ -1,33 +1,33 @@
 <template>
-  <div class="container col-center">
+  <div class="flex col-center">
     <BackBar text="Deck Name" />
 
-    <!-- question text preview, needs to be certain max width -->
-    <div class="container centered">
-      <QuestionTextPreview text="How is mitosis important for cell growth, How is mitosis important for cell growth, How is mitosis important for cell growth, How is mitosis important for cell growth" />      
+    <div class="flex centered-all">
+      <QuestionTextPreview
+        text="How is mitosis important for cell growth, How is mitosis important for cell growth, How is mitosis important for cell growth, How is mitosis important for cell growth"
+      />
     </div>
 
-    <div class="container centered">
+    <div class="flex centered-all w-100">
       <OrderedSequencePreview v-if="answerType == 'ordered sequence'" />
       <MultipleChoicePreview v-if="answerType == 'multiple choice'" />
-      <OpenEndedPreview v-if="answerType == 'open ended'" placeholderText="Enter answer" />
-    </div>    
-
-    
+      <OpenEndedPreview
+        v-if="answerType == 'open ended'"
+        placeholderText="Enter answer"
+      />
+    </div>
   </div>
 
-  <QuestionActionsBar /> 
-
+  <QuestionActionsBar />
 </template>
 
 <script>
-import BackBar from "../../components/shared/BackBar.vue";
+import BackBar from "../../components/shared/navigation/BackBar.vue";
 import QuestionTextPreview from "../../components/question/QuestionTextPreview.vue";
-import OrderedSequencePreview from "../answer/ordered_sequence/OrderedSequencePreview.vue";
-import MultipleChoicePreview from "../answer/multiple_choice/MultipleChoicePreview.vue";
-import OpenEndedPreview from "../answer/open_ended/OpenEndedPreview.vue";
+import OrderedSequencePreview from "../../components/answer/ordered_sequence/OrderedSequencePreview.vue";
+import MultipleChoicePreview from "../../components/answer/multiple_choice/MultipleChoicePreview.vue";
+import OpenEndedPreview from "../../components/answer/open_ended/OpenEndedPreview.vue";
 import QuestionActionsBar from "./QuestionActionsBar.vue";
-
 
 export default {
   name: "ViewQuestion",
@@ -37,7 +37,7 @@ export default {
     OrderedSequencePreview,
     MultipleChoicePreview,
     OpenEndedPreview,
-    QuestionActionsBar
+    QuestionActionsBar,
   },
   props: {
     questionText: {
@@ -51,8 +51,8 @@ export default {
   },
   data() {
     return {
-      questionText: '',
-      answerType: 'ordered sequence',
+      questionText: "",
+      answerType: "ordered sequence",
     };
   },
   methods: {
@@ -67,5 +67,3 @@ export default {
   },
 };
 </script>
-
-<style scoped></style>

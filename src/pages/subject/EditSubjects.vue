@@ -1,5 +1,5 @@
 <template>
-  <div class="container col-center">
+  <div class="flex col-center w-100">
     <br></br>
     <FormHeader
       header="Edit subject"
@@ -18,7 +18,7 @@
 
 <script>
 import CreateSubjectForm from "../../components/subject/CreateSubjectForm.vue";
-import FormHeader from "../../components/shared/FormHeader.vue";
+import FormHeader from "../../components/shared/forms/FormHeader.vue";
 
 export default {
   name: "EditSubjects",

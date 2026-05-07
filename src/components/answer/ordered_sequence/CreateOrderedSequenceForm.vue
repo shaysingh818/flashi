@@ -1,6 +1,6 @@
 <template>
-  <div class="container col-center g-1 w-75">
-    <div class="container row-center g-1" style="height: 35px">
+  <div class="flex col-center gap-4 w-75">
+    <div class="flex row-center gap-2 w-100" style="height: 35px">
       <FormInputField
         placeholder="Add keyword for open ended answer"
         @update:text="newSequence = $event"
@@ -8,7 +8,7 @@
       <font-awesome-icon icon="fa-solid fa-plus" @click="addSequence" />
     </div>
 
-    <div class="container col-center">
+    <div class="flex col-center w-100 p-2 rounded-2">
       <OrderedSequenceFormItem
         v-for="(item , index) in sequences"
         :key="index"
@@ -20,8 +20,8 @@
 </template>
 
 <script>
-import FormInputField from "../../../components/shared/FormInputField.vue";
-import FormTextField from "../../../components/shared/FormTextField.vue";
+import FormInputField from "../../../components/shared/forms/FormInputField.vue";
+import FormTextField from "../../../components/shared/forms/FormTextField.vue";
 import Tag from "../../../components/shared/Tag.vue";
 import OrderedSequenceFormItem from "./OrderedSequenceFormItem.vue";
 

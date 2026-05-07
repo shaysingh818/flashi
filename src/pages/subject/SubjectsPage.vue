@@ -1,5 +1,5 @@
 <template>
-  <div class="container col-center">
+  <div class="flex col-center w-100">
 
   <br /> 
    <SearchComponent 
@@ -7,10 +7,8 @@
       :onClick="search"
     />
 
-    <div class="subjects-header">
-
-      <h2>Subjects </h2> 
-    
+    <div class="flex centered-all">
+      <h2 style="color: white;">Subjects </h2> 
     </div>
 
     <SubjectListView />
@@ -24,8 +22,8 @@
 </template>
 
 <script>
-import SearchComponent from '../../components/shared/SearchComponent.vue'
-import HoverButton from '../../components/shared/HoverButton.vue'
+import SearchComponent from '../../components/shared/forms/SearchComponent.vue'
+import HoverButton from '../../components/shared/buttons/HoverButton.vue'
 import SubjectListView from '../../components/subject/SubjectListView.vue'
 
 export default {
@@ -45,26 +43,5 @@ export default {
 }
 </script>
 
-<style scoped>
-
-h2 {
-  color: white; 
-}
 
 
-.subjects-header {
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  width: 100%; 
-}
-
-.subjects-list-view {
-  display: flex; 
-  flex-direction: column; 
-  align-items: center; 
-  justify-content: center; 
-  gap: 0.5rem; 
-}
-
-</style>

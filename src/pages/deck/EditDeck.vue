@@ -1,5 +1,5 @@
 <template>
-  <div class="container centered align-center col">
+  <div class="flex col-center w-100">
     <br />
 
     <FormHeader
@@ -16,7 +16,7 @@
 </template>
 
 <script>
-import FormHeader from "../../components/shared/FormHeader.vue";
+import FormHeader from "../../components/shared/forms/FormHeader.vue";
 import EditDeckForm from "../../components/deck/EditDeckForm.vue";
 
 export default {
