@@ -1,35 +1,25 @@
 <template>
-
-  <div class="subject-list-view">
-
+  <div class="subject-list-view" v-for="(item, index) in subjectStore.subjects" :key="index">
     <SubjectListItem
-      title="Anatomy"
-      description="Notes and studying for study of the human body"
-      dateUpdated="04/20/2026"
+      :id="item.id"
+      :title="item.name"
+      :description="item.description"
+      :dateUpdated="item.update"
     />
-
-    <SubjectListItem
-      title="Anatomy"
-      description="Notes and studying for study of the human body"
-      dateUpdated="04/20/2026"
-    />
-
-    <SubjectListItem
-      title="Anatomy"
-      description="Notes and studying for study of the human body"
-      dateUpdated="04/20/2026"
-    />
-
   </div>
-
 </template>
 
 <script>
 import SubjectListItem from './SubjectListItem.vue'
+import { subjectStore } from '../../api/Subject';
+
 export default {
   name: 'SubjectListView',
   components: {
     SubjectListItem
+  },
+  async mounted() {
+    await this.subjectStore.loadSubjects();
   }
 } 
 </script>

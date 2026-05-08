@@ -55,6 +55,10 @@ export default {
   name: "SubjectListItem",
   components: { ConfirmDialog, DropDownItem },
   props: {
+    id: {
+      type: String,
+      required: true,
+    },
     title: {
       type: String,
       required: true,

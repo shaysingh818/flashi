@@ -1,6 +1,8 @@
 <template>
     <textarea
+      :value="text"
       :placeholder="`${ description }`"
+      @input="$emit('update:text', $event.target.value)"
       rows="4"
     ></textarea>
 </template>
@@ -9,12 +11,17 @@
 
 export default {
   name: 'FormTextField',
-  props: {
+  props: {    
+    text: {
+      type: String,
+      required: true,
+    },
     description: {
       type: String,
       required: true,
     },
   },
+  emits: ["update:text"],
 }
 
 </script>
