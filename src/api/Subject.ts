@@ -50,17 +50,18 @@ export const subjectStore = reactive({
   },
 
   async loadSubjects() {
-    try {
-      const subjects = await invoke<Subject[]>('view_subjects', {});
+    try { 
+      const dbPath = await this.getDbPath();
+      const subjects = await invoke<Subject[]>('view_subjects', { dbPath });
       this.subjects = subjects;
     } catch (error) {
       console.error("Error loading subjects: ", error);
     }
   },
 
-  async viewSubject(id: string): Promise<Subject> {
+  async viewSubject(subjectId: string): Promise<Subject> {
     const dbPath = await this.getDbPath();
-    return await invoke("view_subject", { dbPath, id });
+    return await invoke("view_subject", { dbPath, subjectId });
   },
 
   async createSubject(name: string, description: string): Promise<string> {
@@ -68,14 +69,14 @@ export const subjectStore = reactive({
     return await invoke("create_subject", { name, description, dbPath });
   },
 
-  async editSubject(id: string, name: string, description: string): Promise<string> {        
+  async editSubject(subjectId: string, name: string, description: string): Promise<string> {        
     const dbPath = await this.getDbPath();
-    return await invoke("edit_subject", { id, name, description, dbPath });  
+    return await invoke("edit_subject", { subjectId, name, description, dbPath });  
   },
 
-  async deleteSubject(id: string): Promise<string> {    
+  async deleteSubject(subjectId: string): Promise<string> {    
     const dbPath = await this.getDbPath();    
-    return await invoke("delete_subject", { dbPath, id });  
+    return await invoke("delete_subject", { dbPath, subjectId });  
   },
 
   async searchSubjects(searchTerm: string) {

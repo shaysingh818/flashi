@@ -1,41 +1,38 @@
 <template>
   <div class="flex col-center w-100">
+
     <br></br>
+    
     <FormHeader
       header="Edit subject"
       description="Edit Attributes for subject"
     />
     <br />
 
-    <CreateSubjectForm
-      :subjectNameText="`${subjectName}`"
-      :subjectDescriptionText="`${subjectDescription}`"
-      submitText="Submit"
-      submitHandler="editSubject"
+    <EditSubjectForm
+      v-if="subject"
+      :subjectId="subject.id"
+      :subjectName="subject.name"
+      :subjectDescription="subject.description"
     />
   </div>
 </template>
 
-<script>
-import CreateSubjectForm from "../../components/subject/CreateSubjectForm.vue";
-import FormHeader from "../../components/shared/forms/FormHeader.vue";
+<script setup>
+import { ref } from 'vue';
+import { onMounted } from 'vue';
+import { useRoute } from 'vue-router';
+import { subjectStore } from '../../api/Subject';
+import FormHeader from '../../components/shared/forms/FormHeader.vue';
+import EditSubjectForm from '../../components/subject/EditSubjectForm.vue';
 
-export default {
-  name: "EditSubjects",
-  components: { CreateSubjectForm, FormHeader },
-  data() {
-    return {
-      subjectName: "testing",
-      subjectDescription: "current description",
-    };
-  },
-  methods: {
-    editSubject() {
-      console.log("Clicked");
-    },
-    goBack() {
-      this.$router.go(-1);
-    },
-  },
-};
+
+const route = useRoute(); 
+const subjectId = route.params.id;
+const subject = ref(null); 
+
+onMounted(async () => {
+  subject.value = await subjectStore.viewSubject(subjectId);
+});
+
 </script>

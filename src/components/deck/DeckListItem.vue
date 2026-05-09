@@ -39,7 +39,11 @@
           class="trailing-icon-style"
         />
 
-        <div v-if="isDropdownOpen" class="flex col absolute gap-2 p-2 transform-50-80 rounded-1" style="background-color: rgb(28 25 23);">
+        <div
+          v-if="isDropdownOpen"
+          class="flex col absolute gap-2 p-2 transform-50-80 rounded-1"
+          style="background-color: rgb(28 25 23)"
+        >
           <DropDownItem
             icon="fa-solid fa-pen-to-square"
             text="Edit Deck"
@@ -50,7 +54,6 @@
             text="Delete Deck"
             :onClickHandler="deleteDeck"
           />
-          
         </div>
 
         <Teleport to="body">
@@ -58,7 +61,7 @@
             v-if="showDialog"
             text="Are you sure you want to delete the subject"
             @close="showDialog = false"
-            @confirm="showDialog = false"
+            @confirm="confirmDelete"
           />
         </Teleport>
       </div>
@@ -66,62 +69,72 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref } from "vue";
+import { useRouter } from "vue-router";
 import { svgPathData } from "@fortawesome/free-solid-svg-icons/faRotateRight";
+import { deckStore } from "../../api/Deck";
 import ConfirmDialog from "../shared/ConfirmDialog.vue";
 import Tag from "../shared/Tag.vue";
 import DropDownItem from "../shared/navigation/DropDownItem.vue";
 
-export default {
-  name: "DeckListItem",
-  components: { ConfirmDialog, Tag, DropDownItem },
-  props: {
-    title: {
-      type: String,
-      required: true,
-    },
-    description: {
-      type: String,
-      required: true,
-    },
-    tags: {
-      type: Array,
-      required: false,
-      default: () => [],
-    },
-    dateUpdated: {
-      type: String,
-      required: true,
-    },
-    actionType: {
-      type: String,
-      required: false,
-      default: 'view'
-    },
+
+const props = defineProps({  
+  id: {
+    type: String,
+    required: true,
   },
-  data() {
-    return {
-      isDropdownOpen: false,
-      showDialog: false,
-    };
+  title: {
+    type: String,
+    required: true,
   },
-  methods: {
-    showDropdown() {
-      console.log("Show dropdown", this.isDropdownOpen);
-      this.isDropdownOpen = !this.isDropdownOpen;
-    },
-    deleteDeck() {
-      this.isDropdownOpen = false; // close the dropdown too
-      this.showDialog = true;
-    },
-    editDeck() {
-      this.$router.push({ path: "/deck/edit" });
-    },
-    deckDetail() {
-      this.$router.push({ path: "/deck/detail" });
-    },
+  description: {
+    type: String,
+    required: true,
   },
-};
+  tags: {
+    type: Array,
+    required: false,
+    default: () => [],
+  },
+  dateUpdated: {
+    type: String,
+    required: true,
+  },
+  actionType: {
+    type: String,
+    required: false,
+    default: "view",
+  },
+});
+
+const router = useRouter();
+const isDropdownOpen = ref(false);
+const showDialog = ref(false);
+
+function showDropdown() {
+  isDropdownOpen.value = !isDropdownOpen.value;
+}
+
+async function confirmDelete() {
+  const result = await deckStore.deleteDeck(`${props.id}`);
+  console.log(result);
+  await deckStore.loadDecks();
+  showDialog.value = false;
+}
+
+async function deleteDeck() {
+  isDropdownOpen.value = false;
+  showDialog.value = true;
+}
+
+function editDeck() {
+  router.push({ path: `/deck/edit/${props.id}` });
+}
+
+function deckDetail() {
+  router.push({ path: `/deck/detail/${props.id}` });
+}
 </script>
 
 <style scoped>
@@ -134,10 +147,9 @@ export default {
   background-color: rgb(28 25 23);
 }
 
-
 .list-item-icon-style {
   color: #f97316;
-  width: 25px; 
+  width: 25px;
   height: 25px;
 }
 

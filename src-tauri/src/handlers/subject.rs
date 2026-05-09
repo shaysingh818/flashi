@@ -96,7 +96,7 @@ pub fn view_subject(db_path: &str, subject_id: &str) -> Result<Subject, String> 
             return Ok(subject);
         }
         Err(e) => {
-            let err_msg = format!("Error retrieving subject with id: {:?} Cause: {:?}", audio_file_id, e);
+            let err_msg = format!("Error retrieving subject with id: {:?} Cause: {:?}", subject_id, e);
             return Err(err_msg.to_string());
         }
     }
@@ -139,7 +139,7 @@ pub fn delete_subject(db_path: &str, subject_id: &str) -> String {
             return format!("Success");
         }
         Err(e) => {
-            return format!("Error retrieving subject with id: {:?} Cause: {:?}", audio_file_id, e);
+            return format!("Error retrieving subject with id: {:?} Cause: {:?}", subject_id, e);
         }
     }
 }

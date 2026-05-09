@@ -1,6 +1,6 @@
 <template>
   <div class="flex col-center gap-2 w-100">
-    <BackBar text="Subject Name" />
+    <BackBar v-if="subject" :text="subject.name" />
 
     <div class="grid cols-3 w-90 gap-6 place-center p-6">
       <MetricCard metric="Daily hours reviewed" numeric="20" />
@@ -14,42 +14,32 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { onMounted } from 'vue';
+import { subjectStore } from '../../api/Subject';
 import BackBar from "../../components/shared/navigation/BackBar.vue";
 import SearchComponent from "../../components/shared/forms/SearchComponent.vue";
 import HoverButton from "../../components/shared/buttons/HoverButton.vue";
 import DeckListView from "../../components/deck/DeckListView.vue";
 import MetricCard from "../../components/shared/analytics/MetricCard.vue";
 
-export default {
-  name: "SubjectDetail",
-  components: { BackBar, SearchComponent, MetricCard, HoverButton, DeckListView },
-  methods: {
-    createDeck() {
-      this.$router.push({ path: "/deck/create" });
-    },
-    search() {
-      console.log("search"); 
-    }
-  },
-};
+const route = useRoute(); 
+const router = useRouter();
+const subjectId = route.params.id;
+const subject = ref(null); 
+
+onMounted(async () => {
+  subject.value = await subjectStore.viewSubject(subjectId);
+});
+
+function createDeck() {
+  router.push({ path: `/deck/create/${subjectId}` });
+}
+
+function search(searchTerm) {
+  console.log("search", searchTerm);
+}
 </script>
 
-<style scoped>
-.metrics-section {
-  padding: 10px;
-  margin: 10px;
-  width: 90%;
-  height: 100px;
-}
-
-.metrics-grid {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-  gap: 1rem;
-}
-</style>

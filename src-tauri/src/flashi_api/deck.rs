@@ -16,24 +16,27 @@ pub struct Deck {
 
 impl Deck {
     
-    pub fn new(subject_id: usize, name: &str, tags: Vec<String>, description: String) -> Deck {
+    pub fn new(subject_id: usize, name: &str, tags: Vec<String>, description: &str) -> Deck {
+      
+        let now = chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+        
         Deck {
-            id: 0,
-            subject_id: subject_id,
-            name: name.to_string(),
-            tags: tags.iter().map(|k| k.to_string()).collect(),
-            description: description.to_string(),
-            created: chrono::offset::Local::now().to_string(),
-            updated: chrono::offset::Local::now().to_string(),
+          id: 0,
+          subject_id: subject_id,
+          name: name.to_string(),
+          tags: tags.iter().map(|k| k.to_string()).collect(),
+          description: description.to_string(),
+          created: now.clone(),
+          updated: now,
         }       
     }
 
     pub fn parse_tags(raw: String) -> Vec<String> {
         raw.trim_matches(|c| c == '[' || c == ']')
-            .split(", ")
-            .filter(|s| !s.is_empty())
-            .map(|s| s.trim_matches('\'').to_string())
-            .collect()
+          .split(", ")
+          .filter(|s| !s.is_empty())
+          .map(|s| s.trim_matches('\'').to_string())
+          .collect()
     }   
 
     pub fn insert(&mut self, conn: &Connection) -> Result<()> {
@@ -78,11 +81,11 @@ impl Deck {
     }
 
     pub fn retrieve(conn: &Connection) -> Result<Vec<Deck>> {
-        let mut stmt = conn.prepare("SELECT * FROM DECK")?;
+        let mut stmt = conn.prepare("SELECT ID, SUBJECT_ID, NAME, TAGS::VARCHAR, DESCRIPTION, CREATED::VARCHAR, UPDATED::VARCHAR FROM DECK")?;
 
         let decks: Result<Vec<Deck>> = stmt
             .query_map([], |row| {
-                let tags_raw: String = row.get(2)?;
+                let tags_raw: String = row.get(3)?;
                 Ok(Deck {
                     id: row.get(0)?,
                     subject_id: row.get(1)?,
@@ -99,8 +102,8 @@ impl Deck {
 
     pub fn update(&mut self, conn: &Connection, id: &str) -> Result<()> {
 
-        self.updated = chrono::offset::Local::now().to_string();
-
+        self.updated = chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+        
         let tags_literal = format!(
             "[{}]",
             self.tags
@@ -160,9 +163,9 @@ impl Deck {
     }
 
     pub fn view(conn: &Connection, id: &str) -> Result<Deck> {
-        let query = "SELECT * FROM DECK WHERE ID = ?";
+        let query = "SELECT ID, SUBJECT_ID, NAME, TAGS::VARCHAR, DESCRIPTION, CREATED::VARCHAR, UPDATED::VARCHAR FROM DECK WHERE ID = ?";
         conn.query_row(query, &[&id], |row| {
-            let tags_raw: String = row.get(2)?;
+            let tags_raw: String = row.get(3)?;
             Ok(Deck {
                 id: row.get(0)?,
                 subject_id: row.get(1)?,
@@ -179,13 +182,14 @@ impl Deck {
     pub fn search(conn: &Connection, search_term: &str) -> Result<Vec<Deck>> {
 
         let query = format!(
-            "SELECT * FROM DECK WHERE NAME LIKE '%{}%'",
-            search_term
+          "SELECT ID, SUBJECT_ID, NAME, TAGS, DESCRIPTION, CREATED::VARCHAR, UPDATED::VARCHAR FROM DECK WHERE NAME LIKE '%{}%'",
+          search_term
         );
+        
         let mut stmt = conn.prepare(&query)?;
         let decks: Result<Vec<Deck>> = stmt
             .query_map([], |row| { 
-                let tags_raw: String = row.get(2)?;
+                let tags_raw: String = row.get(3)?;
                 Ok(Deck {
                     id: row.get(0)?,
                     subject_id: row.get(1)?,

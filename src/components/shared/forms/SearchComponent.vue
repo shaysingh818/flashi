@@ -1,31 +1,28 @@
 <template>
   <div class="search-container">
-    <FormInputField :text="`${text}`" />
+    <FormInputField v-model:text="text" :placeholder="placeholder" />
     <PrimaryButton :onClickHandler="onClick" text="Search" />
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref } from 'vue';
 import FormInputField from "./FormInputField.vue";
 import PrimaryButton from "../buttons/PrimaryButton.vue";
 
-export default {
-  name: "SearchComponent",
-  components: {
-    FormInputField,
-    PrimaryButton,
+defineProps({
+  placeholder: {
+    type: String,
+    default: "Search",
   },
-  props: {
-    text: {
-      type: String,
-      required: true,
-    },
-    onClick: {
-      type: Function,
-      required: true,
-    },
-  },
-};
+});
+
+const emit = defineEmits(['search']);
+const text = ref('');
+
+function onClick() {
+  emit('search', text.value);
+}
 </script>
 
 <style scoped>

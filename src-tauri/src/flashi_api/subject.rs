@@ -15,12 +15,15 @@ pub struct Subject {
 impl Subject {
 
     pub fn new(name: &str, description: &str) -> Subject {
+
+        let now = chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+      
         Subject {
             id: 0,
             name: name.to_string(),
             description: description.to_string(),
-            created: chrono::offset::Local::now().to_string(),
-            updated: chrono::offset::Local::now().to_string(),
+            created: now.clone(),
+            updated: now,
         }
     }
 
@@ -50,7 +53,8 @@ impl Subject {
     }
 
     pub fn retrieve(conn: &Connection) -> Result<Vec<Subject>> {
-        let mut stmt = conn.prepare("SELECT * FROM SUBJECT")?;
+        
+        let mut stmt = conn.prepare("SELECT ID, NAME, DESCRIPTION, CREATED::VARCHAR, UPDATED::VARCHAR FROM SUBJECT")?;
 
         let subjects: Result<Vec<Subject>> = stmt
             .query_map([], |row| {
@@ -67,7 +71,7 @@ impl Subject {
     }
 
     pub fn update(&mut self, conn: &Connection, id: &str) -> Result<()> {
-        self.updated = chrono::offset::Local::now().to_string();
+        self.updated = chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
 
         let result = conn.execute(
             "UPDATE SUBJECT
@@ -111,7 +115,7 @@ impl Subject {
 
     pub fn view(conn: &Connection, id: &str) -> Result<Subject> {
         conn.query_row(
-            "SELECT * FROM SUBJECT WHERE ID = ?",
+            "SELECT ID, NAME, DESCRIPTION, CREATED::VARCHAR, UPDATED::VARCHAR FROM SUBJECT WHERE ID = ?",
             &[&id],
             |row| {
                 Ok(Subject {
@@ -127,7 +131,7 @@ impl Subject {
 
     pub fn search(conn: &Connection, search_term: &str) -> Result<Vec<Subject>> {
         let query = format!(
-            "SELECT * FROM SUBJECT WHERE NAME LIKE '%{}%'",
+            "SELECT ID, NAME, DESCRIPTION, CREATED::VARCHAR, UPDATED::VARCHAR FROM SUBJECT WHERE NAME LIKE '%{}%'",
             search_term
         );
         let mut stmt = conn.prepare(&query)?;

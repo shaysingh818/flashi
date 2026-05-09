@@ -1,11 +1,11 @@
 <template>
   <div class="flex col-center gap-4 w-75 p-4 h-auto">
     <div class="flex w-100" style="height: 40px">
-      <FormInputField :text="`${deckNameText}`" />
+      <FormInputField v-model:text="name" placeholder="Deck name" />
     </div>
 
     <div class="flex w-100" style="height: 100px;">
-      <FormTextField :description="`${deckDescriptionText}`" />
+      <FormTextField v-model:text="description" description="Deck description" />
     </div>
 
     <div class="flex col-center gap-2 w-100">
@@ -31,65 +31,43 @@
     <br> </br>
     <div class="flex row-center gap-4" style="height: 35px">
       <SecondaryButton :onClickHandler="goBack" text="Discard" />
-      <PrimaryButton :onClickHandler="submitHandler" :text="`${submitText}`" />
+      <PrimaryButton :onClickHandler="submitForm" text="Submit" />
     </div>
   </div>
 </template>
 
-<script>
+<script setup>
+import { deckStore } from "../../api/Deck";
+import { ref } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import FormInputField from "../../components/shared/forms/FormInputField.vue";
 import FormTextField from "../../components/shared/forms/FormTextField.vue";
 import PrimaryButton from "../../components/shared/buttons/PrimaryButton.vue";
 import SecondaryButton from "../../components/shared/buttons/SecondaryButton.vue";
 import Tag from "../shared/Tag.vue";
 
-export default {
-  name: "CreateDeckForm",
-  components: {
-    FormInputField,
-    FormTextField,
-    PrimaryButton,
-    SecondaryButton,
-    Tag,
-  },
-  props: {
-    deckNameText: {
-      type: String,
-      required: true,
-    },
-    deckDescriptionText: {
-      type: String,
-      required: true,
-    },
-    deckTagText: {
-      type: String,
-      required: true,
-    },
-    submitText: {
-      type: String,
-      required: true,
-    },
-    submitHandler: {
-      type: Function,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      tags: [],
-      newTag: "",
-    };
-  },
-  methods: {
-    goBack() {
-      this.$router.go(-1);
-    },
-    addTag() {
-      this.tags.push(this.newTag);
-      this.newTag = "";
-    },
-  },
-};
+const router = useRouter();
+const route = useRoute();
+const subjectId = route.params.id;
+const tags = ref([]);
+const name = ref('');
+const newTag = ref('');
+const description = ref('');
+
+function goBack() {
+  router.go(-1);
+}
+
+function addTag() {
+  tags.value.push(newTag.value);
+  newTag.value = "";
+}
+
+async function submitForm() {
+  console.log("Submit deck form call...");
+  const insertDeck = await deckStore.createDeck(subjectId, name.value, tags.value, description.value);
+  console.log(insertDeck);
+}
 </script>
 
 <style scoped>

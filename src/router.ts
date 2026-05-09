@@ -26,13 +26,13 @@ const routes: Array<RouteRecordRaw> = [
   // subjects
   { path: "/subjects", component: SubjectsPage },
   { path: "/subjects/create", component: CreateSubjects },
-  { path: "/subjects/edit", component: EditSubjects },
-  { path: "/subjects/detail", component: SubjectsDetail },
+  { path: "/subjects/edit/:id", component: EditSubjects },
+  { path: "/subjects/detail/:id", component: SubjectsDetail },
 
   // decks
-  { path: "/deck/create", component: CreateDeck },
-  { path: "/deck/edit", component: EditDeck },
-  { path: "/deck/detail", component: DeckDetail },
+  { path: "/deck/create/:id", component: CreateDeck },
+  { path: "/deck/edit/:id", component: EditDeck },
+  { path: "/deck/detail/:id", component: DeckDetail },
 
   // questions
   { path: "/question/create", component: CreateQuestion },

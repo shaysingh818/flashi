@@ -15,56 +15,46 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import FormInputField from "../../components/shared/forms/FormInputField.vue";
 import FormTextField from "../../components/shared/forms/FormTextField.vue";
 import PrimaryButton from "../../components/shared/buttons/PrimaryButton.vue";
 import SecondaryButton from "../../components/shared/buttons/SecondaryButton.vue";
-import { subjectStore } from "../../api/Subject";
+import { subjectStore } from '../../api/Subject';
 
+const props = defineProps({
+  subjectNameText: {
+    type: String,
+    required: true
+  },
+  subjectDescriptionText: {
+    type: String,
+    required: true
+  },
+  submitText: {
+    type: String,
+    required: true
+  },
+  submitHandler: {
+    type: Function,
+    required: true
+  },
+});
 
-export default {
-  name: "CreateSubjectForm",
-  components: {
-    FormInputField,
-    FormTextField,
-    PrimaryButton,
-    SecondaryButton,
-  },
-  props: {
-    subjectNameText: {
-      type: String,
-      required: true,
-    },
-    subjectDescriptionText: {
-      type: String,
-      required: true,
-    },
-    submitText: {
-      type: String,
-      required: true,
-    },
-    submitHandler: {
-      type: Function,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      name: 'Subject Name',
-      description: 'Subject Description'
-    }
-  },
-  methods: {
-    goBack() {
-      this.$router.go(-1);
-    },
-    async submitForm(){
-      console.log(this.name);
-      console.log(this.description);
-    }
-  },
-};
+const router = useRouter();
+const name = ref('');
+const description = ref('');
+
+function goBack() {
+  router.go(-1);
+}
+
+async function submitForm() {
+  const insertSubject = await subjectStore.createSubject(name.value, description.value); 
+  console.log(insertSubject); 
+}
 </script>
 
 <style scoped>

@@ -1,46 +1,33 @@
 <template>
-  <div class="deck-list-view">
+  <div class="deck-list-view" v-for="(item, index) in deckStore.decks" :key="index">
     <DeckListItem
-      title="Nervous System"
-      description="Notes and studying for study of the human body"
-      dateUpdated="04/20/2026"
-      :tags="['muscular', 'skeletal', 'organ system']"
+      :id="item.id"
+      :title="item.name"
+      :description="item.description"      
+      :tags="item.tags"
+      :dateUpdated="item.updated"
       :actionType="actionType"
     />
 
-    <DeckListItem
-      title="Chemical Organization"
-      description="Notes and studying for study of the human body"
-      dateUpdated="04/20/2026"
-      :tags="['muscular', 'skeletal', 'organ system']"
-      :actionType="actionType"
-    />
-
-    <DeckListItem
-      title="Muscular System"
-      description="Notes and studying for study of the human body"
-      dateUpdated="04/20/2026"
-      :tags="['muscular', 'skeletal', 'organ system']"
-      :actionType="actionType"
-    />
   </div>
 </template>
 
-<script>
+<script setup>
 import DeckListItem from "./DeckListItem.vue";
-export default {
-  name: "DeckListView",
-  components: {
-    DeckListItem,
+import { deckStore } from "../../api/Deck";
+import { onMounted } from "vue";
+
+const props = defineProps({
+  actionType: {
+    type: String,
+    default: () => "view",
   },
-  props: {
-    actionType: {
-      type: String,
-      required: false,
-      default: 'view'
-    },
-  }
-};
+});
+
+onMounted(async () => {
+  await deckStore.loadDecks();
+});
+
 </script>
 
 <style>

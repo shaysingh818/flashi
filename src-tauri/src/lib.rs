@@ -11,6 +11,16 @@ use crate::handlers::subject::{
 };
 
 
+use crate::handlers::deck::{
+    create_deck, 
+    delete_deck, 
+    edit_deck, 
+    search_decks,
+    view_deck, 
+    view_decks,
+};
+
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -23,7 +33,16 @@ pub fn run() {
           edit_subject, 
           search_subjects,
           view_subject, 
-          view_subjects
+          view_subjects,
+
+          /* Decks  */
+          create_deck, 
+          delete_deck, 
+          edit_deck, 
+          search_decks,
+          view_deck, 
+          view_decks,
+          
 
         ])
         .run(tauri::generate_context!())

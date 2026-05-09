@@ -4,7 +4,7 @@
   <br /> 
    <SearchComponent 
       text="Search Subjects" 
-      :onClick="search"
+      @search="search"
     />
 
     <div class="flex centered-all">
@@ -17,31 +17,27 @@
 
   </div>
   
-  
-
 </template>
 
-<script>
-import SearchComponent from '../../components/shared/forms/SearchComponent.vue'
-import HoverButton from '../../components/shared/buttons/HoverButton.vue'
-import SubjectListView from '../../components/subject/SubjectListView.vue'
 
-export default {
-  components: { 
-    SearchComponent, 
-    SubjectListView,
-    HoverButton
-  },
-  methods: {
-    async search() {
-      console.log("test"); 
-    },
-    async createSubject() {
-      this.$router.push({ path: "/subjects/create"})
-    }
-  },
+<script setup>
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import SearchComponent from '../../components/shared/forms/SearchComponent.vue';
+import HoverButton from '../../components/shared/buttons/HoverButton.vue';
+import SubjectListView from '../../components/subject/SubjectListView.vue';
+import { subjectStore } from '../../api/Subject';
+
+const router = useRouter();
+const searchTerm = ref('');
+
+async function search(searchTerm) {
+  await subjectStore.searchSubjects(searchTerm);
+}
+
+async function createSubject() {
+  router.push({ path: "/subjects/create" });
 }
 </script>
-
 
 
