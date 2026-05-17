@@ -35,9 +35,9 @@ const routes: Array<RouteRecordRaw> = [
   { path: "/deck/detail/:id", component: DeckDetail },
 
   // questions
-  { path: "/question/create", component: CreateQuestion },
-  { path: "/question/view", component: ViewQuestion },
-  { path: "/question/edit", component: EditQuestion },
+  { path: "/question/create/:id", component: CreateQuestion },
+  { path: "/question/view/:id", component: ViewQuestion },
+  { path: "/question/edit/:id", component: EditQuestion },
 
   // sessions
   { path: "/sessions", component: SessionsPage },

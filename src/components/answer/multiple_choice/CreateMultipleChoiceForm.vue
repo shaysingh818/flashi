@@ -17,37 +17,41 @@
       <MultipleChoiceItem
         v-for="(item, index) in items"
         :key="index"
-        :text="item"
+        :text="item.text"
+        :selected="item.selected"
+        @update:items="item.selected = $event; emitItems()"
+        @remove="removeItem(index)"
       />
     </div>
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref } from "vue";
 import FormInputField from "../../../components/shared/forms/FormInputField.vue";
 import MultipleChoiceItem from "./MultipleChoiceItem.vue";
 import SettingsToggle from "../../../components/shared/SettingsToggle.vue";
 
-export default {
-  name: "CreateMultipleChoiceForm",
-  components: {
-    FormInputField,
-    MultipleChoiceItem,
-    SettingsToggle
-  },
-  data() {
-    return {
-      items: [],
-      newItem: "",
-    };
-  },
-  methods: {
-    addItem() {
-      this.items.push(this.newItem);
-      this.newItem = "";
-    },
-  },
-};
+const items = ref([]); 
+const newItem = ref('');
+const emit = defineEmits(['update:items']);
+
+function addItem() {
+  if (newItem.value.trim()) {
+    items.value.push({ text: newItem.value, selected: false });
+    newItem.value = '';
+  }
+}
+
+function emitItems() {
+  emit('update:items', items.value);
+}
+
+function removeItem(index) {
+  items.value.splice(index, 1);
+  emitSelected();
+}
+
 </script>
 
 <style scoped>

@@ -15,12 +15,15 @@ pub struct OrderedSequenceAnswer {
 impl OrderedSequenceAnswer {
     
     pub fn new(sequence: Vec<&str>, explanation: &str) -> OrderedSequenceAnswer {
-        OrderedSequenceAnswer {
+
+      let now = chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+
+      OrderedSequenceAnswer {
             answer_id: 0,
             sequence: sequence.iter().map(|k| k.to_string()).collect(),
             explanation: explanation.to_string(),
-            created: chrono::offset::Local::now().to_string(),
-            updated: chrono::offset::Local::now().to_string(),
+            created: now.clone(),
+            updated: now,
         }       
     }
 
@@ -32,7 +35,7 @@ impl OrderedSequenceAnswer {
             .collect()
     }   
 
-    pub fn insert(&mut self, conn: &Connection) -> Result<()> {
+    pub fn insert(&mut self, conn: &Connection) -> Result<(OrderedSequenceAnswer)> {
 
         let sequence_literal = format!(
             "[{}]",
@@ -46,34 +49,35 @@ impl OrderedSequenceAnswer {
         let sql = format!(
             "INSERT INTO ORDERED_SEQUENCE_ANSWER 
                 (SEQUENCE, EXPLANATION, CREATED, UPDATED)
-            VALUES ({}, ?1, ?2, ?3)",
+            VALUES ({}, ?1, ?2, ?3)
+            RETURN ANSWER_ID, SEQUENCE, EXPLANATION, CREATED::VARCHAR, UPDATED::VARCHAR",
             sequence_literal
         );
-
-        let result = conn.execute(
-            &sql, 
+        
+        conn.query_row(
+            &sql,
             params![
                 &self.explanation,
                 &self.created,
-                &self.updated 
+                &self.updated
             ],
-        );
-
-        match result {
-            Ok(_) => {
-                println!("Successfully inserted open ended answer");
-                return Ok(())
+            |row| {              
+              let sequence_raw: String = row.get(1)?;
+                Ok(OrderedSequenceAnswer {
+                    answer_id: row.get(0)?,
+                    sequence: Self::parse_sequence(sequence_raw),
+                    explanation: row.get(2)?,
+                    created: row.get(4)?,
+                    updated: row.get(5)?,
+                })
             },
-            Err(err) => {
-                println!("[ordered_sequence_answer::insert] duckdb error {:?}", err);
-                return Err(err)
-            }
-        }
+        )
+
     }
 
     pub fn retrieve(conn: &Connection) -> Result<Vec<OrderedSequenceAnswer>> {
 
-        let mut stmt = conn.prepare("SELECT * FROM ORDERED_SEQUENCE_ANSWER")?;
+        let mut stmt = conn.prepare("SELECT ANSWER_ID, SEQUENCE::VARCHAR, EXPLANATION, CREATED::VARCHAR, UPDATED::VARCHAR FROM ORDERED_SEQUENCE_ANSWER")?;
 
         let ordered_sequence_answers: Result<Vec<OrderedSequenceAnswer>> = stmt
             .query_map([], |row| {
@@ -93,8 +97,8 @@ impl OrderedSequenceAnswer {
 
     pub fn update(&mut self, conn: &Connection, id: &str) -> Result<()> {
         
-        self.updated = chrono::offset::Local::now().to_string();
-
+        self.updated = chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+        
         let sequence_literal = format!(
             "[{}]",
             self.sequence
@@ -150,7 +154,7 @@ impl OrderedSequenceAnswer {
     }
 
     pub fn view(conn: &Connection, id: &str) -> Result<OrderedSequenceAnswer> {
-        let query = "SELECT * FROM ORDERED_SEQUENCE_ANSWER WHERE ID = ?";
+        let query = "SELECT ANSWER_ID, SEQUENCE::VARCHAR, EXPLANATION, CREATED::VARCHAR, UPDATED::VARCHAR FROM ORDERED_SEQUENCE_ANSWER WHERE ID = ?";
         conn.query_row(query, &[&id], |row| {
             let sequence_raw: String = row.get(1)?;
             Ok(OrderedSequenceAnswer {
@@ -166,7 +170,7 @@ impl OrderedSequenceAnswer {
 
     pub fn search(conn: &Connection, search_term: &str) -> Result<Vec<OrderedSequenceAnswer>> {
         let query = format!(
-            "SELECT * FROM ORDERED_SEQUENCE_ANSWER WHERE EXPLANATION LIKE '%{}%'",
+            "SELECT ANSWER_ID, SEQUENCE::VARCHAR, EXPLANATION, CREATED::VARCHAR, UPDATED::VARCHAR FROM ORDERED_SEQUENCE_ANSWER WHERE EXPLANATION LIKE '%{}%'",
             search_term
         );
         let mut stmt = conn.prepare(&query)?;

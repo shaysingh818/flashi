@@ -1,14 +1,14 @@
 <template>
   <div class="deck-list-view" v-for="(item, index) in deckStore.decks" :key="index">
     <DeckListItem
-      :id="item.id"
+      :id="`${item.id}`"
+      :subjectId="`${item.subject_id}`"
       :title="item.name"
       :description="item.description"      
       :tags="item.tags"
       :dateUpdated="item.updated"
       :actionType="actionType"
     />
-
   </div>
 </template>
 
@@ -21,11 +21,15 @@ const props = defineProps({
   actionType: {
     type: String,
     default: () => "view",
+  },  
+  subjectId: {
+    type: String,
+    required: true,
   },
 });
 
 onMounted(async () => {
-  await deckStore.loadDecks();
+  await deckStore.loadDecks(`${props.subjectId}`);
 });
 
 </script>

@@ -12,28 +12,25 @@
     <br />
 
     <CreateQuestionForm
+      :deckId="deckId"
       questionText="Question text"
-      :submitHandler="submitDeck"
     />
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import FormHeader from "../../components/shared/forms/FormHeader.vue";
 import CreateQuestionForm from "../../components/question/CreateQuestionForm.vue";
 
-export default {
-  name: "CreateQuestion",
-  components: { FormHeader, CreateQuestionForm },
-  methods: {
-    submitDeck() {
-      console.log("Clicked");
-    },
-    goBack() {
-      this.$router.go(-1);
-    },
-  },
-};
+const router = useRouter(); 
+const route = useRoute(); 
+const deckId = route.params.id;
+
+function goBack() {
+  router.go(-1);
+}
+
 </script>
 
-<style scoped></style>

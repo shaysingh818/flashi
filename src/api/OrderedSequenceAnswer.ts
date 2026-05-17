@@ -1,0 +1,83 @@
+import { invoke } from "@tauri-apps/api/core";
+import { dataDir} from '@tauri-apps/api/path';
+import { reactive } from 'vue';
+
+
+export interface OrderedSequenceAnswer {
+  answer_id: number;
+  sequence: string[];
+  explanation: string;
+  created: string; 
+  updated: string;
+}
+
+export class OrderedSequenceAnswer {
+  
+  answer_id: number;
+  sequence: string[];
+  explanation: string;
+  created: string; 
+  updated: string;
+
+  constructor({
+    answer_id,
+    sequence,
+    explanation,
+    created, 
+    updated
+  }: {    
+    answer_id: number;
+    sequence: string[];
+    explanation: string;
+    created: string; 
+    updated: string;
+  }) {
+    this.answer_id = answer_id;
+    this.sequence = sequence;
+    this.explanation = explanation;
+    this.created = created;
+    this.updated = updated;
+  }
+}
+
+export const orderedSequenceStore = reactive({
+
+  orderedSequenceAnswers: [] as OrderedSequenceAnswer[],
+
+  async getDbPath(): Promise<string> {    
+    const dataDirPath = await dataDir();
+    const dbPath = `${dataDirPath}/flashi/metadata/flashi.db`;
+    return dbPath;
+  },
+
+  async loadOrderedSequenceAnswers() {
+    try { 
+      const dbPath = await this.getDbPath();
+      const answers = await invoke<OrderedSequenceAnswer[]>('view_ordered_sequence_answers', { dbPath });
+      this.orderedSequenceAnswers = answers;
+    } catch (error) {
+      console.error("Error loading ordered sequence answers: ", error);
+    }
+  },
+
+  async viewOrderedSequenceAnswer(id: string): Promise<OrderedSequenceAnswer> {
+    const dbPath = await this.getDbPath();
+    return await invoke("view_ordered_sequence_answer", { dbPath, id });
+  },
+
+  async createOrderedSequenceAnswer(sequence: string[], explanation: string): Promise<OrderedSequenceAnswer> {
+    const dbPath = await this.getDbPath();
+    return await invoke("create_ordered_sequence_answer", { sequence, explanation, dbPath });
+  },
+
+  async editOrderedSequenceAnswer(id: string, sequence: string[], explanation: string): Promise<string> {        
+    const dbPath = await this.getDbPath();
+    return await invoke("edit_ordered_sequence_answer", { id, sequence, explanation, dbPath });  
+  },
+
+  async deleteOrderedSequenceAnswer(id: string): Promise<string> {    
+    const dbPath = await this.getDbPath();    
+    return await invoke("delete_ordered_sequence_answer", { dbPath, id });  
+  },
+ 
+})

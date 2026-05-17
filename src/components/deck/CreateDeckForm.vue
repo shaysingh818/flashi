@@ -39,16 +39,21 @@
 <script setup>
 import { deckStore } from "../../api/Deck";
 import { ref } from "vue";
-import { useRouter, useRoute } from "vue-router";
+import { useRouter } from "vue-router";
 import FormInputField from "../../components/shared/forms/FormInputField.vue";
 import FormTextField from "../../components/shared/forms/FormTextField.vue";
 import PrimaryButton from "../../components/shared/buttons/PrimaryButton.vue";
 import SecondaryButton from "../../components/shared/buttons/SecondaryButton.vue";
 import Tag from "../shared/Tag.vue";
 
-const router = useRouter();
-const route = useRoute();
-const subjectId = route.params.id;
+const props = defineProps({
+  subjectId: {
+    type: String,
+    required: true
+  },
+});
+
+const router = useRouter(); 
 const tags = ref([]);
 const name = ref('');
 const newTag = ref('');
@@ -65,7 +70,7 @@ function addTag() {
 
 async function submitForm() {
   console.log("Submit deck form call...");
-  const insertDeck = await deckStore.createDeck(subjectId, name.value, tags.value, description.value);
+  const insertDeck = await deckStore.createDeck(props.subjectId, name.value, tags.value, description.value);
   console.log(insertDeck);
 }
 </script>

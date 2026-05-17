@@ -11,31 +11,22 @@
      />
      <br />
      
-     <CreateDeckForm
-       deckNameText="Deck name"
-       deckDescriptionText="Description for deck"
-       deckTagText="Add tags to deck"
-       submitText="Submit"
-       :submitHandler="submitDeck"
-     />
+     <CreateDeckForm :subjectId="subjectId" />
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import FormHeader from '../../components/shared/forms/FormHeader.vue';
 import CreateDeckForm from '../../components/deck/CreateDeckForm.vue';
 
-export default {
-  name: "CreateDeck",
-  components: { FormHeader, CreateDeckForm },
-  methods: {
-    submitDeck() {
-      console.log("Clicked");
-    },
-    goBack() {
-      this.$router.go(-1);
-    },
-  },
-};
+const router = useRouter();
+const route = useRoute();
+const subjectId = route.params.id;
+
+function goBack() {
+  router.go(-1);
+}
 
 </script>

@@ -18,6 +18,9 @@ pub struct Question {
 impl Question {
 
     pub fn new(deck_id: usize, answer_type_id: usize, answer_id: usize, raw: &str) -> Question {
+
+        let now = chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+      
         Question {
             id: 0,
             deck_id,
@@ -25,8 +28,8 @@ impl Question {
             answer_id,
             reviewed: 0,
             raw: raw.to_string(),
-            created: chrono::offset::Local::now().to_string(),
-            updated: chrono::offset::Local::now().to_string(),
+            created: now.clone(),
+            updated: now,
         }
     }
 
@@ -58,11 +61,12 @@ impl Question {
         }
     }
 
-    pub fn retrieve(conn: &Connection) -> Result<Vec<Question>> {
-        let mut stmt = conn.prepare("SELECT * FROM QUESTION")?;
+    pub fn retrieve(conn: &Connection, deck_id: &str) -> Result<Vec<Question>> {
+ 
+        let mut stmt = conn.prepare("SELECT ID, DECK_ID, ANSWER_TYPE_ID, ANSWER_ID, REVIEWED, RAW, CREATED::VARCHAR, UPDATED::VARCHAR FROM QUESTION WHERE DECK_ID = ?")?;
 
         let questions: Result<Vec<Question>> = stmt
-            .query_map([], |row| {
+            .query_map([&deck_id], |row| {
                 Ok(Question {
                     id: row.get(0)?,
                     deck_id: row.get(1)?,
@@ -79,22 +83,15 @@ impl Question {
     }
 
     pub fn update(&mut self, conn: &Connection, id: &str) -> Result<()> {
-        self.updated = chrono::offset::Local::now().to_string();
+
+      self.updated = chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
 
         let result = conn.execute(
             "UPDATE QUESTION
-                SET DECK_ID=?1,
-                    ANSWER_TYPE_ID=?2,
-                    ANSWER_ID=?3,
-                    REVIEWED=?4,
-                    RAW=?5,
-                    UPDATED=?6
-                WHERE ID=?7",
+                SET RAW=?1,
+                    UPDATED=?2
+                WHERE ID=?3",
             params![
-                &self.deck_id,
-                &self.answer_type_id,
-                &self.answer_id,
-                &self.reviewed,
                 &self.raw,
                 &self.updated,
                 id,
@@ -129,7 +126,7 @@ impl Question {
 
     pub fn view(conn: &Connection, id: &str) -> Result<Question> {
         conn.query_row(
-            "SELECT * FROM QUESTION WHERE ID = ?",
+            "SELECT ID, DECK_ID, ANSWER_TYPE_ID, ANSWER_ID, REVIEWED, RAW, CREATED::VARCHAR, UPDATED::VARCHAR FROM QUESTION WHERE ID = ?",
             &[&id],
             |row| {
                 Ok(Question {

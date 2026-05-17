@@ -59,10 +59,10 @@ export const deckStore = reactive({
     return dbPath;
   },
 
-  async loadDecks() {
+  async loadDecks(subjectId: string) {
     try { 
       const dbPath = await this.getDbPath();
-      const decks = await invoke<Deck[]>('view_decks', { dbPath });
+      const decks = await invoke<Deck[]>('view_decks', { dbPath, subjectId });
       this.decks = decks;
       console.log(this.decks);
     } catch (error) {
@@ -82,7 +82,7 @@ export const deckStore = reactive({
 
   async editDeck(deckId: string, name: string, description: string, tags: string[]): Promise<string> {        
     const dbPath = await this.getDbPath();
-    return await invoke("edit_subject", { deckId, name, description, tags, dbPath });  
+    return await invoke("edit_deck", { deckId, name, description, tags, dbPath });  
   },
 
   async deleteDeck(deckId: string): Promise<string> {    
@@ -94,9 +94,10 @@ export const deckStore = reactive({
     try { 
       const dbPath = await this.getDbPath();
       const decks = await invoke<Deck[]>("search_decks", { dbPath, searchTerm }); 
+      console.log("are u being called?");
       this.decks = decks;
     } catch (error) {
-      console.error("Error loading subjects from search term: ", error); 
+      console.error("Error loading decks from search term: ", error); 
     }
   }
   

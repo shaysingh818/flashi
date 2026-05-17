@@ -1,33 +1,35 @@
 <template>
   <label for="item">
-    <input type="checkbox" :id="text" :name="text" value="yes" />
+    <input 
+      type="checkbox"
+      :text="choiceText"
+      :id="text" 
+      :name="text"
+      :checked="selected"
+      @change="emit('update:items', $event.target.checked)"/>
     {{ text }}
-    <font-awesome-icon icon="fa-solid fa-x" @click="addKeyword" />
+    <font-awesome-icon icon="fa-solid fa-x" @click.prevent="emit('remove')" />
   </label>
 </template>
 
-<script>
+<script setup>
+import { ref } from "vue";
 import FormInputField from "../../../components/shared/forms/FormInputField.vue";
 
-export default {
-  name: "MultipleChoiceItem",
-  components: {
-    FormInputField,
+const props = defineProps({  
+  text: {
+    type: String,
+    required: true,
   },
-  props: {
-    text: {
-      type: String,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      tags: [],
-      selectedOption: "",
-    };
-  },
-  methods: {},
-};
+  selected: {
+    type: Boolean,
+    default: false,
+  }
+});
+
+const emit = defineEmits(['update:items', 'remove']);
+const choiceText = ref('');
+
 </script>
 
 <style scoped>

@@ -80,11 +80,11 @@ impl Deck {
         }
     }
 
-    pub fn retrieve(conn: &Connection) -> Result<Vec<Deck>> {
-        let mut stmt = conn.prepare("SELECT ID, SUBJECT_ID, NAME, TAGS::VARCHAR, DESCRIPTION, CREATED::VARCHAR, UPDATED::VARCHAR FROM DECK")?;
+    pub fn retrieve(conn: &Connection, subject_id: &str) -> Result<Vec<Deck>> {
+        let mut stmt = conn.prepare("SELECT ID, SUBJECT_ID, NAME, TAGS::VARCHAR, DESCRIPTION, CREATED::VARCHAR, UPDATED::VARCHAR FROM DECK WHERE SUBJECT_ID = ?")?;
 
         let decks: Result<Vec<Deck>> = stmt
-            .query_map([], |row| {
+            .query_map([&subject_id], |row| {
                 let tags_raw: String = row.get(3)?;
                 Ok(Deck {
                     id: row.get(0)?,
@@ -182,7 +182,7 @@ impl Deck {
     pub fn search(conn: &Connection, search_term: &str) -> Result<Vec<Deck>> {
 
         let query = format!(
-          "SELECT ID, SUBJECT_ID, NAME, TAGS, DESCRIPTION, CREATED::VARCHAR, UPDATED::VARCHAR FROM DECK WHERE NAME LIKE '%{}%'",
+          "SELECT ID, SUBJECT_ID, NAME, TAGS::VARCHAR, DESCRIPTION, CREATED::VARCHAR, UPDATED::VARCHAR FROM DECK WHERE NAME LIKE '%{}%'",
           search_term
         );
         

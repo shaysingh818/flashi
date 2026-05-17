@@ -8,29 +8,29 @@
     />
 
     <EditDeckForm
-      deckName="Deck name"
-      deckDescription="Description for deck"
-      :submitHandler="submitDeck"
+      v-if="deck"
+      :deckId="deck.id"
+      :deckName="deck.name"
+      :deckDescription="deck.description"
+      :tags="deck.tags"
     />
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref } from "vue";
+import { onMounted } from "vue";
+import { useRoute } from "vue-router";
+import { deckStore } from "../../api/Deck";
 import FormHeader from "../../components/shared/forms/FormHeader.vue";
 import EditDeckForm from "../../components/deck/EditDeckForm.vue";
 
-export default {
-  name: "EditDeck",
-  components: { FormHeader, EditDeckForm },
-  methods: {
-    submitDeck() {
-      console.log("Clicked");
-    },
-    goBack() {
-      this.$router.go(-1);
-    },
-  },
-};
+const route = useRoute(); 
+const deckId = route.params.id;
+const deck = ref(null); 
+
+onMounted(async () => {
+  deck.value = await deckStore.viewDeck(deckId);
+});
 </script>
 
-<style scoped></style>

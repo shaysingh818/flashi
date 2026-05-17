@@ -14,11 +14,14 @@ pub struct AnswerType {
 impl AnswerType {
     
     pub fn new(name: &str) -> AnswerType {
+
+        let now = chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+      
         AnswerType {
             answer_type_id: 0,
             name: name.to_string(),
-            created: chrono::offset::Local::now().to_string(),
-            updated: chrono::offset::Local::now().to_string(),
+            created: now.clone(),
+            updated: now,
         }       
     }
 
@@ -48,7 +51,7 @@ impl AnswerType {
     }
 
     pub fn retrieve(conn: &Connection) -> Result<Vec<AnswerType>> {
-        let mut stmt = conn.prepare("SELECT * FROM ANSWER_TYPE")?;
+        let mut stmt = conn.prepare("SELECT ID, NAME, CREATED::VARCHAR, UPDATED::VARCHAR FROM ANSWER_TYPE")?;
 
         let answer_types: Result<Vec<AnswerType>> = stmt
             .query_map([], |row| {
@@ -66,8 +69,8 @@ impl AnswerType {
 
     pub fn update(&mut self, conn: &Connection, id: &str) -> Result<()> {
         /* change date modified */
-        self.updated = chrono::offset::Local::now().to_string();
-
+        self.updated = chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+        
         let result = conn.execute(
             "UPDATE ANSWER_TYPE
                 SET NAME=?, 
@@ -108,7 +111,7 @@ impl AnswerType {
     }
 
     pub fn view(conn: &Connection, id: &str) -> Result<AnswerType> {
-        let query = "SELECT * FROM ANSWER_TYPE WHERE ID = ?";
+        let query = "SELECT ID, NAME, CREATED::VARCHAR, UPDATED::VARCHAR FROM ANSWER_TYPE WHERE ID = ?";
         conn.query_row(query, &[&id], |row| {
             Ok(AnswerType {
                 answer_type_id: row.get(0)?,
@@ -122,7 +125,7 @@ impl AnswerType {
 
     pub fn search(conn: &Connection, search_term: &str) -> Result<Vec<AnswerType>> {
         let query = format!(
-            "SELECT * FROM ANSWER_TYPE WHERE NAME LIKE '%{}%'",
+            "SELECT ID, NAME, CREATED::VARCHAR, UPDATED::VARCHAR FROM ANSWER_TYPE WHERE NAME LIKE '%{}%'",
             search_term
         );
         let mut stmt = conn.prepare(&query)?;

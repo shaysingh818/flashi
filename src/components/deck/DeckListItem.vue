@@ -83,6 +83,10 @@ const props = defineProps({
   id: {
     type: String,
     required: true,
+  },  
+  subjectId: {
+    type: String,
+    required: true,
   },
   title: {
     type: String,
@@ -119,7 +123,7 @@ function showDropdown() {
 async function confirmDelete() {
   const result = await deckStore.deleteDeck(`${props.id}`);
   console.log(result);
-  await deckStore.loadDecks();
+  await deckStore.loadDecks(`${props.subjectId}`);
   showDialog.value = false;
 }
 
