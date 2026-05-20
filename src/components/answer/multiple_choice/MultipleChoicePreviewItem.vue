@@ -1,6 +1,6 @@
 <template>
   <label for="item">
-    <input type="checkbox" :id="text" :name="text" value="yes" />
+    <input type="checkbox" :id="text" :name="text" value="yes" :checked="isSelected" />
     {{ text }}
   </label>
 
@@ -13,6 +13,10 @@ export default {
   props: {
     text: {
       type: String,
+      required: true,
+    },    
+    isSelected: {
+      type: Boolean,
       required: true,
     },
   },

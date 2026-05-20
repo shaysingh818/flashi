@@ -35,7 +35,7 @@ impl OrderedSequenceAnswer {
             .collect()
     }   
 
-    pub fn insert(&mut self, conn: &Connection) -> Result<(OrderedSequenceAnswer)> {
+    pub fn insert(&mut self, conn: &Connection) -> Result<OrderedSequenceAnswer> {
 
         let sequence_literal = format!(
             "[{}]",
@@ -50,7 +50,7 @@ impl OrderedSequenceAnswer {
             "INSERT INTO ORDERED_SEQUENCE_ANSWER 
                 (SEQUENCE, EXPLANATION, CREATED, UPDATED)
             VALUES ({}, ?1, ?2, ?3)
-            RETURN ANSWER_ID, SEQUENCE, EXPLANATION, CREATED::VARCHAR, UPDATED::VARCHAR",
+            RETURNING ANSWER_ID, SEQUENCE::VARCHAR, EXPLANATION, CREATED::VARCHAR, UPDATED::VARCHAR",
             sequence_literal
         );
         
@@ -62,13 +62,13 @@ impl OrderedSequenceAnswer {
                 &self.updated
             ],
             |row| {              
-              let sequence_raw: String = row.get(1)?;
+                let sequence_raw: String = row.get(1)?;
                 Ok(OrderedSequenceAnswer {
                     answer_id: row.get(0)?,
                     sequence: Self::parse_sequence(sequence_raw),
                     explanation: row.get(2)?,
-                    created: row.get(4)?,
-                    updated: row.get(5)?,
+                    created: row.get(3)?,
+                    updated: row.get(4)?,
                 })
             },
         )
@@ -154,7 +154,7 @@ impl OrderedSequenceAnswer {
     }
 
     pub fn view(conn: &Connection, id: &str) -> Result<OrderedSequenceAnswer> {
-        let query = "SELECT ANSWER_ID, SEQUENCE::VARCHAR, EXPLANATION, CREATED::VARCHAR, UPDATED::VARCHAR FROM ORDERED_SEQUENCE_ANSWER WHERE ID = ?";
+        let query = "SELECT ANSWER_ID, SEQUENCE::VARCHAR, EXPLANATION, CREATED::VARCHAR, UPDATED::VARCHAR FROM ORDERED_SEQUENCE_ANSWER WHERE ANSWER_ID = ?";
         conn.query_row(query, &[&id], |row| {
             let sequence_raw: String = row.get(1)?;
             Ok(OrderedSequenceAnswer {

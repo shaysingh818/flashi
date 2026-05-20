@@ -43,7 +43,8 @@ import { onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { openEndedStore } from "../../api/OpenEndedAnswer";
 import { orderedSequenceStore } from "../../api/OrderedSequenceAnswer";
-import { multipleChoiceStore } from "../../api/MutlipleChoiceAnswer";
+import { multipleChoiceStore, multipleChoiceAnswerStore } from "../../api/MutlipleChoiceAnswer";
+import { questionStore } from "../../api/Question";
 import { AnswerType, answerTypeStore } from "../../api/AnswerType";
 import FormInputField from "../../components/shared/forms/FormInputField.vue";
 import FormTextField from "../../components/shared/forms/FormTextField.vue";
@@ -94,35 +95,85 @@ function retrieveAnswerTypeId(key) {
   }
 }
 
-
-function submitMultipleChoice() {
-  const answerTypeId = retrieveAnswerTypeId('Multiple Choice'); 
+async function submitMultipleChoice(multipleChoiceAnswers) { 
+  const answer = await multipleChoiceStore.createMultipleChoice();
+  const answerId = answer.answer_id; 
+  for (const item of multipleChoiceAnswers) {
+    await multipleChoiceAnswerStore.createMultipleChoiceAnswer(
+      `${answerId}`,
+      item.text,
+      '',
+      item.selected
+    );
+  }
+  return answerId;
 }
 
-function submitOpenEnded() {
-  const answerTypeId = retrieveAnswerTypeId('Open Ended'); 
+async function submitOpenEnded(answerText, explanation, keywords) {
+  const answer = await openEndedStore.createOpenEndedAnswer(
+    answerText,
+    explanation,
+    keywords
+  );
+  return answer.answer_id; 
 }
 
-function submitOrderedSequence() {
-  const answerTypeId = retrieveAnswerTypeId('Ordered Sequence'); 
+async function submitOrderedSequence(sequence, explanation) {
+  const answer = await orderedSequenceStore.createOrderedSequenceAnswer(
+    sequence,
+    explanation
+  ); 
+  return answer.answer_id;
 }
 
-function submitQuestion() {
+async function submitQuestion() {
   
-  console.log(text.value); 
-
-  const answerId = 0;
+  const deckId = props.deckId; 
   
-  if (selectedOption.value === 'Multiple Choice') {
-    submitMultipleChoice();
+  if (selectedOption.value === 'Multiple Choice') {    
+    const answerTypeId = retrieveAnswerTypeId('Multiple Choice');
+    const answerId = await submitMultipleChoice(multipleChoiceAnswers.value);     
+    const insertResult = await questionStore.createQuestion(
+      deckId,
+      answerTypeId.toString(),
+      answerId.toString(),
+      text.value
+    );
+    console.log(insertResult); 
   }
 
-  if (selectedOption.value === 'Open Ended') {
-    submitOpenEnded();
+  if (selectedOption.value === 'Open Ended') { 
+    const answerTypeId = retrieveAnswerTypeId('Open Ended');
+    const answerId = await submitOpenEnded(
+      openEndedText.value,
+      '',
+      openEndedKeywords.value
+    );
+
+    const insertResult = await questionStore.createQuestion(
+      deckId,
+      answerTypeId.toString(),
+      answerId.toString(),
+      text.value
+    );
+    console.log(insertResult); 
+
   }
   
-  if (selectedOption.value === 'Ordered Sequence') {    
-    submitOrderedSequence();
+  if (selectedOption.value === 'Ordered Sequence') { 
+    const answerTypeId = retrieveAnswerTypeId('Ordered Sequence');
+    const answerId = await submitOrderedSequence(
+      orderedSequences.value,
+      ''
+    );
+    
+    const insertResult = await questionStore.createQuestion(
+      deckId,
+      answerTypeId.toString(),
+      answerId.toString(),
+      text.value
+    );
+    console.log(insertResult); 
   }
 }
 

@@ -1,20 +1,24 @@
 <template>
   <tr @click="questionDetail">
-    <td class="tag-column"><Tag :title="props.questionType" height="10px" /></td>
+    <td class="tag-column"><Tag :title="answerTypeText" height="10px" /></td>
     <td class="date-column">{{ props.dateUpdated }}</td>
     <td class="content-column">{{ props.content }}</td>
   </tr>
 </template>
 
 <script setup>
+import { ref } from 'vue';
+import Tag from '../shared/Tag.vue';
 import { useRouter } from 'vue-router';
+import { onMounted } from 'vue';
+import { answerTypeStore } from '../../api/AnswerType';
 
 const props = defineProps({
   id: {
-    type: String,
+    type: Number,
     required: true,
   },
-  questionType: {
+  answerTypeId: {
     type: String,
     required: true,
   },
@@ -29,10 +33,17 @@ const props = defineProps({
 });
 
 const router = useRouter(); 
+const answerTypeText = ref('');
 
 function questionDetail() {
   router.push({ path: `/question/view/${props.id}` });
 }
+
+onMounted(async () => {
+  const answerType = await answerTypeStore.viewAnswerType(`${props.answerTypeId}`);
+  answerTypeText.value = answerType.name; 
+  console.log(answerTypeText.value);  
+})
 
 </script>
 

@@ -1,47 +1,38 @@
 <template>
-  <div class="flex col-center gap-4 w-75 p-2">
+  <div class="flex col-center gap-4 w-85 p-2">
     <OrderedSequencePreviewItem
-      v-for="(item, index) in items"
+      v-if="props.visible === true"
+      v-for="(item, index) in props.items"
       :key="index"
       :index="index+1"
+      :text="item"
+    />
+
+    <OrderedSequencePreviewItem
+      v-if="props.visible === false"
+      v-for="(item, index) in props.items"
+      :key="index"
+      :index="index+1"
+      text=""
     />
   </div>
 </template>
 
-<script>
+<script setup>
 import OrderedSequencePreviewItem from "./OrderedSequencePreviewItem.vue";
 
-export default {
-  name: "OrderedSequencePreview",
-  components: { OrderedSequencePreviewItem },
-  props: {
-    questionText: {
-      type: String,
-      required: true,
-    },
-    answerType: {
-      type: String,
-      required: true,
-    },
+const props = defineProps({
+  visible: {
+    type: Boolean,
+    required: true,
   },
-  data() {
-    return {
-      isDropdownOpen: false,
-      selected: null,
-      items: [1, 2, 3, 4, 5, 6],
-    };
+  items: {
+    type: Array,
+    required: true,
   },
-  methods: {
-    showDropdown() {
-      console.log("Show dropdown", this.isDropdownOpen);
-      this.isDropdownOpen = !this.isDropdownOpen;
-    },
-    selectItem(item) {
-      this.selected = item;
-      this.$emit("update:title", item); // add this
-    },
-  },
-};
+});
+
+console.log(props.items); 
 </script>
 
 <style scoped>

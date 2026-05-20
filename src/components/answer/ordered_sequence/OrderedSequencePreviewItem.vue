@@ -1,40 +1,28 @@
 <template>
   <div class="flex row-center gap-2 w-100" style="height: 35px;">
     <p>{{ index }}. </p>
-    <FormInputField placeholder="" @update:text="newItem = $event" />
+    <FormInputField :placeholder="text" @update:text="newItem = $event" />
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref } from "vue";
 import FormInputField from "../../../components/shared/forms/FormInputField.vue";
 
-export default {
-  name: "OrderedSequencePreviewItem",
-  components: { FormInputField },
-  props: {
-    index: {
-      type: Number,
-      required: true,
-    },
+const props = defineProps({
+  index: {
+    type: Number,
+    required: true,
   },
-  data() {
-    return {
-      isDropdownOpen: false,
-      selected: null,
-      newItem: ''
-    };
+  text: {
+    type: String,
+    required: true,
   },
-  methods: {
-    showDropdown() {
-      console.log("Show dropdown", this.isDropdownOpen);
-      this.isDropdownOpen = !this.isDropdownOpen;
-    },
-    selectItem(item) {
-      this.selected = item;
-      this.$emit("update:title", item); // add this
-    },
-  },
-};
+});
+
+const newItem = ref(''); 
+
+
 </script>
 
 <style scoped>

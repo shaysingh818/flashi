@@ -1,35 +1,71 @@
 <template>
-  <div class="flex centered-all" style="background-color: rgb(28 25 23); margin: 20px; border-radius: 10px; height: 75%;">
-    <p class="flex p-6">{{ text }} </p>
+  <div class="flex centered-all w-85 question-box">
+    <p class="flex col items-left p-4" v-html="renderedText"> </p>
   </div>
 
 </template>
 
-<script>
-export default {
-  name: "QuestionTextPreview",
-  components: {},
-  props: {
-    text: {
-      type: String,
-      required: true,
-    },
+<script setup>
+import { computed } from 'vue';
+import { marked } from 'marked';
+import markedKatex from 'marked-katex-extension';
+import { markedHighlight } from 'marked-highlight';
+import hljs from 'highlight.js';
+import 'katex/dist/katex.min.css';
+import 'highlight.js/styles/github-dark.css'; 
+
+const props = defineProps({  
+  text: {
+    type: String,
+    required: true,
   },
-  data() {
-    return {
-      tags: [],
-      selectedOption: "",
-    };
-  },
-  methods: {
-    goBack() {
-      this.$router.go(-1);
-    },
-  },
-};
+})
+
+marked.use(markedKatex({ throwOnError: false }));
+marked.use(markedHighlight({
+  langPrefix: 'hljs language-',
+  highlight(code, lang) {
+    const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+    return hljs.highlight(code, { language }).value;
+  }
+}));
+
+
+const renderedText = computed(() => marked(props.text))
 </script>
 
 <style scoped>
+
+.question-box {
+  background-color: rgb(28 25 23);
+  margin: 20px;
+  border-radius: 10px;
+  height: 75%;
+}
+
+
+.question-box :deep(h1) {
+  margin-bottom: 0rem;
+}
+
+.question-box :deep(h2) {
+  margin-bottom: 0rem;
+}
+
+.question-box :deep(p) {
+  font-weight: normal;
+  font-size: 13px; 
+  margin-bottom: 1rem; 
+}
+
+.question-box :deep(li) {
+  font-weight: normal;
+  font-size: 13px; 
+}
+
+.question-box :deep(ul) {
+  margin-bottom: 1rem; 
+}
 
 p {
   color: #b5b3b3; 

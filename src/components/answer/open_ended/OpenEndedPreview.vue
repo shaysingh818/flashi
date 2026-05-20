@@ -1,39 +1,69 @@
 <template>
-  <div class="flex w-75 p-4" style="height: 100px;">
-   <FormTextField :description="placeholderText" />
+
+<div class="flex col-center w-100">
+  <div class="flex w-85 p-4" style="height: 100px;">
+    
+   <FormTextField   
+    v-if="visible === true"
+    :description="placeholderText" 
+    />
+
+    <FormTextField   
+     v-if="visible === false"
+     description="Enter your answer" 
+    />
+    
   </div>
+
+  <div v-if="visible === true" class="flex row-center gap-2 w-85" style="height: 35px;">
+    <FormInputField
+      placeholder="Add keyword for open ended answer"
+      @update:text="newKeyword = $event;"
+    />
+    <font-awesome-icon icon="fa-solid fa-plus" style="color: #f97316" @click="addKeyword" />
+  </div>
+
+  <div class="flex row-center align-left wrap gap-2 p-4 w-85">
+    <Tag
+      v-if="visible === true"
+      v-for="(item, index) in keywords"
+      :key="index"
+      :title="item"
+      height="10px"
+    />
+  </div>
+</div>
+
 
 </template>
 
-<script>
+<script setup>
+import { ref } from 'vue';
+import Tag from '../../shared/Tag.vue';
+import FormInputField from '../../shared/forms/FormInputField.vue';
 import FormTextField from '../../../components/shared/forms/FormTextField.vue';
 
-export default {
-  name: "ViewQuestion",
-  components: {
-    FormTextField
+const props = defineProps({
+  visible: {
+    type: Boolean,
+    required: true
   },
-  props: {
-    placeholderText: {
-      type: String,
-      required: true,
-    },
+  placeholderText: {
+    type: String,
+    required: true,
   },
-  data() {
-    return {
-      questionText: '',
-      answerType: 'multiple choice',
-    };
-  },
-  methods: {
-    showDropdown() {
-      console.log("Show dropdown", this.isDropdownOpen);
-      this.isDropdownOpen = !this.isDropdownOpen;
-    },
-    selectItem(item) {
-      this.selected = item;
-      this.$emit("update:title", item); // add this
-    },
-  },
-};
+  keywords: {
+    type: Array,
+    required: true,
+  }
+});
+
+const newKeyword = ref('');
+
+function addKeyword() {
+  if (!newKeyword.value.trim()) return;
+  props.keywords.push(newKeyword.value.trim());
+  newKeyword.value = '';
+}
+
 </script>

@@ -51,8 +51,8 @@ impl OpenEndedAnswer {
         let sql = format!(
             "INSERT INTO OPEN_ENDED_ANSWER 
                 (ANSWER, EXPLANATION, KEYWORDS, CREATED, UPDATED)
-            VALUES (?1, ?2, {}, ?3, ?4, ?5)
-            RETURN ANSWER_ID, ANSWER, EXPLANATION, KEYWORDS, CREATED::VARCHAR, UPDATED::VARCHAR",
+            VALUES (?1, ?2, {}, ?3, ?4)
+            RETURNING ANSWER_ID, ANSWER, EXPLANATION, KEYWORDS::VARCHAR, CREATED::VARCHAR, UPDATED::VARCHAR",
             keywords_literal
         );
 
@@ -159,7 +159,7 @@ impl OpenEndedAnswer {
     }
 
     pub fn view(conn: &Connection, id: &str) -> Result<OpenEndedAnswer> {
-        let query = "SELECT ANSWER_ID, ANSWER, EXPLANATION, KEYWORDS::VARCHAR, CREATED::VARCHAR, UPDATED::VARCHAR FROM OPEN_ENDED_ANSWER WHERE ID = ?";
+        let query = "SELECT ANSWER_ID, ANSWER, EXPLANATION, KEYWORDS::VARCHAR, CREATED::VARCHAR, UPDATED::VARCHAR FROM OPEN_ENDED_ANSWER WHERE ANSWER_ID = ?";
         conn.query_row(query, &[&id], |row| {
             let keywords_raw: String = row.get(3)?;
             Ok(OpenEndedAnswer {

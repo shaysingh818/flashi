@@ -16,7 +16,7 @@ export default {
       required: true,
     },
     numeric: {
-      type: Number,
+      type: String,
       required: true,
     },
   },

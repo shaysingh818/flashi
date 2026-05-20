@@ -1,5 +1,5 @@
 <template>
-  <div class="flex centered-all">
+  <div class="flex centered-all w-100">
     <table>
       <tbody>
         <tr>
@@ -7,38 +7,38 @@
           <th>Date Updated</th>
           <th>Question</th>
         </tr>
-        <tr @click="questionDetail">
-          <td class="tag-column"><Tag title="multiple choice" height="10px" /></td>
-          <td class="date-column">04/22/2026</td>
-          <td class="content-column">What are the main compounds that make up your pysio</td>
-        </tr>
-        <tr>
-          <td class="tag-column"><Tag title="open ended" height="10px" /></td>
-          <td class="date-column">10/22/2026</td>
-          <td class="content-column">Explain the order in which ATP starts from the brain to the heart. Add sequence diagrams</td>
-        </tr>   
-        <tr>
-          <td class="tag-column"><Tag title="ordered sequence" height="10px" /></td>
-          <td class="date-column">10/22/2026</td>
-          <td class="content-column">List the parts of the brain that are responsible for feeling temperature and sending action potential to neurons in the nervous system</td>
-        </tr>          
+
+        <QuestionTableItem
+          v-for="(item, index) in questionStore.questions"
+          :key="index"
+          :id="item.id"
+          :answerTypeId="`${item.answer_type_id}`"
+          :dateUpdated="item.updated"
+          :content="item.raw"
+        />
       </tbody>
     </table>
   </div>
 </template>
 
-<script>
+<script setup>
+import { onMounted } from 'vue';
+import { questionStore } from '../../api/Question';
 import Tag from '../shared/Tag.vue';
+import QuestionTableItem from './QuestionTableItem.vue';
 
-export default {
-  name: "QuestionTableView",
-  components: {Tag},
-  methods: {
-    questionDetail() {
-      this.$router.push({ path: "/question/view" });
-    }
+const props = defineProps({
+  deckId: {
+    type: String,
+    required: true,
   }
-};
+})
+
+onMounted(async () => {
+  await questionStore.loadQuestions(`${props.deckId}`);
+})
+
+
 </script>
 
 <style scoped>

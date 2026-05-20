@@ -38,10 +38,12 @@ use crate::handlers::answer::answer_type::{
 };
 
 use crate::handlers::answer::multiple_choice::{
+    create_multiple_choice,
     create_multiple_choice_answer, 
+    delete_multiple_choice,
     delete_multiple_choice_answer, 
-    edit_multiple_choice_answer, 
-    search_multiple_choice_answers,
+    edit_multiple_choice_answer,
+    view_multiple_choice,
     view_multiple_choice_answer, 
     view_multiple_choice_answers,
 };
@@ -103,10 +105,12 @@ pub fn run() {
           view_answer_types,
 
           /* Multiple choice  */ 
-          create_multiple_choice_answer, 
+          create_multiple_choice,
+          create_multiple_choice_answer,
+          delete_multiple_choice,
           delete_multiple_choice_answer, 
-          edit_multiple_choice_answer, 
-          search_multiple_choice_answers,
+          edit_multiple_choice_answer,
+          view_multiple_choice,
           view_multiple_choice_answer, 
           view_multiple_choice_answers,
 

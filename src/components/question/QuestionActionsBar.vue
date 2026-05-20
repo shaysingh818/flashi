@@ -16,12 +16,6 @@ export default {
     PrimaryButton,
     SecondaryButton
   },
-  props: {
-    placeholderText: {
-      type: String,
-      required: true,
-    },
-  },
   data() {
     return {
       questionText: '',

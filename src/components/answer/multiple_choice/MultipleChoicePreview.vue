@@ -1,41 +1,36 @@
 <template>
-  <div class="flex col-center gap-2 w-75 p-4">
+  <div class="flex col-center gap-2 w-85 p-4">
     <MultipleChoicePreviewItem
+      v-if="props.visible === true"
       v-for="(item, index) in items"
       :key="index"
-      :text="item"
+      :text="item.answer"
+      :isSelected="item.is_correct"
+    />
+    
+    <MultipleChoicePreviewItem
+      v-if="props.visible === false"
+      v-for="(item, index) in items"
+      :key="index"
+      :text="item.answer"
+      :isSelected="false"
     />
   </div> 
 
 </template>
 
-<script>
+<script setup>
+import { ref } from 'vue';
 import MultipleChoicePreviewItem from './MultipleChoicePreviewItem.vue';
 
-export default {
-  name: "MultipleChoicePreview",
-  components: { MultipleChoicePreviewItem },
-  props: {},
-  data() {
-    return {
-      isDropdownOpen: false,
-      selected: null,
-      items: [
-        "option 1, go through the blank", 
-        "option 2, go through the ranks with anks with danks", 
-        "option 3"
-      ],
-    };
+const props = defineProps({  
+  visible: {
+    type: Boolean,
+    required: true,
   },
-  methods: {
-    showDropdown() {
-      console.log("Show dropdown", this.isDropdownOpen);
-      this.isDropdownOpen = !this.isDropdownOpen;
-    },
-    selectItem(item) {
-      this.selected = item;
-      this.$emit("update:title", item); // add this
-    },
+  items: {
+    type: Array,
+    required: true,
   },
-};
+})
 </script>
