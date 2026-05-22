@@ -1,6 +1,12 @@
 <template>
   <div class="flex col-center w-100">
-    <BackBar v-if="deck" :text="deck.name" />
+    <BackBar 
+      v-if="deck" 
+      :text="deck.name"
+      :actions="[
+         { icon: 'fa-solid fa-pen-to-square', handler: showDropdown },
+      ]"
+    />
 
     <div class="flex centered-all w-100">
       <QuestionTextPreview
@@ -8,8 +14,10 @@
         :text="question.raw"
       />
     </div>
+    
 
     <div class="flex centered-all w-100">
+      
       <OrderedSequencePreview 
         v-if="answerType === 'Ordered Sequence'" 
         :visible="true"
@@ -26,28 +34,44 @@
         :visible="true"
         :placeholderText="openEndedAnswer"
         :keywords="openEndedAnswerKeywords"
-      />
+        @update:text="updatedOpenEndedAnswer = $event"
+        @update:keywords="openEndedAnswerKeywords = $event"
+        />
     </div>
   </div>
 
-  <QuestionActionsBar />
+  <QuestionActionsBar :submitHandler="editAnswer"/>
+
+  <EditQuestionForm 
+    v-if="isDropdownOpen"
+    :questionId="`${ question.id }`"
+    :questionText="question.raw"
+    :closeFormHandler="showDropdown"
+  />
+
+  
 </template>
 
 <script setup>
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { questionStore } from "../../api/Question";
-import { answerTypeStore } from "../../api/AnswerType";
-import { deckStore } from "../../api/Deck";
-import { orderedSequenceStore } from "../../api/OrderedSequenceAnswer";
+
 import BackBar from "../../components/shared/navigation/BackBar.vue";
 import QuestionTextPreview from "../../components/question/QuestionTextPreview.vue";
 import OrderedSequencePreview from "../../components/answer/ordered_sequence/OrderedSequencePreview.vue";
 import MultipleChoicePreview from "../../components/answer/multiple_choice/MultipleChoicePreview.vue";
 import OpenEndedPreview from "../../components/answer/open_ended/OpenEndedPreview.vue";
 import QuestionActionsBar from "./QuestionActionsBar.vue";
-import { multipleChoiceStore, multipleChoiceAnswerStore } from "../../api/MutlipleChoiceAnswer";
-import { openEndedStore } from "../../api/OpenEndedAnswer";
+import EditQuestionForm from "../../components/question/EditQuestionForm.vue";
+import { 
+  deckStore,
+  questionStore,
+  answerTypeStore,
+  opendEndedStore,
+  orderedSequenceStore,
+  multipleChoiceStore,
+  multipleChoiceAnswerStore
+} from "../../api";
 
 const route = useRoute(); 
 const questionId = route.params.id;
@@ -57,14 +81,23 @@ const answerType = ref('');
 const orderedSequences = ref([]); 
 const multipleChoiceAnswers = ref([]); 
 const openEndedAnswer = ref(''); 
+const updatedOpenEndedAnswer = ref(''); 
 const openEndedAnswerKeywords = ref([]);
+const editQuestionOpen = ref(false); 
+const isDropdownOpen = ref(false); 
 
-onMounted(async () => {
-  
+function showDropdown() {
+  isDropdownOpen.value = !isDropdownOpen.value;
+  if (!isDropdownOpen.value) {
+    loadData(); 
+  }
+}
+
+async function loadData() {
+
   question.value = await questionStore.viewQuestion(`${questionId}`);
   const answerTypeText = await answerTypeStore.viewAnswerType(`${question.value.answer_type_id}`);
   answerType.value = answerTypeText.name;
-
   deck.value = await deckStore.viewDeck(`${question.value.deck_id}`); 
   console.log(deck.value); 
   
@@ -88,9 +121,22 @@ onMounted(async () => {
     );
     openEndedAnswer.value = answer.answer;
     openEndedAnswerKeywords.value = answer.keywords;
-    console.log(openEndedAnswer.value);
+  }
+}
+
+
+async function editAnswer() {
+  if (answerType.value === 'Open Ended') {
+    const editResult = await openEndedStore.editOpenEndedAnswer(
+        `${question.value.answer_id}`,
+        updatedOpenEndedAnswer.value, 
+        '',
+        openEndedAnswerKeywords.value 
+    );
+    loadData();
   }
 
- 
-})
+}
+
+onMounted(loadData); 
 </script>

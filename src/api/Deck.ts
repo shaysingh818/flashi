@@ -94,7 +94,6 @@ export const deckStore = reactive({
     try { 
       const dbPath = await this.getDbPath();
       const decks = await invoke<Deck[]>("search_decks", { dbPath, searchTerm }); 
-      console.log("are u being called?");
       this.decks = decks;
     } catch (error) {
       console.error("Error loading decks from search term: ", error); 

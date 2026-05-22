@@ -10,7 +10,15 @@
     </div>
 
     <div class="flex centered-all" style="width: 10%;">
-      <font-awesome-icon icon="fa-regular fa-pen-to-square" @click="goBack" />
+
+      <font-awesome-icon
+        v-for="(item, index) in actions"
+        :key="index"
+        :icon="item.icon" 
+        @click="item.handler()" 
+      />
+      
+      <!-- <font-awesome-icon icon="fa-regular fa-pen-to-square" @click="goBack" /> -->
     </div>
   </div>
 </template>
@@ -23,6 +31,11 @@ export default {
       type: String,
       required: true,
     },
+    actions: {
+      type: Array,
+      required: false,
+      default: () => [],
+    }
   },
   methods: {
     closeDialog() {

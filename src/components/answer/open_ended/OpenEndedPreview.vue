@@ -6,19 +6,20 @@
    <FormTextField   
     v-if="visible === true"
     :description="placeholderText" 
+    @update:text="newText = $event; emitQuestionText()"
     />
 
     <FormTextField   
      v-if="visible === false"
-     description="Enter your answer" 
+     description="Enter your answer"
     />
     
   </div>
 
   <div v-if="visible === true" class="flex row-center gap-2 w-85" style="height: 35px;">
     <FormInputField
-      placeholder="Add keyword for open ended answer"
-      @update:text="newKeyword = $event;"
+      placeholder="Update keyword for open ended answer"
+      @update:text="newKeyword = $event; emitKeywords()"
     />
     <font-awesome-icon icon="fa-solid fa-plus" style="color: #f97316" @click="addKeyword" />
   </div>
@@ -59,11 +60,22 @@ const props = defineProps({
 });
 
 const newKeyword = ref('');
+const newText = ref('');
+const emit = defineEmits(["update:keywords", "update:text"]);
 
 function addKeyword() {
-  if (!newKeyword.value.trim()) return;
+  console.log("is this being called");
   props.keywords.push(newKeyword.value.trim());
   newKeyword.value = '';
 }
+
+function emitKeywords() {
+  emit('update:keywords', props.keywords);
+}
+
+function emitQuestionText() {
+  emit('update:text', newText.value);
+}
+
 
 </script>

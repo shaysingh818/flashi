@@ -1,5 +1,5 @@
 <template>
-  <div class="flex col-center gap-2 w-85 p-4">
+  <div class="flex col-center gap-2 w-85 p-4 ml-2">
     <MultipleChoicePreviewItem
       v-if="props.visible === true"
       v-for="(item, index) in items"

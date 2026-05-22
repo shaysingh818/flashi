@@ -40,6 +40,15 @@ main {
   flex-direction: column-reverse;
 }
 
+/* margin */ 
+.mr-2 {
+  margin-inline-end: 1.0rem;
+}
+
+.ml-2 {
+  margin-inline-start: 1.0rem;
+}
+
 /* ── Justify Content ────────────────────────────────────────── */
 .justify-start {
   justify-content: flex-start;
@@ -367,7 +376,7 @@ main {
 /* ── Centering overlay (modal / splash) ─────────────────────── */
 .centered-overlay {
   position: fixed;
-  top: 50%;
+  top: 45%;
   left: 50%;
   transform: translate(-50%, -50%);
 }

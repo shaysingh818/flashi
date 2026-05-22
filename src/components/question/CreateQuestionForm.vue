@@ -41,11 +41,6 @@
 import { ref } from "vue";
 import { onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { openEndedStore } from "../../api/OpenEndedAnswer";
-import { orderedSequenceStore } from "../../api/OrderedSequenceAnswer";
-import { multipleChoiceStore, multipleChoiceAnswerStore } from "../../api/MutlipleChoiceAnswer";
-import { questionStore } from "../../api/Question";
-import { AnswerType, answerTypeStore } from "../../api/AnswerType";
 import FormInputField from "../../components/shared/forms/FormInputField.vue";
 import FormTextField from "../../components/shared/forms/FormTextField.vue";
 import PrimaryButton from "../../components/shared/buttons/PrimaryButton.vue";
@@ -56,6 +51,14 @@ import CreateMultipleChoiceForm from "../answer/multiple_choice/CreateMultipleCh
 import CreateOpenEndedForm from "../answer/open_ended/CreateOpenEndedForm.vue";
 import CreateOrderedSequenceForm from "../answer/ordered_sequence/CreateOrderedSequenceForm.vue";
 
+import { 
+  questionStore,
+  AnswerType, answerTypeStore,
+  opendEndedStore,
+  orderedSequenceStore,
+  multipleChoiceStore,
+  multipleChoiceAnswerStore
+} from "../../api";
 
 const props = defineProps({
   deckId: {

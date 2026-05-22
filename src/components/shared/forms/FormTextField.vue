@@ -1,17 +1,17 @@
 <template>
     <textarea
-      :value="text"
-      :placeholder="`${ description }`"
+      :style="{ backgroundColor: props.backgroundColor }"
+      :value="props.text"
+      :placeholder="`${ props.description }`"
       @input="$emit('update:text', $event.target.value)"
       rows="4"
     ></textarea>
 </template>
 
-<script>
+<script setup>
 
-export default {
-  name: 'FormTextField',
-  props: {    
+
+const props = defineProps({   
     text: {
       type: String,
       required: true,
@@ -20,17 +20,19 @@ export default {
       type: String,
       required: true,
     },
-  },
-  emits: ["update:text"],
-}
+    backgroundColor: {
+      type: String,
+      default: () => "rgb(28 25 23)"
+    }
+})
 
+defineEmits(["update:text"]);
 </script>
 
 <style scoped>
 
 textarea {
   width: 100%;
-  background-color: rgb(28 25 23);
   border: none;
   border-radius: 5px;
   padding: 5px;

@@ -1,44 +1,22 @@
 <template>
   <div class="bottom-actions-bar">
     <SecondaryButton :onClickHandler="showDropdown" text="Skip" />
-    <PrimaryButton :onClickHandler="showDropdown" text="Submit" />
+    <PrimaryButton :onClickHandler="props.submitHandler" text="Submit" />
 
   </div>
 </template>
 
-<script>
+
+<script setup>
 import PrimaryButton from '../../components/shared/buttons/PrimaryButton.vue';
 import SecondaryButton from '../../components/shared/buttons/SecondaryButton.vue';
 
-export default {
-  name: "QuestionActionsBar",
-  components: {
-    PrimaryButton,
-    SecondaryButton
+const props = defineProps({
+  submitHandler: {
+    type: Function,
+    required: true,
   },
-  props: {
-    placeholderText: {
-      type: String,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      questionText: '',
-      answerType: 'multiple choice',
-    };
-  },
-  methods: {
-    showDropdown() {
-      console.log("Show dropdown", this.isDropdownOpen);
-      this.isDropdownOpen = !this.isDropdownOpen;
-    },
-    selectItem(item) {
-      this.selected = item;
-      this.$emit("update:title", item); // add this
-    },
-  },
-};
+});
 </script>
 
 <style scoped>

@@ -1,7 +1,7 @@
 <template>
   <div class="flex row-center gap-2 w-100" style="height: 35px;">
     <p>{{ index }}. </p>
-    <FormInputField :placeholder="text" @update:text="newItem = $event" />
+    <FormInputField :text="text" :placeholder="text" @update:text="newItem = $event" />
   </div>
 </template>
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex centered-all w-85 question-box">
+  <div class="flex centered-all w-85 question-box p-2">
     <p class="flex col items-left p-4" v-html="renderedText"> </p>
   </div>
 
