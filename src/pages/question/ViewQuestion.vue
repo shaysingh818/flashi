@@ -22,7 +22,11 @@
         v-if="answerType === 'Ordered Sequence'" 
         :visible="true"
         :items="orderedSequences"
+        @update:items="updatedOrderedSequences = $event;"
+        @update:delete="updatedOrderedSequences = $event; editAnswer()"
+        @update:add="updatedOrderedSequences = $event; editAnswer()"
       />
+
       <MultipleChoicePreview 
         v-if="answerType === 'Multiple Choice'"
         :visible="true"
@@ -34,8 +38,7 @@
         :visible="true"
         :placeholderText="openEndedAnswer"
         :keywords="openEndedAnswerKeywords"
-        @update:text="updatedOpenEndedAnswer = $event"
-        @update:keywords="openEndedAnswerKeywords = $event"
+        @update:items="updatedOpenEndedAnswer = $event"
         />
     </div>
   </div>
@@ -55,7 +58,6 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
-
 import BackBar from "../../components/shared/navigation/BackBar.vue";
 import QuestionTextPreview from "../../components/question/QuestionTextPreview.vue";
 import OrderedSequencePreview from "../../components/answer/ordered_sequence/OrderedSequencePreview.vue";
@@ -67,7 +69,7 @@ import {
   deckStore,
   questionStore,
   answerTypeStore,
-  opendEndedStore,
+  openEndedStore,
   orderedSequenceStore,
   multipleChoiceStore,
   multipleChoiceAnswerStore
@@ -77,12 +79,19 @@ const route = useRoute();
 const questionId = route.params.id;
 const question = ref(null); 
 const deck = ref(null); 
-const answerType = ref(''); 
+const answerType = ref('');
+
+/* answers */
 const orderedSequences = ref([]); 
 const multipleChoiceAnswers = ref([]); 
 const openEndedAnswer = ref(''); 
-const updatedOpenEndedAnswer = ref(''); 
 const openEndedAnswerKeywords = ref([]);
+
+/* updated answers */
+const updatedOpenEndedAnswer = ref(''); 
+const updatedOrderedSequences = ref([]); 
+
+/* edit toggles */ 
 const editQuestionOpen = ref(false); 
 const isDropdownOpen = ref(false); 
 
@@ -99,7 +108,6 @@ async function loadData() {
   const answerTypeText = await answerTypeStore.viewAnswerType(`${question.value.answer_type_id}`);
   answerType.value = answerTypeText.name;
   deck.value = await deckStore.viewDeck(`${question.value.deck_id}`); 
-  console.log(deck.value); 
   
   if (answerType.value === 'Ordered Sequence') {
     const answer = await orderedSequenceStore.viewOrderedSequenceAnswer(
@@ -132,6 +140,23 @@ async function editAnswer() {
         updatedOpenEndedAnswer.value, 
         '',
         openEndedAnswerKeywords.value 
+    );
+    loadData();
+  }
+
+
+  if (answerType.value === 'Ordered Sequence') {
+
+    const preservedAnswerOrder = [];
+    console.log(updatedOrderedSequences.value); 
+    for (const [index, item] of updatedOrderedSequences.value.entries()) {
+      preservedAnswerOrder.push(item);
+    }
+
+    const editResult = await orderedSequenceStore.editOrderedSequenceAnswer(
+      `${question.value.answer_id}`,
+      preservedAnswerOrder,
+      '',
     );
     loadData();
   }
