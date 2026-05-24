@@ -1,16 +1,16 @@
 <template>
   <div
     class="flex centered-all p-4 tag"
-    :style="{width: width, height: height }"
+    :style="{width: props.width, height: props.height }"
+    @dblclick="$emit('remove')"
   >
     <p>{{ title }}</p>
   </div>
 </template>
 
-<script>
-export default {
-  name: "Tag",
-  props: {
+<script setup>
+
+const props = defineProps({
     title: {
       type: String,
       required: true,
@@ -23,8 +23,9 @@ export default {
       type: String,
       default: "auto",
     },
-  },
-};
+});
+
+defineEmits(['remove']);
 </script>
 
 <style scoped>

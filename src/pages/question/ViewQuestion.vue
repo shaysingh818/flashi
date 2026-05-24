@@ -38,7 +38,8 @@
         :visible="true"
         :placeholderText="openEndedAnswer"
         :keywords="openEndedAnswerKeywords"
-        @update:items="updatedOpenEndedAnswer = $event"
+        @update:keywords="openEndedAnswerKeywords = $event"
+        @update:text="openEndedAnswer = $event"
         />
     </div>
   </div>
@@ -88,7 +89,6 @@ const openEndedAnswer = ref('');
 const openEndedAnswerKeywords = ref([]);
 
 /* updated answers */
-const updatedOpenEndedAnswer = ref(''); 
 const updatedOrderedSequences = ref([]); 
 
 /* edit toggles */ 
@@ -135,9 +135,10 @@ async function loadData() {
 
 async function editAnswer() {
   if (answerType.value === 'Open Ended') {
+    console.log(openEndedAnswerKeywords.value); 
     const editResult = await openEndedStore.editOpenEndedAnswer(
         `${question.value.answer_id}`,
-        updatedOpenEndedAnswer.value, 
+        openEndedAnswer.value, 
         '',
         openEndedAnswerKeywords.value 
     );
