@@ -6,9 +6,12 @@
         placeholder="Add item for ordered sequence answer"
         @update:text="newSequence = $event"
       />
-      <font-awesome-icon icon="fa-solid fa-plus" style="color: #f97316" @click="addSequence" />
+      <font-awesome-icon 
+        icon="fa-solid fa-plus" 
+        style="color: #f97316" 
+        @click="addSequence" 
+      />
     </div>
-
 
     <OrderedSequencePreviewItem
       v-if="props.visible === true"
@@ -52,7 +55,13 @@ const newItem = ref('');
 const newIndex= ref('');
 const newSequence = ref('');
 const deleteIndex = ref('');
-const emit = defineEmits(["update:text", "update:index", "update:items", "update:delete", "update:add"]);
+const emit = defineEmits([
+  "update:text", 
+  "update:index", 
+  "update:items", 
+  "update:delete", 
+  "update:add"
+]);
 
 
 function emitUpdateItem() {

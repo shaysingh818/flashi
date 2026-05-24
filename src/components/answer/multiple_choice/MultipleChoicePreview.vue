@@ -1,11 +1,30 @@
 <template>
-  <div class="flex col-center gap-2 w-85 p-4 ml-2">
+  <div class="flex col-center w-100 gap-2 p-2">
+
+    <div v-if="visible === true" class="flex row-center gap-2 w-85" style="height: 35px;">
+      <FormInputField
+        placeholder="Add more multiple choice items."
+        @update:text="newItem = $event"
+      />
+
+      <font-awesome-icon 
+        icon="fa-solid fa-plus" 
+        style="color: #f97316" 
+        @click="addMultipleChoice" 
+      />
+    </div>
+
     <MultipleChoicePreviewItem
       v-if="props.visible === true"
       v-for="(item, index) in items"
       :key="index"
+      :visible="props.visible"
+      :index="index"
       :text="item.answer"
       :isSelected="item.is_correct"
+      @update:text="updatedText = $event; updateAnswer(index)"
+      @update:selected="updateSelected = $event; updateAnswer(index)"
+      @update:delete="deleteIndex = $event; deleteAnswer()"
     />
     
     <MultipleChoicePreviewItem
@@ -21,7 +40,9 @@
 
 <script setup>
 import { ref } from 'vue';
+import FormInputField from '../../shared/forms/FormInputField.vue';
 import MultipleChoicePreviewItem from './MultipleChoicePreviewItem.vue';
+import { multipleChoiceStore, multipleChoiceAnswerStore } from "../../../api";
 
 const props = defineProps({  
   visible: {
@@ -32,5 +53,35 @@ const props = defineProps({
     type: Array,
     required: true,
   },
-})
+});
+
+const newItem = ref('');
+const updatedText = ref('');
+const updateSelected = ref(false);
+const deleteIndex = ref(null);
+const emit = defineEmits([
+  "update:item", 
+  "update:add", 
+  "update:delete"
+]); 
+
+function updateAnswer(index) {
+  const localProps = [...props.items];
+  localProps[index] = {
+    ...localProps[index],
+    answer: updatedText.value,
+    is_correct: updateSelected.value
+  };
+  emit("update:item", localProps[index]);
+}
+
+function addMultipleChoice() {
+  emit("update:add", newItem.value);
+  newItem.value = ''; 
+}
+
+function deleteAnswer() {
+  emit("update:delete", deleteIndex.value);
+  deleteIndex.value = null; 
+}
 </script>

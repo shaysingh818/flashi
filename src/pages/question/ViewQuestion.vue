@@ -31,6 +31,9 @@
         v-if="answerType === 'Multiple Choice'"
         :visible="true"
         :items="multipleChoiceAnswers"
+        @update:item="updatedMultipleChoiceAnswer = $event; editAnswer()"
+        @update:add="multipleChoiceAnswer = $event; editAnswer()"
+        @update:delete="multipleChoiceDeleteIndex = $event; editAnswer()"
       />
       
       <OpenEndedPreview
@@ -40,7 +43,7 @@
         :keywords="openEndedAnswerKeywords"
         @update:keywords="openEndedAnswerKeywords = $event"
         @update:text="openEndedAnswer = $event"
-        />
+      />
     </div>
   </div>
 
@@ -83,13 +86,18 @@ const deck = ref(null);
 const answerType = ref('');
 
 /* answers */
+const openEndedAnswer = ref(''); 
+const multipleChoiceAnswer = ref('');
+const multipleChoiceDeleteIndex = ref(null);
+const openEndedAnswerKeywords = ref([]);
 const orderedSequences = ref([]); 
 const multipleChoiceAnswers = ref([]); 
-const openEndedAnswer = ref(''); 
-const openEndedAnswerKeywords = ref([]);
+const newMultipleChoiceAnswers = ref([]);
 
 /* updated answers */
-const updatedOrderedSequences = ref([]); 
+const updatedOrderedSequences = ref([]);
+const updatedMultipleChoiceAnswer = ref(null);
+const updatedMultipleChoiceAnswers = ref([]); 
 
 /* edit toggles */ 
 const editQuestionOpen = ref(false); 
@@ -120,7 +128,7 @@ async function loadData() {
     await multipleChoiceAnswerStore.loadMultipleChoiceAnswers(
       `${question.value.answer_id}`
     );
-    multipleChoiceAnswers.value = multipleChoiceAnswerStore.multipleChoiceAnswers;  
+    multipleChoiceAnswers.value = multipleChoiceAnswerStore.multipleChoiceAnswers; 
   }
   
   if (answerType.value === 'Open Ended') {
@@ -134,8 +142,9 @@ async function loadData() {
 
 
 async function editAnswer() {
+
   if (answerType.value === 'Open Ended') {
-    console.log(openEndedAnswerKeywords.value); 
+
     const editResult = await openEndedStore.editOpenEndedAnswer(
         `${question.value.answer_id}`,
         openEndedAnswer.value, 
@@ -145,11 +154,9 @@ async function editAnswer() {
     loadData();
   }
 
-
   if (answerType.value === 'Ordered Sequence') {
 
     const preservedAnswerOrder = [];
-    console.log(updatedOrderedSequences.value); 
     for (const [index, item] of updatedOrderedSequences.value.entries()) {
       preservedAnswerOrder.push(item);
     }
@@ -160,6 +167,41 @@ async function editAnswer() {
       '',
     );
     loadData();
+  }
+
+  if (answerType.value === 'Multiple Choice') {
+
+    if(multipleChoiceAnswer.value != '') {
+      await multipleChoiceAnswerStore.createMultipleChoiceAnswer( 
+        `${question.value.answer_id}`,
+        multipleChoiceAnswer.value,
+        '',
+        false
+      );
+      loadData();
+      multipleChoiceAnswer.value = '';
+    }
+
+    if(multipleChoiceDeleteIndex.value != null) {
+      const multipleChoiceAnswer = multipleChoiceAnswers.value[multipleChoiceDeleteIndex.value];
+      await multipleChoiceAnswerStore.deleteMultipleChoiceAnswer(
+        `${multipleChoiceAnswer.id}`
+      );
+      loadData();
+      multipleChoiceDeleteIndex.value = null;
+    }
+
+
+    if(updatedMultipleChoiceAnswer.value != null) { 
+      updatedMultipleChoiceAnswers.value.push(updatedMultipleChoiceAnswer.value);
+      updatedMultipleChoiceAnswer.value = null;
+    }
+
+    if(updatedMultipleChoiceAnswers.value.length > 0) {
+      console.log(updatedMultipleChoiceAnswers.value);  
+      updatedMultipleChoiceAnswers.value = [];
+    }
+
   }
 
 }
