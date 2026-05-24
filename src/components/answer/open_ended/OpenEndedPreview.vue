@@ -4,14 +4,16 @@
   <div class="flex w-85 p-4" style="height: 100px;">
     
    <FormTextField   
-    v-if="visible === true"
-    :description="placeholderText" 
+    v-if="props.visible === true"
+    :description="props.placeholderText"
+    :text="props.placeholderText"
     @update:text="newText = $event; emitQuestionText()"
     />
 
     <FormTextField   
      v-if="visible === false"
      description="Enter your answer"
+    :text="props.placeholderText"
     />
     
   </div>
