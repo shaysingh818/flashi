@@ -74,9 +74,9 @@ export const multipleChoiceAnswerStore = reactive({
     return await invoke("create_multiple_choice_answer", { answerId, answer, explanation, isCorrect, dbPath });
   },
 
-  async editMultipleChoiceAnswer(id: string, answerId: string, answer: string, explanation: string, is_correct: boolean): Promise<string> {        
+  async editMultipleChoiceAnswer(id: string, answerId: string, answer: string, explanation: string, isCorrect: boolean): Promise<string> {        
     const dbPath = await this.getDbPath();
-    return await invoke("edit_multiple_choice_answer", { id, answerId, answer, explanation, is_correct, dbPath });  
+    return await invoke("edit_multiple_choice_answer", { id, answerId, answer, explanation, isCorrect, dbPath });  
   },
 
   async deleteMultipleChoiceAnswer(id: string): Promise<string> {    

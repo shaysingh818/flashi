@@ -31,7 +31,7 @@
         v-if="answerType === 'Multiple Choice'"
         :visible="true"
         :items="multipleChoiceAnswers"
-        @update:item="updatedMultipleChoiceAnswer = $event; editAnswer()"
+        @update:item="onMultipleChoiceUpdate"
         @update:add="multipleChoiceAnswer = $event; editAnswer()"
         @update:delete="multipleChoiceDeleteIndex = $event; editAnswer()"
       />
@@ -60,7 +60,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, toRaw } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import BackBar from "../../components/shared/navigation/BackBar.vue";
 import QuestionTextPreview from "../../components/question/QuestionTextPreview.vue";
@@ -96,12 +96,18 @@ const newMultipleChoiceAnswers = ref([]);
 
 /* updated answers */
 const updatedOrderedSequences = ref([]);
-const updatedMultipleChoiceAnswer = ref(null);
 const updatedMultipleChoiceAnswers = ref([]); 
 
 /* edit toggles */ 
 const editQuestionOpen = ref(false); 
-const isDropdownOpen = ref(false); 
+const isDropdownOpen = ref(false);
+
+const changedChoiceItems = ref({});
+
+function onMultipleChoiceUpdate(allItems, changed) {
+  updatedMultipleChoiceAnswers.value = allItems;
+  changedChoiceItems.value = changed;
+}
 
 function showDropdown() {
   isDropdownOpen.value = !isDropdownOpen.value;
@@ -192,14 +198,21 @@ async function editAnswer() {
     }
 
 
-    if(updatedMultipleChoiceAnswer.value != null) { 
-      updatedMultipleChoiceAnswers.value.push(updatedMultipleChoiceAnswer.value);
-      updatedMultipleChoiceAnswer.value = null;
-    }
 
-    if(updatedMultipleChoiceAnswers.value.length > 0) {
-      console.log(updatedMultipleChoiceAnswers.value);  
-      updatedMultipleChoiceAnswers.value = [];
+    if (Object.keys(changedChoiceItems.value).length > 0) {
+
+      const raw = toRaw(changedChoiceItems.value);
+      const numericKeys = Object.keys(raw).filter(k => !isNaN(k));
+      console.log(raw.value); 
+
+      for (const key of numericKeys) {
+        const item = toRaw(raw[key]);
+        console.log(item); // plain {id, answer_id, is_correct, answer, ...}
+        //await multipleChoiceAnswerStore.updateMultipleChoiceAnswer(item.id, item);
+      }
+
+      changedChoiceItems.value = {};
+      loadData();
     }
 
   }

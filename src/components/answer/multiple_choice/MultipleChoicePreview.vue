@@ -22,8 +22,8 @@
       :index="index"
       :text="item.answer"
       :isSelected="item.is_correct"
-      @update:text="updatedText = $event; updateAnswer(index)"
-      @update:selected="updateSelected = $event; updateAnswer(index)"
+      @update:text="updateAnswerText(index, $event)"
+      @update:selected="updateAnswerSelected(index, $event)"
       @update:delete="deleteIndex = $event; deleteAnswer()"
     />
     
@@ -56,23 +56,26 @@ const props = defineProps({
 });
 
 const newItem = ref('');
-const updatedText = ref('');
-const updateSelected = ref(false);
 const deleteIndex = ref(null);
+const changedItems = ref({});
 const emit = defineEmits([
   "update:item", 
   "update:add", 
   "update:delete"
 ]); 
 
-function updateAnswer(index) {
+function updateAnswerText(index, text) {
   const localProps = [...props.items];
-  localProps[index] = {
-    ...localProps[index],
-    answer: updatedText.value,
-    is_correct: updateSelected.value
-  };
-  emit("update:item", localProps[index]);
+  localProps[index] = { ...localProps[index], answer: text };
+  changedItems.value[index] = { ...localProps[index] };
+  emit("update:item", localProps, changedItems);
+}
+
+function updateAnswerSelected(index, selected) {
+  const localProps = [...props.items];
+  localProps[index] = { ...localProps[index], is_correct: selected };
+  changedItems.value[index] = { ...localProps[index] };
+  emit("update:item", localProps, changedItems);
 }
 
 function addMultipleChoice() {
