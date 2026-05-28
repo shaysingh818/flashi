@@ -31,7 +31,7 @@
         v-if="answerType === 'Multiple Choice'"
         :visible="true"
         :items="multipleChoiceAnswers"
-        @update:item="onMultipleChoiceUpdate"
+        @update:item="updatedMultipleChoiceAnswer = $event; appendChoice()"
         @update:add="multipleChoiceAnswer = $event; editAnswer()"
         @update:delete="multipleChoiceDeleteIndex = $event; editAnswer()"
       />
@@ -96,17 +96,22 @@ const newMultipleChoiceAnswers = ref([]);
 
 /* updated answers */
 const updatedOrderedSequences = ref([]);
+const updatedMultipleChoiceAnswer = ref(null); 
 const updatedMultipleChoiceAnswers = ref([]); 
 
 /* edit toggles */ 
 const editQuestionOpen = ref(false); 
 const isDropdownOpen = ref(false);
 
-const changedChoiceItems = ref({});
 
-function onMultipleChoiceUpdate(allItems, changed) {
-  updatedMultipleChoiceAnswers.value = allItems;
-  changedChoiceItems.value = changed;
+function appendChoice() {
+  updatedMultipleChoiceAnswers.value.push(updatedMultipleChoiceAnswer.value);
+  updatedMultipleChoiceAnswer.value = null;
+  console.log(updatedMultipleChoiceAnswers.value);
+
+  // check if answer ID is already there, update
+
+  // If new answer id, then append new value to list
 }
 
 function showDropdown() {
@@ -199,20 +204,10 @@ async function editAnswer() {
 
 
 
-    if (Object.keys(changedChoiceItems.value).length > 0) {
+    if (updatedMultipleChoiceAnswers.value.length > 0) {
+      console.log("new answers to update");
+      console.log(updatedMultipleChoiceAnswers.value);
 
-      const raw = toRaw(changedChoiceItems.value);
-      const numericKeys = Object.keys(raw).filter(k => !isNaN(k));
-      console.log(raw.value); 
-
-      for (const key of numericKeys) {
-        const item = toRaw(raw[key]);
-        console.log(item); // plain {id, answer_id, is_correct, answer, ...}
-        //await multipleChoiceAnswerStore.updateMultipleChoiceAnswer(item.id, item);
-      }
-
-      changedChoiceItems.value = {};
-      loadData();
     }
 
   }
