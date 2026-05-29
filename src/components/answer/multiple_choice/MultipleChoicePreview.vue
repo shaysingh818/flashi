@@ -23,7 +23,7 @@
       :text="item.answer"
       :isSelected="item.is_correct"
       @update:text="newItem = $event; updateAnswer(index)"
-      @update:selected="selectedItem = $event; updateAnswer(index, $event)"
+      @update:selected="selectedItem = $event; updateAnswer(index)"
       @update:delete="deleteIndex = $event; deleteAnswer()"
     />
     
@@ -68,24 +68,29 @@ function updateAnswer(index) {
   const localProps = [...props.items];
 
   const isSelectedItem = selectedItem.value != null; 
-  const isNewText = newItem.value != null;
+  const isNewText = newItem.value != '';
+  const existingAnswer = localProps[index].answer;
 
   if(isSelectedItem && isNewText) {
+
     localProps[index] = { 
       ...localProps[index], 
       is_correct: selectedItem.value,
       answer: newItem.value
     };
+    newItem.value = ''; 
   } else if (isSelectedItem) {
     localProps[index] = { 
       ...localProps[index], 
       is_correct: selectedItem.value,
+      answer: existingAnswer
     };
   } else if (isNewText) {
     localProps[index] = { 
       ...localProps[index], 
       answer: newItem.value,
     };
+    newItem.value = ''; 
   }
 
   emit("update:item", localProps[index]);

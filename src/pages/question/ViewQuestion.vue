@@ -105,13 +105,30 @@ const isDropdownOpen = ref(false);
 
 
 function appendChoice() {
-  updatedMultipleChoiceAnswers.value.push(updatedMultipleChoiceAnswer.value);
-  updatedMultipleChoiceAnswer.value = null;
-  console.log(updatedMultipleChoiceAnswers.value);
 
-  // check if answer ID is already there, update
+  if(updatedMultipleChoiceAnswers.value.length > 0) {
+    let idExists = false;
+    const currId = updatedMultipleChoiceAnswer.value.id;
+    for(var i = 0; i < updatedMultipleChoiceAnswers.value.length; i++) {
+      const currItem = updatedMultipleChoiceAnswers.value[i]; 
+      if(currItem.id === currId) {
+        updatedMultipleChoiceAnswers.value[i] = updatedMultipleChoiceAnswer.value;
+        updatedMultipleChoiceAnswer.value = null;
+        idExists = true;
+      }
+    }
+    if(!idExists) {
+      updatedMultipleChoiceAnswers.value.push(updatedMultipleChoiceAnswer.value); 
+      updatedMultipleChoiceAnswer.value = null;
+    }
+  } else {
+    updatedMultipleChoiceAnswers.value.push(updatedMultipleChoiceAnswer.value); 
+    updatedMultipleChoiceAnswer.value = null;
+  }
 
-  // If new answer id, then append new value to list
+  console.log(updatedMultipleChoiceAnswers.value); 
+
+
 }
 
 function showDropdown() {
@@ -205,9 +222,17 @@ async function editAnswer() {
 
 
     if (updatedMultipleChoiceAnswers.value.length > 0) {
-      console.log("new answers to update");
-      console.log(updatedMultipleChoiceAnswers.value);
-
+      for(const item of updatedMultipleChoiceAnswers.value) {  
+        await multipleChoiceAnswerStore.editMultipleChoiceAnswer(
+          `${item.id}`,
+          `${item.answer_id}`,
+          item.answer, 
+          '',
+          item.is_correct
+        );
+      }
+      loadData();
+      updatedMultipleChoiceAnswers.value = [];
     }
 
   }
