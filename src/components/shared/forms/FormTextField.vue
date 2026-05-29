@@ -2,7 +2,7 @@
     <textarea
       :style="{ backgroundColor: props.backgroundColor }"
       :value="props.text"
-      :placeholder="`${ props.description }`"
+      :placeholder="props.description"
       @input="$emit('update:text', $event.target.value)"
       rows="4"
     ></textarea>

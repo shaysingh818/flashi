@@ -54,7 +54,7 @@ import CreateOrderedSequenceForm from "../answer/ordered_sequence/CreateOrderedS
 import { 
   questionStore,
   AnswerType, answerTypeStore,
-  opendEndedStore,
+  openEndedStore,
   orderedSequenceStore,
   multipleChoiceStore,
   multipleChoiceAnswerStore

@@ -1,42 +1,88 @@
 <template>
-  <label for="item">
-    <input type="checkbox" :id="text" :name="text" value="yes" :checked="isSelected" />
+
+  <label for="item" v-if="props.visible === false">
+    <input 
+      type="checkbox" 
+      :id="text" 
+      :name="text" 
+      value="yes" 
+      :checked="isSelected"
+    />
     {{ text }}
   </label>
 
+  <div v-if="props.visible === true" class="flex row-center gap-2 w-100">
+
+      <div class="fw-10">
+        <label for="item" v-if="props.visible === true">
+            <input 
+              type="checkbox" 
+              :id="text" 
+              :name="text" 
+              :checked="isSelected"
+              @change="emit('update:selected', $event.target.checked)"
+            />
+        </label>
+      </div>
+
+      <div class="flex row-center fw-75 gap-2" style="height: 35px;">
+        <FormInputField 
+          :text="text" 
+          :placeholder="text" 
+          @update:text="newText = $event; emitText()"
+        />
+        <font-awesome-icon 
+          icon="fa-solid fa-x" 
+          style="color: #f97316"
+          @click="deleteMultipleChoiceItem" 
+        />
+      </div>
+
+  </div>
+
+
 </template>
 
-<script>
+<script setup>
+import { ref } from 'vue';
+import FormInputField from "../../../components/shared/forms/FormInputField.vue";
 
-export default {
-  name: "MultipleChoicePreviewItem",
-  props: {
-    text: {
-      type: String,
-      required: true,
-    },    
-    isSelected: {
-      type: Boolean,
-      required: true,
-    },
+const props = defineProps({
+  visible: {
+    type: Boolean,
+    default: () => false,
   },
-  data() {
-    return {
-      isDropdownOpen: false,
-      selected: null,
-    };
+  index: {
+    type: Number,
+    required: true,
   },
-  methods: {
-    showDropdown() {
-      console.log("Show dropdown", this.isDropdownOpen);
-      this.isDropdownOpen = !this.isDropdownOpen;
-    },
-    selectItem(item) {
-      this.selected = item;
-      this.$emit("update:title", item); // add this
-    },
+  text: {
+    type: String,
+    required: true,
+  },    
+  isSelected: {
+    type: Boolean,
+    required: true,
   },
-};
+
+});
+
+const newText = ref(''); 
+
+function emitText(item) {
+  emit("update:text", newText.value);
+  newText.value = ''; 
+}
+
+function deleteMultipleChoiceItem() {
+  emit("update:delete", props.index);
+}
+
+const emit = defineEmits([
+  "update:text", 
+  "update:selected", 
+  "update:delete"
+]);
 </script>
 
 <style scoped>

@@ -22,11 +22,18 @@
         v-if="answerType === 'Ordered Sequence'" 
         :visible="true"
         :items="orderedSequences"
+        @update:items="updatedOrderedSequences = $event;"
+        @update:delete="updatedOrderedSequences = $event; editAnswer()"
+        @update:add="updatedOrderedSequences = $event; editAnswer()"
       />
+
       <MultipleChoicePreview 
         v-if="answerType === 'Multiple Choice'"
         :visible="true"
         :items="multipleChoiceAnswers"
+        @update:item="updatedMultipleChoiceAnswer = $event; appendChoice()"
+        @update:add="multipleChoiceAnswer = $event; editAnswer()"
+        @update:delete="multipleChoiceDeleteIndex = $event; editAnswer()"
       />
       
       <OpenEndedPreview
@@ -34,9 +41,9 @@
         :visible="true"
         :placeholderText="openEndedAnswer"
         :keywords="openEndedAnswerKeywords"
-        @update:text="updatedOpenEndedAnswer = $event"
         @update:keywords="openEndedAnswerKeywords = $event"
-        />
+        @update:text="openEndedAnswer = $event"
+      />
     </div>
   </div>
 
@@ -53,9 +60,8 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, toRaw } from "vue";
 import { useRoute, useRouter } from "vue-router";
-
 import BackBar from "../../components/shared/navigation/BackBar.vue";
 import QuestionTextPreview from "../../components/question/QuestionTextPreview.vue";
 import OrderedSequencePreview from "../../components/answer/ordered_sequence/OrderedSequencePreview.vue";
@@ -67,7 +73,7 @@ import {
   deckStore,
   questionStore,
   answerTypeStore,
-  opendEndedStore,
+  openEndedStore,
   orderedSequenceStore,
   multipleChoiceStore,
   multipleChoiceAnswerStore
@@ -77,14 +83,53 @@ const route = useRoute();
 const questionId = route.params.id;
 const question = ref(null); 
 const deck = ref(null); 
-const answerType = ref(''); 
+const answerType = ref('');
+
+/* answers */
+const openEndedAnswer = ref(''); 
+const multipleChoiceAnswer = ref('');
+const multipleChoiceDeleteIndex = ref(null);
+const openEndedAnswerKeywords = ref([]);
 const orderedSequences = ref([]); 
 const multipleChoiceAnswers = ref([]); 
-const openEndedAnswer = ref(''); 
-const updatedOpenEndedAnswer = ref(''); 
-const openEndedAnswerKeywords = ref([]);
+const newMultipleChoiceAnswers = ref([]);
+
+/* updated answers */
+const updatedOrderedSequences = ref([]);
+const updatedMultipleChoiceAnswer = ref(null); 
+const updatedMultipleChoiceAnswers = ref([]); 
+
+/* edit toggles */ 
 const editQuestionOpen = ref(false); 
-const isDropdownOpen = ref(false); 
+const isDropdownOpen = ref(false);
+
+
+function appendChoice() {
+
+  if(updatedMultipleChoiceAnswers.value.length > 0) {
+    let idExists = false;
+    const currId = updatedMultipleChoiceAnswer.value.id;
+    for(var i = 0; i < updatedMultipleChoiceAnswers.value.length; i++) {
+      const currItem = updatedMultipleChoiceAnswers.value[i]; 
+      if(currItem.id === currId) {
+        updatedMultipleChoiceAnswers.value[i] = updatedMultipleChoiceAnswer.value;
+        updatedMultipleChoiceAnswer.value = null;
+        idExists = true;
+      }
+    }
+    if(!idExists) {
+      updatedMultipleChoiceAnswers.value.push(updatedMultipleChoiceAnswer.value); 
+      updatedMultipleChoiceAnswer.value = null;
+    }
+  } else {
+    updatedMultipleChoiceAnswers.value.push(updatedMultipleChoiceAnswer.value); 
+    updatedMultipleChoiceAnswer.value = null;
+  }
+
+  console.log(updatedMultipleChoiceAnswers.value); 
+
+
+}
 
 function showDropdown() {
   isDropdownOpen.value = !isDropdownOpen.value;
@@ -99,7 +144,6 @@ async function loadData() {
   const answerTypeText = await answerTypeStore.viewAnswerType(`${question.value.answer_type_id}`);
   answerType.value = answerTypeText.name;
   deck.value = await deckStore.viewDeck(`${question.value.deck_id}`); 
-  console.log(deck.value); 
   
   if (answerType.value === 'Ordered Sequence') {
     const answer = await orderedSequenceStore.viewOrderedSequenceAnswer(
@@ -112,7 +156,7 @@ async function loadData() {
     await multipleChoiceAnswerStore.loadMultipleChoiceAnswers(
       `${question.value.answer_id}`
     );
-    multipleChoiceAnswers.value = multipleChoiceAnswerStore.multipleChoiceAnswers;  
+    multipleChoiceAnswers.value = multipleChoiceAnswerStore.multipleChoiceAnswers; 
   }
   
   if (answerType.value === 'Open Ended') {
@@ -126,14 +170,71 @@ async function loadData() {
 
 
 async function editAnswer() {
+
   if (answerType.value === 'Open Ended') {
+
     const editResult = await openEndedStore.editOpenEndedAnswer(
         `${question.value.answer_id}`,
-        updatedOpenEndedAnswer.value, 
+        openEndedAnswer.value, 
         '',
         openEndedAnswerKeywords.value 
     );
     loadData();
+  }
+
+  if (answerType.value === 'Ordered Sequence') {
+
+    const preservedAnswerOrder = [];
+    for (const [index, item] of updatedOrderedSequences.value.entries()) {
+      preservedAnswerOrder.push(item);
+    }
+
+    const editResult = await orderedSequenceStore.editOrderedSequenceAnswer(
+      `${question.value.answer_id}`,
+      preservedAnswerOrder,
+      '',
+    );
+    loadData();
+  }
+
+  if (answerType.value === 'Multiple Choice') {
+
+    if(multipleChoiceAnswer.value != '') {
+      await multipleChoiceAnswerStore.createMultipleChoiceAnswer( 
+        `${question.value.answer_id}`,
+        multipleChoiceAnswer.value,
+        '',
+        false
+      );
+      loadData();
+      multipleChoiceAnswer.value = '';
+    }
+
+    if(multipleChoiceDeleteIndex.value != null) {
+      const multipleChoiceAnswer = multipleChoiceAnswers.value[multipleChoiceDeleteIndex.value];
+      await multipleChoiceAnswerStore.deleteMultipleChoiceAnswer(
+        `${multipleChoiceAnswer.id}`
+      );
+      loadData();
+      multipleChoiceDeleteIndex.value = null;
+    }
+
+
+
+    if (updatedMultipleChoiceAnswers.value.length > 0) {
+      for(const item of updatedMultipleChoiceAnswers.value) {  
+        await multipleChoiceAnswerStore.editMultipleChoiceAnswer(
+          `${item.id}`,
+          `${item.answer_id}`,
+          item.answer, 
+          '',
+          item.is_correct
+        );
+      }
+      loadData();
+      updatedMultipleChoiceAnswers.value = [];
+    }
+
   }
 
 }
