@@ -58,6 +58,31 @@ export class Question {
 export const questionStore = reactive({
 
   questions: [] as Question[],
+  currQuestion: 0 as number,
+
+  getCurrQuestion(): number {
+    return this.currQuestion;
+  },
+
+  cyclePreviousQuestion() {
+
+    if(this.currQuestion == 0) {
+      this.currQuestion = this.questions.length - 1;
+    } else {
+      this.currQuestion -= 1;
+    }
+
+  },
+
+  cycleNextQuestion() {
+
+    if(this.currQuestion == this.questions.length - 1) {
+      this.currQuestion = 0;
+    } else {
+      this.currQuestion += 1;
+    }
+
+  },
 
   async getDbPath(): Promise<string> {    
     const dataDirPath = await dataDir();

@@ -6,15 +6,18 @@
           <th>Type</th>
           <th>Date Updated</th>
           <th>Question</th>
+          <th>Delete</th>
         </tr>
 
         <QuestionTableItem
           v-for="(item, index) in questionStore.questions"
           :key="index"
           :id="item.id"
+          :index="index"
           :answerTypeId="`${item.answer_type_id}`"
           :dateUpdated="item.updated"
           :content="item.raw"
+          @update:delete="handleDelete($event)"
         />
       </tbody>
     </table>
@@ -34,8 +37,15 @@ const props = defineProps({
   }
 })
 
+
+async function handleDelete(id) {
+  await questionStore.deleteQuestion(`${id}`);
+  await questionStore.loadQuestions(`${props.deckId}`);
+}
+
 onMounted(async () => {
   await questionStore.loadQuestions(`${props.deckId}`);
+  questionStore.currQuestion = 0;
 })
 
 

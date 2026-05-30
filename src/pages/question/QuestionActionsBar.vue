@@ -1,8 +1,8 @@
 <template>
   <div class="bottom-actions-bar">
-    <SecondaryButton :onClickHandler="showDropdown" text="Skip" />
-    <PrimaryButton :onClickHandler="props.submitHandler" text="Submit" />
-
+    <SecondaryButton :onClickHandler="props.previousHandler" text="Previous" />
+    <PrimaryButton :onClickHandler="props.updateHandler" text="Update" />
+    <SecondaryButton :onClickHandler="props.nextHandler" text="Next" />
   </div>
 </template>
 
@@ -12,7 +12,15 @@ import PrimaryButton from '../../components/shared/buttons/PrimaryButton.vue';
 import SecondaryButton from '../../components/shared/buttons/SecondaryButton.vue';
 
 const props = defineProps({
-  submitHandler: {
+  previousHandler: {
+    type: Function,
+    required: true,
+  },
+  updateHandler: {
+    type: Function,
+    required: true,
+  },
+  nextHandler: {
     type: Function,
     required: true,
   },
