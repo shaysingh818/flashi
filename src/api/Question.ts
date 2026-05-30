@@ -80,7 +80,6 @@ export const questionStore = reactive({
     } else {
       this.currQuestion += 1;
     }
-
   },
 
   async getDbPath(): Promise<string> {    
