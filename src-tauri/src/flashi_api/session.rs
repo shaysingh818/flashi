@@ -7,21 +7,19 @@ use duckdb::{params, Connection, Result};
 pub struct Session {
     pub id: usize,
     pub name: String,
-    pub start_time: String,
-    pub end_time: String,
+    pub description: String,
     pub created: String,
     pub updated: String,
 }
 
 impl Session {
 
-    pub fn new(name: &str) -> Session {
+    pub fn new(name: &str, description: &str) -> Session {
         let now = chrono::offset::Local::now().to_string();
         Session {
             id: 0,
             name: name.to_string(),
-            start_time: now.clone(),
-            end_time: now.clone(),
+            description: description.to_string(),
             created: now.clone(),
             updated: now,
         }
@@ -30,12 +28,11 @@ impl Session {
     pub fn insert(&mut self, conn: &Connection) -> Result<()> {
         let result = conn.execute(
             "INSERT INTO SESSION
-                (NAME, START_TIME, END_TIME, CREATED, UPDATED)
+                (NAME, DESCRIPTION, CREATED, UPDATED)
             VALUES (?1, ?2, ?3, ?4, ?5)",
             params![
                 &self.name,
-                &self.start_time,
-                &self.end_time,
+                &self.description,
                 &self.created,
                 &self.updated,
             ],
@@ -61,10 +58,9 @@ impl Session {
                 Ok(Session {
                     id: row.get(0)?,
                     name: row.get(1)?,
-                    start_time: row.get(2)?,
-                    end_time: row.get(3)?,
-                    created: row.get(4)?,
-                    updated: row.get(5)?,
+                    description: row.get(2)?,
+                    created: row.get(3)?,
+                    updated: row.get(4)?,
                 })
             })?
             .collect();
@@ -77,14 +73,12 @@ impl Session {
         let result = conn.execute(
             "UPDATE SESSION
                 SET NAME=?1,
-                    START_TIME=?2,
-                    END_TIME=?3,
-                    UPDATED=?4
-                WHERE ID=?5",
+                    DESCRIPTION=?2,
+                    UPDATED=?3
+                WHERE ID=?4",
             params![
                 &self.name,
-                &self.start_time,
-                &self.end_time,
+                &self.description,
                 &self.updated,
                 id,
             ],
@@ -124,13 +118,61 @@ impl Session {
                 Ok(Session {
                     id: row.get(0)?,
                     name: row.get(1)?,
-                    start_time: row.get(2)?,
-                    end_time: row.get(3)?,
-                    created: row.get(4)?,
-                    updated: row.get(5)?,
+                    description: row.get(2)?,
+                    created: row.get(3)?,
+                    updated: row.get(4)?,
                 })
             }
         )
+    }
+
+    pub fn add_deck_to_session(&mut self, conn: &Connection, deck_id: &str) -> Result<String> {
+        
+        let result = conn.execute(
+            "INSERT INTO SESSION_DECK
+                (SESSION_ID, DECK_ID, CREATED, UPDATED)
+            VALUES (?1, ?2, ?3, ?4)",
+            params![
+                &self.id,
+                deck_id,
+                &self.created,
+                &self.updated,
+            ],
+        );
+
+        match result {
+            Ok(_) => {
+                println!("Successfully added deck to session");
+                Ok(("Success").to_string())
+            },
+            Err(err) => {
+                println!("[session::add_deck_to_session] duckdb error {:?}", err);
+                Err(err)
+            }
+        }
+    }
+
+    pub fn remove_deck_from_session(&mut self, conn: &Connection, deck_id: &str) -> Result<String> {
+        
+        let result = conn.execute(
+            "DELETE FROM SESSION_DECK
+                WHERE SESSION_ID = ?1 AND DECK_ID = ?2",
+            params![
+                &self.id,
+                deck_id,
+            ],
+        );
+
+        match result {
+            Ok(_) => {
+                println!("Successfully removed deck from session");
+                Ok(("Success").to_string())
+            },
+            Err(err) => {
+                println!("[session::remove_deck_from_session] duckdb error {:?}", err);
+                Err(err)
+            }
+        }
     }
 
     pub fn search(conn: &Connection, search_term: &str) -> Result<Vec<Session>> {
@@ -145,14 +187,15 @@ impl Session {
                 Ok(Session {
                     id: row.get(0)?,
                     name: row.get(1)?,
-                    start_time: row.get(2)?,
-                    end_time: row.get(3)?,
-                    created: row.get(4)?,
-                    updated: row.get(5)?,
+                    description: row.get(2)?,
+                    created: row.get(3)?,
+                    updated: row.get(4)?,
                 })
             })?
             .collect();
         sessions
     }
+
+
 
 }
