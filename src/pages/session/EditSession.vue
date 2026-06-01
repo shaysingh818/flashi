@@ -9,28 +9,28 @@
     <br />
 
     <EditSessionForm
-      sessionName="Session Name"
-      sessionDescription="Enter a description"
-      :submitHandler="submitSubject"
+      v-if="session"
+      :sessionId="session.id"
+      :sessionName="session.name"
+      :sessionDescription="session.description"
     />
   </div>
 </template>
 
 
-<script>
+<script setup>
+import { ref } from "vue";
+import { onMounted } from "vue";
+import { useRoute } from "vue-router";
+import { sessionStore } from "../../api";
 import EditSessionForm from '../../components/session/EditSessionForm.vue';
 import FormHeader from '../../components/shared/forms/FormHeader.vue';
 
-export default {
-  name: "EditSession",
-  components: { EditSessionForm, FormHeader },
-  methods: {
-    submitSubject() {
-      console.log("Clicked");
-    },
-    goBack() {
-      this.$router.go(-1);
-    },
-  },
-};
+const route = useRoute(); 
+const sessionId = route.params.id;
+const session = ref(null); 
+
+onMounted(async () => {
+  session.value = await sessionStore.viewSession(sessionId);
+});
 </script>

@@ -9,7 +9,11 @@
     </div>
 
     <SearchComponent text="Search Decks" @search="search" />
-    <DeckListView v-if="subject" :subjectId="`${subject.id}`" />
+    <DeckListView 
+      v-if="subject" 
+      :decks="deckStore.decks" 
+      actionType="view"
+    />
     <HoverButton icon="fa-solid fa-plus" :onClickHandler="createDeck" />
   </div>
 </template>
@@ -35,6 +39,7 @@ const subject = ref(null);
 
 onMounted(async () => {
   subject.value = await subjectStore.viewSubject(subjectId);
+  await deckStore.loadDecksBySubject(`${props.subjectId}`);
 });
 
 function createDeck() {

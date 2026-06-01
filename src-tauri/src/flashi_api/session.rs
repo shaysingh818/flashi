@@ -1,6 +1,7 @@
 use chrono;
 use serde::{Deserialize, Serialize};
-use duckdb::{params, Connection, Result}; 
+use duckdb::{params, Connection, Result};
+use crate::flashi_api::deck::Deck; 
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15,7 +16,8 @@ pub struct Session {
 impl Session {
 
     pub fn new(name: &str, description: &str) -> Session {
-        let now = chrono::offset::Local::now().to_string();
+        
+        let now = chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
         Session {
             id: 0,
             name: name.to_string(),
@@ -29,7 +31,7 @@ impl Session {
         let result = conn.execute(
             "INSERT INTO SESSION
                 (NAME, DESCRIPTION, CREATED, UPDATED)
-            VALUES (?1, ?2, ?3, ?4, ?5)",
+            VALUES (?1, ?2, ?3, ?4)",
             params![
                 &self.name,
                 &self.description,
@@ -51,7 +53,7 @@ impl Session {
     }
 
     pub fn retrieve(conn: &Connection) -> Result<Vec<Session>> {
-        let mut stmt = conn.prepare("SELECT * FROM SESSION")?;
+        let mut stmt = conn.prepare("SELECT ID, NAME, DESCRIPTION, CREATED::VARCHAR, UPDATED::VARCHAR FROM SESSION")?;
 
         let sessions: Result<Vec<Session>> = stmt
             .query_map([], |row| {
@@ -67,8 +69,36 @@ impl Session {
         sessions
     }
 
+    pub fn retrieve_session_decks(conn: &Connection, session_id: usize) -> Result<Vec<Deck>> {
+
+        let mut stmt = conn.prepare(
+            "SELECT d.ID, d.SUBJECT_ID, d.NAME, d.TAGS::VARCHAR, d.DESCRIPTION, 
+                    d.CREATED::VARCHAR, d.UPDATED::VARCHAR
+             FROM DECK d
+             INNER JOIN SESSION_DECK sd ON sd.DECK_ID = d.ID
+             WHERE sd.SESSION_ID = ?1"
+        )?;
+
+        let decks: Result<Vec<Deck>> = stmt
+            .query_map(params![session_id], |row| {
+                let tags_raw: String = row.get(3)?;
+                Ok(Deck {
+                    id: row.get(0)?,
+                    subject_id: row.get(1)?,
+                    name: row.get(2)?,
+                    tags: Deck::parse_tags(tags_raw),
+                    description: row.get(4)?,
+                    created: row.get(5)?,
+                    updated: row.get(6)?,
+                })
+            })?
+            .collect();
+
+        decks
+    }
+
     pub fn update(&mut self, conn: &Connection, id: &str) -> Result<()> {
-        self.updated = chrono::offset::Local::now().to_string();
+        self.updated = chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
 
         let result = conn.execute(
             "UPDATE SESSION
@@ -112,7 +142,7 @@ impl Session {
 
     pub fn view(conn: &Connection, id: &str) -> Result<Session> {
         conn.query_row(
-            "SELECT * FROM SESSION WHERE ID = ?",
+            "SELECT ID, NAME, DESCRIPTION, CREATED::VARCHAR, UPDATED::VARCHAR FROM SESSION WHERE ID = ?",
             &[&id],
             |row| {
                 Ok(Session {
@@ -144,6 +174,16 @@ impl Session {
             Ok(_) => {
                 println!("Successfully added deck to session");
                 Ok(("Success").to_string())
+            },
+            Err(duckdb::Error::DuckDBFailure(err, msg)) => {
+                let msg_str = msg.as_deref().unwrap_or("");
+                if msg_str.contains("violates unique constraint") {
+                    println!("Deck already associated with session, skipping");
+                    Ok("Duplicate".to_string())
+                } else {
+                    println!("[session::add_deck_to_session] duckdb error {:?}", msg_str);
+                    Err(duckdb::Error::DuckDBFailure(err, msg))
+                }
             },
             Err(err) => {
                 println!("[session::add_deck_to_session] duckdb error {:?}", err);
@@ -177,7 +217,7 @@ impl Session {
 
     pub fn search(conn: &Connection, search_term: &str) -> Result<Vec<Session>> {
         let query = format!(
-            "SELECT * FROM SESSION WHERE NAME LIKE '%{}%'",
+            "SELECT ID, NAME, DESCRIPTION, CREATED::VARCHAR, UPDATED::VARCHAR FROM SESSION WHERE NAME LIKE '%{}%'",
             search_term
         );
         let mut stmt = conn.prepare(&query)?;

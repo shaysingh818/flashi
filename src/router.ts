@@ -41,10 +41,10 @@ const routes: Array<RouteRecordRaw> = [
 
   // sessions
   { path: "/sessions", component: SessionsPage },
-  { path: "/sessions/detail", component: SessionDetail },
   { path: "/sessions/create", component: CreateSession },
-  { path: "/sessions/edit", component: EditSession },
-  { path: "/sessions/deck/add", component: AddDeckToSession },
+  { path: "/sessions/edit/:id", component: EditSession },
+  { path: "/sessions/detail/:id", component: SessionDetail },
+  { path: "/sessions/deck/add/:id", component: AddDeckToSession },
 
   // metrics
   { path: "/metrics", component: MetricsPage },

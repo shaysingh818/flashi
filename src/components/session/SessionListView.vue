@@ -1,36 +1,23 @@
 <template>
 
-  <div class="flex col-center gap-4 w-75 p-4">
-    
+  <div class="flex col-center w-85 p-2" v-for="(item, index) in sessionStore.sessions" :key="index">
     <SessionListItem
-      title="Anatomy 1: Nervous System"
-      description="Notes and studying for study of the human body"
-      dateUpdated="04/20/2026"
-    />
-
-    <SessionListItem
-      title="Microbiology"
-      description="Notes and studying for study of the human body"
-      dateUpdated="04/20/2026"
-    />
-
-    <SessionListItem
-      title="Anatomy 1: Muscular System"
-      description="Notes and studying for study of the human body"
-      dateUpdated="04/20/2026"
-    />
-    
+      :id="`${item.id}`"
+      :title="item.name"
+      :description="item.description"
+      :dateUpdated="item.updated"
+    /> 
   </div>
 </template>
 
-<script>
+<script setup>
+import { onMounted } from "vue"; 
+import { sessionStore } from "../../api";
 import SessionListItem from './SessionListItem.vue';
 
-export default {
-  name: 'SessionListView',
-  components: {
-    SessionListItem
-  }
-} 
+
+onMounted(async () => {
+  await sessionStore.loadSessions();
+});
 </script>
 

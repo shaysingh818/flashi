@@ -5,7 +5,10 @@ use uuid::Uuid;
 
 use duckdb::{Connection, Result}; 
 
+
+use crate::flashi_api::deck::Deck; 
 use crate::flashi_api::session::*; 
+
 
 
 #[tauri::command]
@@ -140,6 +143,29 @@ pub fn delete_session(db_path: &str, session_id: &str) -> String {
         }
         Err(e) => {
             return format!("Error retrieving subject with id: {:?} Cause: {:?}", session_id, e);
+        }
+    }
+}
+
+
+#[tauri::command]
+pub fn view_session_decks(db_path: &str, session_id: &str) -> Vec<Deck> {
+  
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return Vec::new();
+        }
+    };
+
+    let session_id_usize: usize = session_id.parse::<usize>().unwrap();
+
+    match Session::retrieve_session_decks(&conn, session_id_usize) {
+        Ok(decks) => decks,
+        Err(e) => {
+            println!("{:?}", e);
+            Vec::new()
         }
     }
 }

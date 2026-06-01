@@ -1,35 +1,34 @@
 <template>
   <div class="flex col-center gap-4 w-100">
     <div class="flex w-75" style="height: 40px;">
-      <FormInputField :text="`${sessionName}`" />
+      <FormInputField v-model:text="name" :placeholder="`${sessionName}`" />
     </div>
 
     <div class="flex w-75" style="height: 40px;">
-      <FormTextField :description="`${sessionDescription}`" />
+      <FormTextField v-model:text="description" :description="`${sessionDescription}`" />
     </div>
 
     <div class="flex row-center w-75 gap-4" style="height: 40px;">
       <SecondaryButton :onClickHandler="goBack" text="Discard" />
-      <PrimaryButton :onClickHandler="submitHandler" text="Save" />
+      <PrimaryButton :onClickHandler="submitForm" text="Save" />
     </div>
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import { sessionStore } from "../../api";
 import FormInputField from "../../components/shared/forms/FormInputField.vue";
 import FormTextField from "../../components/shared/forms/FormTextField.vue";
 import PrimaryButton from "../../components/shared/buttons/PrimaryButton.vue";
 import SecondaryButton from "../../components/shared/buttons/SecondaryButton.vue";
 
-export default {
-  name: "EditSessionForm",
-  components: {
-    FormInputField,
-    FormTextField,
-    PrimaryButton,
-    SecondaryButton,
-  },
-  props: {
+const props = defineProps({ 
+    sessionId: {
+      type: String,
+      required: true,
+    },
     sessionName: {
       type: String,
       required: true,
@@ -38,15 +37,24 @@ export default {
       type: String,
       required: true,
     },
-    submitHandler: {
-      type: Function,
-      required: true,
-    },
-  },
-  methods: {
-    goBack() {
-      this.$router.go(-1);
-    },
-  },
-};
+})
+
+
+const router = useRouter(); 
+const name = ref(props.deckName);
+const description = ref(props.deckDescription);
+
+
+function goBack() {
+  router.go(-1); 
+}
+
+async function submitForm() {
+  const editSession = await sessionStore.editSession(
+    `${props.sessionId}`, 
+    name.value, 
+    description.value
+  );
+  console.log(editSession);
+}
 </script>

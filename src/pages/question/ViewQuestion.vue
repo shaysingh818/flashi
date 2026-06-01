@@ -47,11 +47,7 @@
     </div>
   </div>
 
-  <QuestionActionsBar 
-    :previousHandler="previousQuestion"
-    :updateHandler="editAnswer"
-    :nextHandler="nextQuestion"
-  />
+  <QuestionActionsBar :submitHandler="editAnswer"/>
 
   <EditQuestionForm 
     v-if="isDropdownOpen"
@@ -64,7 +60,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, toRaw, watch } from "vue";
+import { onMounted, ref, toRaw } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import BackBar from "../../components/shared/navigation/BackBar.vue";
 import QuestionTextPreview from "../../components/question/QuestionTextPreview.vue";
@@ -83,8 +79,7 @@ import {
   multipleChoiceAnswerStore
 } from "../../api";
 
-const route = useRoute();
-const router = useRouter();
+const route = useRoute(); 
 const questionId = route.params.id;
 const question = ref(null); 
 const deck = ref(null); 
@@ -108,18 +103,6 @@ const updatedMultipleChoiceAnswers = ref([]);
 const editQuestionOpen = ref(false); 
 const isDropdownOpen = ref(false);
 
-
-function nextQuestion() {
-  questionStore.cycleNextQuestion();
-  const currId = questionStore.questions[questionStore.getCurrQuestion()].id;
-  router.push({path: `/question/view/${currId}`, replace: true});
-}
-
-function previousQuestion() {
-  questionStore.cyclePreviousQuestion();
-  const currId = questionStore.questions[questionStore.getCurrQuestion()].id;
-  router.push({path: `/question/view/${currId}`, replace: true});
-}
 
 function appendChoice() {
 
@@ -152,9 +135,9 @@ function showDropdown() {
   }
 }
 
-async function loadData(id) {
+async function loadData() {
 
-  question.value = await questionStore.viewQuestion(`${id}`);
+  question.value = await questionStore.viewQuestion(`${questionId}`);
   const answerTypeText = await answerTypeStore.viewAnswerType(`${question.value.answer_type_id}`);
   answerType.value = answerTypeText.name;
   deck.value = await deckStore.viewDeck(`${question.value.deck_id}`); 
@@ -253,10 +236,5 @@ async function editAnswer() {
 
 }
 
-onMounted(() => loadData(route.params.id)); 
-
-watch(() => route.params.id, (newId) => {
-  if (newId) loadData(newId);
-});
-
+onMounted(loadData); 
 </script>

@@ -1,7 +1,7 @@
 <template>
   <div class="flex col-center w-100">
     <br />
-    <SearchComponent text="Search Sessions" :onClick="search" />
+    <SearchComponent text="Search Sessions" @search="search" />
     <div class="flex items-center justify-center">
       <h2>Sessions</h2>
     </div>
@@ -10,26 +10,25 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import { sessionStore } from "../api";
 import SearchComponent from "../components/shared/forms/SearchComponent.vue";
 import SessionListView from "../components/session/SessionListView.vue";
 import HoverButton from "../components/shared/buttons/HoverButton.vue";
 
-export default {
-  components: {
-    SearchComponent,
-    SessionListView,
-    HoverButton,
-  },
-  methods: {
-    async search() {
-      console.log("test");
-    },
-    async createSession() {
-      this.$router.push({ path: "/sessions/create" });
-    },
-  },
-};
+
+const router = useRouter();
+
+async function search(searchTerm) {
+  await sessionStore.searchSessions(searchTerm);
+}
+
+async function createSession() {
+  router.push({ path: "/sessions/create" });
+}
+
 </script>
 
 <style scoped>
