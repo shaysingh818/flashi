@@ -1,7 +1,7 @@
 <template>
   <div class="bottom-actions-bar">
-    <SecondaryButton :onClickHandler="showDropdown" text="Skip" />
-    <PrimaryButton :onClickHandler="props.submitHandler" text="Testing" />
+    <SecondaryButton @click="showDropdown" text="Skip" />
+    <PrimaryButton @click="props.submitHandler" text="Testing" />
 
   </div>
 </template>

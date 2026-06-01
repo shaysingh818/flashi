@@ -5,8 +5,8 @@
         <p>{{ text }}</p>
       </div>
       <div class="button-dialog">
-        <SecondaryButton :onClickHandler="closeDialog" text="No" />
-        <PrimaryButton :onClickHandler="submitHandler" text="Yes" />
+        <SecondaryButton @click="closeDialog" text="No" />
+        <PrimaryButton @click="submitHandler" text="Yes" />
       </div>
     </div>
   </div>

@@ -9,8 +9,8 @@
     </div>
 
     <div class="flex row-center w-75 gap-4" style="height: 40px;">
-      <SecondaryButton :onClickHandler="goBack" text="Discard" />
-      <PrimaryButton :onClickHandler="submitForm" text="Save" />
+      <SecondaryButton @click="goBack" text="Discard" />
+      <PrimaryButton @click="submitForm" text="Save" />
     </div>
   </div>
 </template>

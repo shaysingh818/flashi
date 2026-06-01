@@ -1,8 +1,8 @@
 <template>
   <div class="bottom-actions-bar">
-    <SecondaryButton :onClickHandler="props.previousHandler" text="Previous" />
-    <PrimaryButton :onClickHandler="props.updateHandler" text="Update" />
-    <SecondaryButton :onClickHandler="props.nextHandler" text="Next" />
+    <SecondaryButton @click="props.previousHandler" text="Previous" />
+    <PrimaryButton @click="props.updateHandler" text="Update" />
+    <SecondaryButton @click="props.nextHandler" text="Next" />
   </div>
 </template>
 

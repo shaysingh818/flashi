@@ -14,7 +14,7 @@
       :decks="deckStore.decks" 
       actionType="view"
     />
-    <HoverButton icon="fa-solid fa-plus" :onClickHandler="createDeck" />
+    <HoverButton icon="fa-solid fa-plus" @click="createDeck" />
   </div>
 </template>
 
@@ -39,7 +39,7 @@ const subject = ref(null);
 
 onMounted(async () => {
   subject.value = await subjectStore.viewSubject(subjectId);
-  await deckStore.loadDecksBySubject(`${props.subjectId}`);
+  await deckStore.loadDecksBySubject(subjectId);
 });
 
 function createDeck() {

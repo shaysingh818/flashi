@@ -2,12 +2,8 @@
   <div class="flex col-center">
     <br />
     <FormHeader
-      header="Create a deck"
-      description="A subject is a top-level category that helps you organize
-        related study decks in one place. Think of it like a folder
-        — create a subject for a course or topic, then build
-        multiple decks inside it to break your material into
-        focused, manageable sets."
+      header="Create a question"
+      description="Questions belong to decks and come in three types: Open Ended for free-text answers (with optional keywords to match against responses), Sequence for ordered steps or processes, and Multiple Choice for single or multi-select answers."
     />
     <br />
 
@@ -31,6 +27,5 @@ const deckId = route.params.id;
 function goBack() {
   router.go(-1);
 }
-
 </script>
 

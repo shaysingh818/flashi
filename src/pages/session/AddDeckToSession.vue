@@ -19,7 +19,6 @@ import { deckStore } from "../../api";
 import SearchComponent from '../../components/shared/forms/SearchComponent.vue';
 import DeckListView from '../../components/deck/DeckListView.vue';
 import BackBar from '../../components/shared/navigation/BackBar.vue';
-import SessionDecksToAdd from '../../components/session/SessionDecksToAdd.vue';
 
 
 const route = useRoute(); 

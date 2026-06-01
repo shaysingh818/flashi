@@ -2,10 +2,10 @@
   <div class="flex col-center w-100">
     <BackBar v-if="deck" :text="deck.name" />
     <br></br>
-    <SearchComponent text="Search Decks" :onClick="search" />
+    <SearchComponent text="Search Decks" @search="search" />
     <br> </br>
     <QuestionTableView :deckId="deckId"/>
-    <HoverButton icon="fa-solid fa-plus" :onClickHandler="createQuestion" />
+    <HoverButton icon="fa-solid fa-plus" @click="createQuestion" />
   </div>
 </template>
 
@@ -37,8 +37,5 @@ function search() {
 onMounted(async () => {
   deck.value = await deckStore.viewDeck(`${deckId}`); 
 })
-
-
-
 </script>
 

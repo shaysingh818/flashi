@@ -7,10 +7,8 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: "FormHeader",
-  props: {
+<script setup>
+const props = defineProps({
     header: {
       type: String,
       required: true,
@@ -19,8 +17,7 @@ export default {
       type: String,
       required: true,
     },
-  },
-};
+});
 </script>
 
 <style scoped>

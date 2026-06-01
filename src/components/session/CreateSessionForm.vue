@@ -15,8 +15,8 @@
     </div>
 
     <div class="flex row-center w-75 gap-4" style="height: 40px;">
-      <SecondaryButton :onClickHandler="goBack" text="Discard" />
-      <PrimaryButton :onClickHandler="submitSession" text="Submit" />
+      <SecondaryButton @click="goBack" text="Discard" />
+      <PrimaryButton @click="submitSession" text="Submit" />
     </div>
   </div>
 </template>

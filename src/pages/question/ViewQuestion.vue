@@ -47,7 +47,11 @@
     </div>
   </div>
 
-  <QuestionActionsBar :submitHandler="editAnswer"/>
+  <QuestionActionsBar 
+    :previousHandler="previousQuestion"
+    :updateHandler="editAnswer"
+    :nextHandler="nextQuestion"
+  />
 
   <EditQuestionForm 
     v-if="isDropdownOpen"
@@ -60,7 +64,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, toRaw } from "vue";
+import { onMounted, ref, toRaw, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import BackBar from "../../components/shared/navigation/BackBar.vue";
 import QuestionTextPreview from "../../components/question/QuestionTextPreview.vue";
@@ -79,7 +83,8 @@ import {
   multipleChoiceAnswerStore
 } from "../../api";
 
-const route = useRoute(); 
+const route = useRoute();
+const router = useRouter();
 const questionId = route.params.id;
 const question = ref(null); 
 const deck = ref(null); 
@@ -103,6 +108,18 @@ const updatedMultipleChoiceAnswers = ref([]);
 const editQuestionOpen = ref(false); 
 const isDropdownOpen = ref(false);
 
+
+function nextQuestion() {
+  questionStore.cycleNextQuestion();
+  const currId = questionStore.questions[questionStore.getCurrQuestion()].id;
+  router.push({path: `/question/view/${currId}`, replace: true});
+}
+
+function previousQuestion() {
+  questionStore.cyclePreviousQuestion();
+  const currId = questionStore.questions[questionStore.getCurrQuestion()].id;
+  router.push({path: `/question/view/${currId}`, replace: true});
+}
 
 function appendChoice() {
 
@@ -135,9 +152,9 @@ function showDropdown() {
   }
 }
 
-async function loadData() {
+async function loadData(id) {
 
-  question.value = await questionStore.viewQuestion(`${questionId}`);
+  question.value = await questionStore.viewQuestion(`${id}`);
   const answerTypeText = await answerTypeStore.viewAnswerType(`${question.value.answer_type_id}`);
   answerType.value = answerTypeText.name;
   deck.value = await deckStore.viewDeck(`${question.value.deck_id}`); 
@@ -176,7 +193,7 @@ async function editAnswer() {
         '',
         openEndedAnswerKeywords.value 
     );
-    loadData();
+    loadData(question.value.id);
   }
 
   if (answerType.value === 'Ordered Sequence') {
@@ -191,7 +208,7 @@ async function editAnswer() {
       preservedAnswerOrder,
       '',
     );
-    loadData();
+    loadData(question.value.id);
   }
 
   if (answerType.value === 'Multiple Choice') {
@@ -203,7 +220,7 @@ async function editAnswer() {
         '',
         false
       );
-      loadData();
+      loadData(question.value.id);
       multipleChoiceAnswer.value = '';
     }
 
@@ -212,7 +229,7 @@ async function editAnswer() {
       await multipleChoiceAnswerStore.deleteMultipleChoiceAnswer(
         `${multipleChoiceAnswer.id}`
       );
-      loadData();
+      loadData(question.value.id);
       multipleChoiceDeleteIndex.value = null;
     }
 
@@ -228,7 +245,7 @@ async function editAnswer() {
           item.is_correct
         );
       }
-      loadData();
+      loadData(question.value.id);
       updatedMultipleChoiceAnswers.value = [];
     }
 
@@ -236,5 +253,10 @@ async function editAnswer() {
 
 }
 
-onMounted(loadData); 
+onMounted(() => loadData(route.params.id)); 
+
+watch(() => route.params.id, (newId) => {
+  if (newId) loadData(newId);
+});
+
 </script>

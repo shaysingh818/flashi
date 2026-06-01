@@ -12,7 +12,7 @@
     />
 
     
-    <HoverButton icon="fa-solid fa-plus" :onClickHandler="addDeckToSession" />
+    <HoverButton icon="fa-solid fa-plus" @click="addDeckToSession" />
   </div>
 </template>
 

@@ -10,21 +10,20 @@
 
 <script setup>
 
-
 const props = defineProps({   
-    text: {
-      type: String,
-      required: false,
-      default: '',
-    },
-    description: {
-      type: String,
-      required: true,
-    },
-    backgroundColor: {
-      type: String,
-      default: () => "rgb(28 25 23)"
-    }
+  text: {
+    type: String,
+    required: false,
+    default: '',
+  },
+  description: {
+    type: String,
+    required: true,
+  },
+  backgroundColor: {
+    type: String,
+    default: () => "rgb(28 25 23)"
+  }
 })
 
 defineEmits(["update:text"]);

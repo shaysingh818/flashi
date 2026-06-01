@@ -6,7 +6,7 @@
       <h2>Sessions</h2>
     </div>
     <SessionListView />
-    <HoverButton icon="fa-solid fa-plus" :onClickHandler="createSession" />
+    <HoverButton icon="fa-solid fa-plus" @click="createSession" />
   </div>
 </template>
 

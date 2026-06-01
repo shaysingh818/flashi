@@ -1,7 +1,7 @@
 <template>
   <div class="search-container">
     <FormInputField v-model:text="text" :placeholder="placeholder" />
-    <PrimaryButton :onClickHandler="onClick" text="Search" />
+    <PrimaryButton @click="onClick" text="Search" />
   </div>
 </template>
 
@@ -10,7 +10,7 @@ import { ref } from 'vue';
 import FormInputField from "./FormInputField.vue";
 import PrimaryButton from "../buttons/PrimaryButton.vue";
 
-defineProps({
+const props = defineProps({
   placeholder: {
     type: String,
     default: "Search",
