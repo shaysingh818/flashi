@@ -1,27 +1,27 @@
 use chrono;
 use serde::{Deserialize, Serialize};
-use duckdb::{params, Connection, Result}; 
+use duckdb::{params, Connection, Result};
+use crate::flashi_api::deck::Deck; 
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Session {
     pub id: usize,
     pub name: String,
-    pub start_time: String,
-    pub end_time: String,
+    pub description: String,
     pub created: String,
     pub updated: String,
 }
 
 impl Session {
 
-    pub fn new(name: &str) -> Session {
-        let now = chrono::offset::Local::now().to_string();
+    pub fn new(name: &str, description: &str) -> Session {
+        
+        let now = chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
         Session {
             id: 0,
             name: name.to_string(),
-            start_time: now.clone(),
-            end_time: now.clone(),
+            description: description.to_string(),
             created: now.clone(),
             updated: now,
         }
@@ -30,12 +30,11 @@ impl Session {
     pub fn insert(&mut self, conn: &Connection) -> Result<()> {
         let result = conn.execute(
             "INSERT INTO SESSION
-                (NAME, START_TIME, END_TIME, CREATED, UPDATED)
-            VALUES (?1, ?2, ?3, ?4, ?5)",
+                (NAME, DESCRIPTION, CREATED, UPDATED)
+            VALUES (?1, ?2, ?3, ?4)",
             params![
                 &self.name,
-                &self.start_time,
-                &self.end_time,
+                &self.description,
                 &self.created,
                 &self.updated,
             ],
@@ -54,37 +53,62 @@ impl Session {
     }
 
     pub fn retrieve(conn: &Connection) -> Result<Vec<Session>> {
-        let mut stmt = conn.prepare("SELECT * FROM SESSION")?;
+        let mut stmt = conn.prepare("SELECT ID, NAME, DESCRIPTION, CREATED::VARCHAR, UPDATED::VARCHAR FROM SESSION")?;
 
         let sessions: Result<Vec<Session>> = stmt
             .query_map([], |row| {
                 Ok(Session {
                     id: row.get(0)?,
                     name: row.get(1)?,
-                    start_time: row.get(2)?,
-                    end_time: row.get(3)?,
-                    created: row.get(4)?,
-                    updated: row.get(5)?,
+                    description: row.get(2)?,
+                    created: row.get(3)?,
+                    updated: row.get(4)?,
                 })
             })?
             .collect();
         sessions
     }
 
+    pub fn retrieve_session_decks(conn: &Connection, session_id: usize) -> Result<Vec<Deck>> {
+
+        let mut stmt = conn.prepare(
+            "SELECT d.ID, d.SUBJECT_ID, d.NAME, d.TAGS::VARCHAR, d.DESCRIPTION, 
+                    d.CREATED::VARCHAR, d.UPDATED::VARCHAR
+             FROM DECK d
+             INNER JOIN SESSION_DECK sd ON sd.DECK_ID = d.ID
+             WHERE sd.SESSION_ID = ?1"
+        )?;
+
+        let decks: Result<Vec<Deck>> = stmt
+            .query_map(params![session_id], |row| {
+                let tags_raw: String = row.get(3)?;
+                Ok(Deck {
+                    id: row.get(0)?,
+                    subject_id: row.get(1)?,
+                    name: row.get(2)?,
+                    tags: Deck::parse_tags(tags_raw),
+                    description: row.get(4)?,
+                    created: row.get(5)?,
+                    updated: row.get(6)?,
+                })
+            })?
+            .collect();
+
+        decks
+    }
+
     pub fn update(&mut self, conn: &Connection, id: &str) -> Result<()> {
-        self.updated = chrono::offset::Local::now().to_string();
+        self.updated = chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
 
         let result = conn.execute(
             "UPDATE SESSION
                 SET NAME=?1,
-                    START_TIME=?2,
-                    END_TIME=?3,
-                    UPDATED=?4
-                WHERE ID=?5",
+                    DESCRIPTION=?2,
+                    UPDATED=?3
+                WHERE ID=?4",
             params![
                 &self.name,
-                &self.start_time,
-                &self.end_time,
+                &self.description,
                 &self.updated,
                 id,
             ],
@@ -118,24 +142,82 @@ impl Session {
 
     pub fn view(conn: &Connection, id: &str) -> Result<Session> {
         conn.query_row(
-            "SELECT * FROM SESSION WHERE ID = ?",
+            "SELECT ID, NAME, DESCRIPTION, CREATED::VARCHAR, UPDATED::VARCHAR FROM SESSION WHERE ID = ?",
             &[&id],
             |row| {
                 Ok(Session {
                     id: row.get(0)?,
                     name: row.get(1)?,
-                    start_time: row.get(2)?,
-                    end_time: row.get(3)?,
-                    created: row.get(4)?,
-                    updated: row.get(5)?,
+                    description: row.get(2)?,
+                    created: row.get(3)?,
+                    updated: row.get(4)?,
                 })
             }
         )
     }
 
+    pub fn add_deck_to_session(&mut self, conn: &Connection, deck_id: &str) -> Result<String> {
+        
+        let result = conn.execute(
+            "INSERT INTO SESSION_DECK
+                (SESSION_ID, DECK_ID, CREATED, UPDATED)
+            VALUES (?1, ?2, ?3, ?4)",
+            params![
+                &self.id,
+                deck_id,
+                &self.created,
+                &self.updated,
+            ],
+        );
+
+        match result {
+            Ok(_) => {
+                println!("Successfully added deck to session");
+                Ok(("Success").to_string())
+            },
+            Err(duckdb::Error::DuckDBFailure(err, msg)) => {
+                let msg_str = msg.as_deref().unwrap_or("");
+                if msg_str.contains("violates unique constraint") {
+                    println!("Deck already associated with session, skipping");
+                    Ok("Duplicate".to_string())
+                } else {
+                    println!("[session::add_deck_to_session] duckdb error {:?}", msg_str);
+                    Err(duckdb::Error::DuckDBFailure(err, msg))
+                }
+            },
+            Err(err) => {
+                println!("[session::add_deck_to_session] duckdb error {:?}", err);
+                Err(err)
+            }
+        }
+    }
+
+    pub fn remove_deck_from_session(&mut self, conn: &Connection, deck_id: &str) -> Result<String> {
+        
+        let result = conn.execute(
+            "DELETE FROM SESSION_DECK
+                WHERE SESSION_ID = ?1 AND DECK_ID = ?2",
+            params![
+                &self.id,
+                deck_id,
+            ],
+        );
+
+        match result {
+            Ok(_) => {
+                println!("Successfully removed deck from session");
+                Ok(("Success").to_string())
+            },
+            Err(err) => {
+                println!("[session::remove_deck_from_session] duckdb error {:?}", err);
+                Err(err)
+            }
+        }
+    }
+
     pub fn search(conn: &Connection, search_term: &str) -> Result<Vec<Session>> {
         let query = format!(
-            "SELECT * FROM SESSION WHERE NAME LIKE '%{}%'",
+            "SELECT ID, NAME, DESCRIPTION, CREATED::VARCHAR, UPDATED::VARCHAR FROM SESSION WHERE NAME LIKE '%{}%'",
             search_term
         );
         let mut stmt = conn.prepare(&query)?;
@@ -145,14 +227,15 @@ impl Session {
                 Ok(Session {
                     id: row.get(0)?,
                     name: row.get(1)?,
-                    start_time: row.get(2)?,
-                    end_time: row.get(3)?,
-                    created: row.get(4)?,
-                    updated: row.get(5)?,
+                    description: row.get(2)?,
+                    created: row.get(3)?,
+                    updated: row.get(4)?,
                 })
             })?
             .collect();
         sessions
     }
+
+
 
 }

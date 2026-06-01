@@ -193,7 +193,7 @@ async function editAnswer() {
         '',
         openEndedAnswerKeywords.value 
     );
-    loadData();
+    loadData(question.value.id);
   }
 
   if (answerType.value === 'Ordered Sequence') {
@@ -208,7 +208,7 @@ async function editAnswer() {
       preservedAnswerOrder,
       '',
     );
-    loadData();
+    loadData(question.value.id);
   }
 
   if (answerType.value === 'Multiple Choice') {
@@ -220,7 +220,7 @@ async function editAnswer() {
         '',
         false
       );
-      loadData();
+      loadData(question.value.id);
       multipleChoiceAnswer.value = '';
     }
 
@@ -229,7 +229,7 @@ async function editAnswer() {
       await multipleChoiceAnswerStore.deleteMultipleChoiceAnswer(
         `${multipleChoiceAnswer.id}`
       );
-      loadData();
+      loadData(question.value.id);
       multipleChoiceDeleteIndex.value = null;
     }
 
@@ -245,7 +245,7 @@ async function editAnswer() {
           item.is_correct
         );
       }
-      loadData();
+      loadData(question.value.id);
       updatedMultipleChoiceAnswers.value = [];
     }
 

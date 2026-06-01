@@ -17,10 +17,10 @@
       
     </div>
     <br />
-    <SearchComponent text="Search review sessions" :onClick="search" />
+    <SearchComponent text="Search review sessions" @search="search" />
     <br />
     <SessionReviewTable />
-    <HoverButton icon="fa-solid fa-play" :onClickHandler="createSession" />
+    <HoverButton icon="fa-solid fa-play" @click="createSession" />
   </div>
 </template>
 

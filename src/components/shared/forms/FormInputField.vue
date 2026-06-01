@@ -1,30 +1,30 @@
 <template>
   <input
     type="text"
-    :value="text"
+    :value="props.text"
     id="search-term"
     name="search-item"
-    :placeholder="placeholder"
-    @input="$emit('update:text', $event.target.value)"
+    :placeholder="props.placeholder"
+    @input="emit('update:text', $event.target.value)"
     class="focus:outline-none focus:ring-0 focus:shadow-none"
   />
 </template>
 
-<script>
-export default {
-  name: "FormInputField",
-  props: {
-    text: {
-      type: String,
-      required: true,
-    },
-    placeholder: {
-      type: String,
-      required: true,
-    },
+<script setup>
+
+const props = defineProps({
+  text: {
+    type: String,
+    required: false,
+    default: '', 
   },
-  emits: ["update:text"],
-};
+  placeholder: {
+    type: String,
+    required: true,
+  },
+});
+
+const emit = defineEmits(["update:text"]);
 </script>
 
 <style scoped>

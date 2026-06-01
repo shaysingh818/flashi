@@ -13,7 +13,7 @@
 
     <SubjectListView />
     
-    <HoverButton icon="fa-solid fa-plus" :onClickHandler="createSubject" />
+    <HoverButton icon="fa-solid fa-plus" @click="createSubject" />
 
   </div>
   

@@ -19,22 +19,22 @@
       <div class="flex row gap-4 trailing centered-all">
         <p :style="{ color: '#F97316' }">{{ dateUpdated }}</p>
         <font-awesome-icon
-          v-if="actionType === 'view'"
+          v-if="props.actionType === 'view'"
           @click.stop="showDropdown"
           icon="fa-solid fa-ellipsis-vertical"
           class="trailing-icon-style"
         />
 
         <font-awesome-icon
-          v-if="actionType === 'add'"
-          @click.stop="showDropdown"
+          v-if="props.actionType === 'add'"
+          @click.stop="addDeckToSession"
           icon="fa-solid fa-plus"
           class="trailing-icon-style"
         />
 
         <font-awesome-icon
-          v-if="actionType === 'remove'"
-          @click.stop="showDropdown"
+          v-if="props.actionType === 'remove'"
+          @click.stop="removeDeckFromSession"
           icon="fa-solid fa-x"
           class="trailing-icon-style"
         />
@@ -115,6 +115,7 @@ const props = defineProps({
 const router = useRouter();
 const isDropdownOpen = ref(false);
 const showDialog = ref(false);
+const emit = defineEmits(["deck:add_to_session", "deck:remove_from_session"]);
 
 function showDropdown() {
   isDropdownOpen.value = !isDropdownOpen.value;
@@ -139,6 +140,15 @@ function editDeck() {
 function deckDetail() {
   router.push({ path: `/deck/detail/${props.id}` });
 }
+
+function addDeckToSession() {
+  emit("deck:add_to_session", props.id); 
+}
+
+function removeDeckFromSession() {
+  emit("deck:remove_from_session", props.id); 
+}
+
 </script>
 
 <style scoped>

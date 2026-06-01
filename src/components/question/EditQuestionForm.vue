@@ -16,8 +16,8 @@
     
     <br />
     <div class="flex row-center gap-4" style="height: 35px">
-      <SecondaryButton :onClickHandler="props.closeFormHandler" text="Discard" />
-      <PrimaryButton :onClickHandler="submitQuestionText" text="Submit" />
+      <SecondaryButton @click="props.closeFormHandler" text="Discard" />
+      <PrimaryButton @click="submitQuestionText" text="Submit" />
     </div>
   </div>
 </template>

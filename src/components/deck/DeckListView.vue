@@ -1,5 +1,5 @@
 <template>
-  <div class="deck-list-view" v-for="(item, index) in deckStore.decks" :key="index">
+  <div class="deck-list-view" v-for="(item, index) in props.decks" :key="index">
     <DeckListItem
       :id="`${item.id}`"
       :subjectId="`${item.subject_id}`"
@@ -7,30 +7,44 @@
       :description="item.description"      
       :tags="item.tags"
       :dateUpdated="item.updated"
-      :actionType="actionType"
+      :actionType="props.actionType"
+      @deck:add_to_session="addDeckToSession($event)"
+      @deck:remove_from_session="removeDeckFromSession($event)"
     />
   </div>
 </template>
 
 <script setup>
 import DeckListItem from "./DeckListItem.vue";
-import { deckStore } from "../../api/Deck";
-import { onMounted } from "vue";
+import { deckStore, sessionStore } from "../../api";
+
 
 const props = defineProps({
+  decks: {
+    type: Array,
+    default: () => [],
+  },
   actionType: {
     type: String,
     default: () => "view",
-  },  
-  subjectId: {
+  }, 
+  sessionId: {
     type: String,
-    required: true,
+    required: false,
   },
 });
 
-onMounted(async () => {
-  await deckStore.loadDecks(`${props.subjectId}`);
-});
+
+const emit = defineEmits(["update:items"]);
+
+async function addDeckToSession(deckId) {
+  await sessionStore.addDeckToSession(props.sessionId, deckId);
+}
+
+async function removeDeckFromSession(deckId) {
+  await sessionStore.removeDeckFromSession(props.sessionId, deckId);
+  emit("update:items", deckId); 
+}
 
 </script>
 

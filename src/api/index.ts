@@ -5,3 +5,4 @@ export * from './OpenEndedAnswer';
 export * from './OrderedSequenceAnswer';
 export * from './Question';
 export * from './Subject';
+export * from './Session'; 

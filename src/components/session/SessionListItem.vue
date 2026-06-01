@@ -20,40 +20,48 @@
         class="trailing-icon-style"
       />
 
-      <div v-if="isDropdownOpen" class="flex col absolute gap-2 p-2 transform-50-80 rounded-1" style="background-color: rgb(28 25 23);">
-        <div @click.stop="editSession" class="flex row left-all gap-2">
-          <font-awesome-icon
-            icon="fa-solid fa-pen-to-square"
-            class="dropdown-icon-style"
-          />
-          <p>Edit Session</p>
-        </div>
-
-        <div @click.stop="deleteSession" class="flex row left-all gap-2">
-          <font-awesome-icon icon="fa-solid fa-x" class="dropdown-icon-style" />
-          <p>Delete Session</p>
-        </div>
+      <div 
+        v-if="isDropdownOpen" 
+        class="flex col absolute gap-2 p-2 transform-50-80 rounded-1" 
+        style="background-color: rgb(28 25 23);"
+      >
+        <DropDownItem
+          icon="fa-solid fa-pen-to-square"
+          text="Edit Session"
+          :onClickHandler="editSession"
+        />
+        <DropDownItem
+          icon="fa-solid fa-x"
+          text="Delete Session"
+          :onClickHandler="deleteSession"
+        />
       </div>
+
       <Teleport to="body">
         <ConfirmDialog
           v-if="showDialog"
           text="Are you sure you want to delete this session?"
           @close="showDialog = false"
-          @confirm="showDialog = false"
+          @confirm="confirmDelete"
         />
       </Teleport>
     </div>
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref } from "vue";
+import { sessionStore } from  "../../api"; 
+import { useRouter } from "vue-router";
 import { svgPathData } from "@fortawesome/free-solid-svg-icons/faRotateRight";
 import ConfirmDialog from "../shared/ConfirmDialog.vue";
+import DropDownItem from "../shared/navigation/DropDownItem.vue";
 
-export default {
-  name: "SubjectListItem",
-  components: { ConfirmDialog },
-  props: {
+const props = defineProps({ 
+    id: {
+      type: String,
+      required: true,
+    },
     title: {
       type: String,
       required: true,
@@ -66,30 +74,34 @@ export default {
       type: String,
       required: true,
     },
-  },
-  data() {
-    return {
-      isDropdownOpen: false,
-      showDialog: false,
-    };
-  },
-  methods: {
-    showDropdown() {
-      console.log("Show dropdown", this.isDropdownOpen);
-      this.isDropdownOpen = !this.isDropdownOpen;
-    },
-    deleteSession() {
-      this.isDropdownOpen = false; // close the dropdown too
-      this.showDialog = true;
-    },
-    editSession() {
-      this.$router.push({ path: "/sessions/edit" });
-    },
-    sessionDetail() {
-      this.$router.push({ path: "/sessions/detail" });
-    },
-  },
-};
+});
+
+const router = useRouter();
+const showDialog = ref(false);
+const isDropdownOpen = ref(false);
+
+function showDropdown() {
+  isDropdownOpen.value = !isDropdownOpen.value;
+}
+
+async function confirmDelete() {
+  const result = await sessionStore.deleteSession(`${props.id}`);
+  await sessionStore.loadSessions();
+  showDialog.value = false;
+}
+
+function deleteSession() {
+  isDropdownOpen.value = false;
+  showDialog.value = true;
+}
+
+function editSession() {
+  router.push({ path: `/sessions/edit/${props.id}` });
+}
+
+function sessionDetail() {
+  router.push({ path: `/sessions/detail/${props.id}` });
+}
 </script>
 
 <style scoped>

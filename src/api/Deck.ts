@@ -59,12 +59,21 @@ export const deckStore = reactive({
     return dbPath;
   },
 
-  async loadDecks(subjectId: string) {
+  async loadDecks() {
     try { 
       const dbPath = await this.getDbPath();
-      const decks = await invoke<Deck[]>('view_decks', { dbPath, subjectId });
+      const decks = await invoke<Deck[]>('view_decks', { dbPath });
       this.decks = decks;
-      console.log(this.decks);
+    } catch (error) {
+      console.error("Error loading decks: ", error);
+    }
+  },
+
+  async loadDecksBySubject(subjectId: string) {
+    try { 
+      const dbPath = await this.getDbPath();
+      const decks = await invoke<Deck[]>('view_decks_by_subject', { dbPath, subjectId });
+      this.decks = decks;
     } catch (error) {
       console.error("Error loading decks: ", error);
     }

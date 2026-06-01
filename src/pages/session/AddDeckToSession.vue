@@ -1,29 +1,36 @@
 <template>
   <div class="flex col-center w-100">
-    <BackBar text="Add Deck to session name" />
+    <BackBar text="Add deck to session" />
     <br />
-    <SearchComponent text="Search decks to add" :onClick="search" />
+    <SearchComponent text="Search decks to add" @search="search" />
     <br/>
-    <DeckListView actionType="add"/>
+    <DeckListView 
+      :decks="deckStore.decks"
+      :sessionId="sessionId"
+      actionType="add"
+    />
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted } from "vue"; 
+import { useRoute } from "vue-router";
+import { deckStore } from "../../api"; 
 import SearchComponent from '../../components/shared/forms/SearchComponent.vue';
 import DeckListView from '../../components/deck/DeckListView.vue';
 import BackBar from '../../components/shared/navigation/BackBar.vue';
 
-export default {
-  name: "AddDeckToSession",
-  components: {SearchComponent, DeckListView, BackBar},
-  methods: {
-    questionDetail() {
-      this.$router.push({ path: "/question/view" });
-    },
-    search(){
-      console.log("Test"); 
-    }
-  }
-};
+
+const route = useRoute(); 
+const sessionId = route.params.id;
+
+onMounted(async () => {
+  await deckStore.loadDecks();
+});
+
+async function search(searchTerm) {
+  await deckStore.searchDecks(searchTerm);
+}
+
 </script>
 

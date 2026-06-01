@@ -2,25 +2,20 @@
   <button @click="handleClick" type="button">{{ text }}</button>
 </template>
 
-<script>
-export default {
-  name: "PrimaryButton",
-  props: {
-    text: {
-      type: String,
-      required: true,
-    },
-    onClickHandler: {
-      type: Function,
-      required: true,
-    },
+<script setup>
+
+const props = defineProps({
+  text: {
+    type: String,
+    required: true,
   },
-  methods: {
-    handleClick() {
-      this.onClickHandler();
-    },
-  },
-};
+});
+
+const emit = defineEmits(['click']);
+
+async function handleClick() {
+  emit('click');
+}
 </script>
 
 <style scoped>

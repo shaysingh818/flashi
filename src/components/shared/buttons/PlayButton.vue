@@ -4,25 +4,20 @@
   </button>
 </template>
 
-<script>
-export default {
-  name: 'PlayButton',
-  props: {
-    icon: {
-      type: String,
-      required: true,
-    },
-    onClickHandler: {
-      type: Function,
-      required: true,
-    },
+<script setup>
+
+const props = defineProps({
+  icon: {
+    type: String,
+    required: true,
   },
-  methods: {
-    handleClick() {
-      this.onClickHandler();
-    }
-  }
-} 
+});
+
+const emit = defineEmits(['click']);
+
+async function handleClick() {
+  emit('click');
+}
 </script>
 
 <style scoped>

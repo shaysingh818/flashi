@@ -80,7 +80,27 @@ impl Deck {
         }
     }
 
-    pub fn retrieve(conn: &Connection, subject_id: &str) -> Result<Vec<Deck>> {
+    pub fn retrieve(conn: &Connection) -> Result<Vec<Deck>> {
+        let mut stmt = conn.prepare("SELECT ID, SUBJECT_ID, NAME, TAGS::VARCHAR, DESCRIPTION, CREATED::VARCHAR, UPDATED::VARCHAR FROM DECK")?;
+
+        let decks: Result<Vec<Deck>> = stmt
+            .query_map([], |row| {
+                let tags_raw: String = row.get(3)?;
+                Ok(Deck {
+                    id: row.get(0)?,
+                    subject_id: row.get(1)?,
+                    name: row.get(2)?,
+                    tags: Self::parse_tags(tags_raw),
+                    description: row.get(4)?,
+                    created: row.get(5)?,
+                    updated: row.get(6)?,
+                })
+            })?
+            .collect();
+        decks
+    }
+
+    pub fn retrieve_by_subject(conn: &Connection, subject_id: &str) -> Result<Vec<Deck>> {
         let mut stmt = conn.prepare("SELECT ID, SUBJECT_ID, NAME, TAGS::VARCHAR, DESCRIPTION, CREATED::VARCHAR, UPDATED::VARCHAR FROM DECK WHERE SUBJECT_ID = ?")?;
 
         let decks: Result<Vec<Deck>> = stmt

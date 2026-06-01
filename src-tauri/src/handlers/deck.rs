@@ -63,7 +63,7 @@ pub fn edit_deck(deck_id: &str, name: &str, description: &str, tags: Vec<String>
 }
 
 #[tauri::command]
-pub fn view_decks(db_path: &str, subject_id: &str) -> Vec<Deck> {
+pub fn view_decks(db_path: &str) -> Vec<Deck> {
   
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
@@ -73,7 +73,27 @@ pub fn view_decks(db_path: &str, subject_id: &str) -> Vec<Deck> {
         }
     };
 
-    match Deck::retrieve(&conn, subject_id) {
+    match Deck::retrieve(&conn) {
+        Ok(decks) => decks,
+        Err(e) => {
+            println!("{:?}", e);
+            Vec::new()
+        }
+    }
+}
+
+#[tauri::command]
+pub fn view_decks_by_subject(db_path: &str, subject_id: &str) -> Vec<Deck> {
+  
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return Vec::new();
+        }
+    };
+
+    match Deck::retrieve_by_subject(&conn, subject_id) {
         Ok(decks) => decks,
         Err(e) => {
             println!("{:?}", e);

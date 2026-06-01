@@ -37,8 +37,8 @@
 
         <br/>
         <div class="flex row-center gap-4 p-10" style="height: 30px">
-          <SecondaryButton :onClickHandler="showDropdown" text="Discard" />
-          <PrimaryButton :onClickHandler="showDropdown" text="Submit" />
+          <SecondaryButton @click="showDropdown" text="Discard" />
+          <PrimaryButton @click="showDropdown" text="Submit" />
         </div>
       </div>
     </Teleport>
