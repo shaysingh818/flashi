@@ -144,3 +144,25 @@ pub fn delete_open_ended_answer(db_path: &str, id: &str) -> String {
         }
     }
 }
+
+#[tauri::command]
+pub fn validate_open_ended_answer(id: &str, answer: &str, db_path: &str) -> (bool, String) {
+
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return (false, e.to_string()); 
+        }
+    };
+
+    match OpenEndedAnswer::view(&conn, id) {
+        Ok(mut open_ended) => {
+            return open_ended.validate(answer);
+        }
+        Err(e) => {
+            let msg = format!("Error viewing open ended answer for validation: {:?}", e);
+            (false, msg.to_string())
+        }
+    }
+}

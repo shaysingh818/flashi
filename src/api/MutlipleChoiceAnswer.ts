@@ -138,5 +138,10 @@ export const multipleChoiceStore = reactive({
     const dbPath = await this.getDbPath();    
     return await invoke("delete_multiple_choice", { dbPath, id });  
   },
+
+  async validateMultipleChoice(id: string, answer: string[]): Promise<[boolean, string]> {    
+    const dbPath = await this.getDbPath();    
+    return await invoke("validate_multiple_choice_answer", { dbPath, id, answer });  
+  },
  
 })

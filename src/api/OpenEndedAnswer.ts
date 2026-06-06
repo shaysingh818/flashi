@@ -85,5 +85,11 @@ export const openEndedStore = reactive({
     const dbPath = await this.getDbPath();    
     return await invoke("delete_open_ended_answer", { dbPath, id });  
   },
+
+  async validateOpenEndedAnswer(id: string, answer: string): Promise<[boolean, string]> {    
+    const dbPath = await this.getDbPath();    
+    return await invoke("validate_open_ended_answer", { dbPath, id, answer });  
+  },
+
  
 })

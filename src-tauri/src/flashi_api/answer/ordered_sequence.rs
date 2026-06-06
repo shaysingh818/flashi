@@ -189,4 +189,17 @@ impl OrderedSequenceAnswer {
         ordered_sequence_answers
     }
 
+    pub fn validate(&mut self, answer_sequence: Vec<String>) -> (bool, String) {
+
+        let mut result = true;
+        let mut explanation = String::new();
+        
+        if answer_sequence == self.sequence {
+            (true, String::from("Correct!"))
+        } else {
+            (false, format!("{:?}", self.sequence))
+        }
+
+    }
+
 }

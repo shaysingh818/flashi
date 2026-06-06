@@ -60,6 +60,7 @@ use crate::handlers::answer::multiple_choice::{
     view_multiple_choice,
     view_multiple_choice_answer, 
     view_multiple_choice_answers,
+    validate_multiple_choice_answer,
 };
 
 use crate::handlers::answer::open_ended::{
@@ -69,6 +70,7 @@ use crate::handlers::answer::open_ended::{
     search_open_ended_answers,
     view_open_ended_answer, 
     view_open_ended_answers,
+    validate_open_ended_answer,
 };
 
 use crate::handlers::answer::ordered_sequence::{
@@ -78,6 +80,7 @@ use crate::handlers::answer::ordered_sequence::{
     search_ordered_sequence_answers,
     view_ordered_sequence_answer, 
     view_ordered_sequence_answers,
+    validate_ordered_sequence_answer,
 };
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -139,6 +142,7 @@ pub fn run() {
             view_multiple_choice,
             view_multiple_choice_answer, 
             view_multiple_choice_answers,
+            validate_multiple_choice_answer,
 
             /* Open Ended  */
             create_open_ended_answer, 
@@ -147,6 +151,7 @@ pub fn run() {
             search_open_ended_answers,
             view_open_ended_answer, 
             view_open_ended_answers,
+            validate_open_ended_answer,
 
             /* Ordered Sequence */
             create_ordered_sequence_answer, 
@@ -155,6 +160,7 @@ pub fn run() {
             search_ordered_sequence_answers,
             view_ordered_sequence_answer, 
             view_ordered_sequence_answers,
+            validate_ordered_sequence_answer,
           
 
         ])
