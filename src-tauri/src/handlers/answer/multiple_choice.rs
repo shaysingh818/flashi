@@ -198,3 +198,26 @@ pub fn delete_multiple_choice_answer(db_path: &str, id: &str) -> String {
         }
     }
 }
+
+
+#[tauri::command]
+pub fn validate_multiple_choice_answer(db_path: &str, id: &str, answer: Vec<String>) -> (bool, String) {
+
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return (false, e.to_string()); 
+        }
+    };
+
+    match MultipleChoice::view(&conn, id) {
+        Ok(mut multiple_choice) => {
+            return multiple_choice.validate(&conn, answer).unwrap();
+        }
+        Err(e) => {
+            let msg = format!("Error viewing ordered sequence answer for validation: {:?}", e);
+            (false, msg.to_string())
+        }
+    }
+}

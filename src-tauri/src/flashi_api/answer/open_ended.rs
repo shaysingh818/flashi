@@ -196,4 +196,31 @@ impl OpenEndedAnswer {
         open_ended_answers
     }
 
+    pub fn validate(&mut self, answer_text: &str) -> (bool, String) {
+
+        let mut result = true;
+        let mut explanation = String::new(); 
+        let mut total_keywords = self.keywords.len();
+        let mut keywords_matched = Vec::new();
+        let mut keywords_missing = Vec::new();
+
+        for keyword in &self.keywords {
+            match answer_text.contains(&*keyword) {
+                false => {
+                    result = false;
+                    keywords_missing.push(keyword);
+                },
+                true => {
+                    keywords_matched.push(keyword);
+                }
+            }
+        }
+
+        if !result {
+            explanation = format!("Answer is missing these keywords: {:?}", keywords_missing);
+        }
+
+        (result, explanation.to_string())
+    }
+
 }

@@ -79,5 +79,10 @@ export const orderedSequenceStore = reactive({
     const dbPath = await this.getDbPath();    
     return await invoke("delete_ordered_sequence_answer", { dbPath, id });  
   },
+
+  async validateOrderedSequenceAnswer(id: string, answer: string[]): Promise<[boolean, string]> {    
+    const dbPath = await this.getDbPath();    
+    return await invoke("validate_ordered_sequence_answer", { dbPath, id, answer });  
+  },
  
 })

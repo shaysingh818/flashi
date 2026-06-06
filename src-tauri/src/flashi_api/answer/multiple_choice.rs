@@ -208,5 +208,27 @@ impl MultipleChoice {
             })
         })
     }
+
+    pub fn validate(&mut self, conn: &Connection, selected_answers: Vec<String>) -> Result<(bool, String)> {
+
+        let query = "SELECT ID::VARCHAR FROM MULTIPLE_CHOICE_ANSWER WHERE ANSWER_ID = ? AND IS_CORRECT = TRUE";
+        
+        let mut stmt  = conn.prepare(query)?;
+        let correct_answers: Vec<String> = stmt
+            .query_map(&[&self.answer_id], |row| row.get(0))?
+            .filter_map(|r| r.ok())
+            .collect();
+
+        println!("Answer id: {:?}", self.answer_id); 
+        println!("Correct answers: {:?}", correct_answers);
+        println!("Selected answers: {:?}", selected_answers); 
+
+        if selected_answers == correct_answers {
+            Ok((true, String::from("Correct!")))
+        } else {
+            Ok((false, String::from("Missing one or more selected answers"))) 
+        }
+
+    }
   
 }

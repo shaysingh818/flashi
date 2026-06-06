@@ -109,7 +109,15 @@ const editQuestionOpen = ref(false);
 const isDropdownOpen = ref(false);
 
 
-function nextQuestion() {
+async function nextQuestion() {
+
+  /*
+  const result = await multipleChoiceStore.validateMultipleChoice(
+    `${question.value.answer_id}`, 
+    ["20"]
+  );
+  console.log(result); */
+
   questionStore.cycleNextQuestion();
   const currId = questionStore.questions[questionStore.getCurrQuestion()].id;
   router.push({path: `/question/view/${currId}`, replace: true});
