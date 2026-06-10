@@ -1,6 +1,6 @@
 use chrono;
 use serde::{Deserialize, Serialize};
-use duckdb::{params, Connection, Result}; 
+use duckdb::{params, Connection, Result, OptionalExt}; 
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -19,7 +19,7 @@ pub struct SessionReview {
 impl SessionReview {
 
     pub fn new(session_id: usize) -> SessionReview {
-        let now = chrono::offset::Local::now().to_string();
+        let now = chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();        
         SessionReview {
             id: 0,
             session_id: session_id,
@@ -33,11 +33,12 @@ impl SessionReview {
         }
     }
 
-    pub fn insert(&mut self, conn: &Connection) -> Result<()> {
-        let result = conn.execute(
+    pub fn insert(&mut self, conn: &Connection) -> Result<SessionReview> {
+        conn.query_row(
             "INSERT INTO SESSION_REVIEW
                 (SESSION_ID, COMPLETE, CYCLE, CURRENT_QUESTION, START_TIME, END_TIME, CREATED, UPDATED)
-            VALUES (?1, ?2, ?3, ?4, ?5)",
+            VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
+            RETURNING ID, SESSION_ID, COMPLETE, CYCLE, CURRENT_QUESTION, START_TIME::VARCHAR, END_TIME::VARCHAR, CREATED::VARCHAR, UPDATED::VARCHAR",
             params![
                 &self.session_id,
                 &self.complete,
@@ -48,22 +49,52 @@ impl SessionReview {
                 &self.created, 
                 &self.updated
             ],
-        );
-
-        match result {
-            Ok(_) => {
-                println!("Successfully inserted session review");
-                Ok(())
+            |row| {
+                Ok(SessionReview {
+                    id: row.get(0)?,
+                    session_id: row.get(1)?, 
+                    complete: row.get(2)?,
+                    cycle: row.get(3)?,
+                    current_question: row.get(4)?,
+                    start_time: row.get(5)?, 
+                    end_time: row.get(6)?,
+                    created: row.get(7)?, 
+                    updated: row.get(8)?,
+                })
             },
-            Err(err) => {
-                println!("[session_review::insert] duckdb error {:?}", err);
-                Err(err)
-            }
-        }
+        )
     }
 
-    pub fn retrieve(conn: &Connection) -> Result<Vec<SessionReview>> {
-        let mut stmt = conn.prepare("SELECT * FROM SESSION_REVIEW")?;
+    pub fn check_complete_sessions(&mut self, conn: &Connection) -> Result<i64> {
+        let query = "
+        SELECT 
+            ID
+        FROM SESSION_REVIEW WHERE COMPLETE = FALSE AND SESSION_ID = ?";
+
+        let mut stmt = conn.prepare(query)?; 
+        let session_id: Option<i64> = stmt.query_row(
+            params![self.session_id],
+            |row| row.get(0)
+        ).optional()?;
+
+        Ok(session_id.unwrap_or(-1))
+    }
+
+    pub fn retrieve(conn: &Connection, session_id: &str) -> Result<Vec<SessionReview>> {
+
+        let query = "
+            SELECT
+                ID,
+                SESSION_ID,
+                COMPLETE,
+                CYCLE,
+                CURRENT_QUESTION,
+                START_TIME::VARCHAR,
+                END_TIME::VARCHAR,
+                CREATED::VARCHAR,
+                UPDATED::VARCHAR
+            FROM SESSION_REVIEW WHERE SESSION_ID = ?";
+        let mut stmt = conn.prepare(query)?;
 
         let sessions: Result<Vec<SessionReview>> = stmt
             .query_map([], |row| {
@@ -136,7 +167,16 @@ impl SessionReview {
 
     pub fn view(conn: &Connection, id: &str) -> Result<SessionReview> {
         conn.query_row(
-            "SELECT * FROM SESSION_REVIEW WHERE ID = ?",
+            "SELECT 
+                ID, 
+                SESSION_ID, 
+                COMPLETE, 
+                CYCLE, 
+                CURRENT_QUESTION, 
+                START_TIME::VARCHAR, 
+                END_TIME::VARCHAR, 
+                CREATED::VARCHAR, 
+                UPDATED::VARCHAR FROM SESSION_REVIEW WHERE ID = ?",
             &[&id],
             |row| {
                 Ok(SessionReview {
@@ -152,6 +192,49 @@ impl SessionReview {
                 })
             }
         )
+    }
+
+    pub fn generate_questions(&mut self, conn: &Connection) -> Result<()> {
+        let query = "
+            WITH DECK_IDS AS (
+	            SELECT 
+                    DECK_ID 
+                FROM SESSION_DECK WHERE SESSION_ID = ?
+            ),
+            QUESTIONS AS (
+	            SELECT 
+                ID, 
+                DECK_ID, 
+                CORRECT, 
+                INCORRECT, 
+                REVIEWED 
+            FROM QUESTION 
+            )
+            SELECT 
+                Q.ID
+            FROM QUESTIONS AS Q
+            LEFT JOIN DECK_IDS AS DIDS
+            ON Q.DECK_ID = DIDS.DECK_ID
+            ORDER BY Q.CORRECT DESC";
+
+        let mut stmt = conn.prepare(query)?; 
+        
+        let question_ids: Vec<usize> = stmt
+            .query_map(&[&self.session_id], |row| row.get(0))?
+            .filter_map(|r| r.ok())
+            .collect();
+
+        for (idx, question_id) in question_ids.into_iter().enumerate() {
+            let mut session_question = SessionReviewQuestion::new(
+                self.id, 
+                question_id,
+                idx
+            );
+            session_question.insert(conn);
+        }
+        
+        Ok(())
+
     }
 
 }
@@ -173,7 +256,7 @@ pub struct SessionReviewQuestion {
 impl SessionReviewQuestion {
 
     pub fn new(session_review_id: usize, question_id: usize, priority_index: usize) -> SessionReviewQuestion {
-        let now = chrono::offset::Local::now().to_string();
+        let now = chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();        
         SessionReviewQuestion {
             id: 0,
             session_review_id: session_review_id,
@@ -189,7 +272,7 @@ impl SessionReviewQuestion {
 
     pub fn insert(&mut self, conn: &Connection) -> Result<()> {
         let result = conn.execute(
-            "INSERT INTO SESSION_REVIEW
+            "INSERT INTO SESSION_REVIEW_QUESTION
                 (
                     SESSION_REVIEW_ID, 
                     QUESTION_ID, 
@@ -230,6 +313,42 @@ impl SessionReviewQuestion {
 
         let sessions: Result<Vec<SessionReviewQuestion>> = stmt
             .query_map([], |row| {
+                Ok(SessionReviewQuestion {
+                    id: row.get(0)?,
+                    session_review_id: row.get(1)?, 
+                    question_id: row.get(2)?,
+                    priority_index: row.get(3)?,
+                    incorrect_count: row.get(4)?, 
+                    review_count: row.get(5)?,
+                    active: row.get(6)?,
+                    created: row.get(7)?,
+                    updated: row.get(8)?,
+                })
+            })?
+            .collect();
+        sessions
+    }
+
+
+    pub fn retrieve_by_session_review_id(conn: &Connection, session_review_id: &str) -> Result<Vec<SessionReviewQuestion>> {
+
+        let query = "
+        SELECT 
+	        ID,
+            SESSION_REVIEW_ID,
+            QUESTION_ID,
+            PRIORITY_INDEX,
+            INCORRECT_COUNT,
+            REVIEW_COUNT,
+            ACTIVE,
+            UPDATED::VARCHAR,
+            CREATED::VARCHAR
+        FROM SESSION_REVIEW_QUESTION WHERE SESSION_REVIEW_ID = ? AND ACTIVE = TRUE ORDER BY PRIORITY_INDEX ASC";
+
+        let mut stmt = conn.prepare(query)?;
+
+        let sessions: Result<Vec<SessionReviewQuestion>> = stmt
+            .query_map([&session_review_id], |row| {
                 Ok(SessionReviewQuestion {
                     id: row.get(0)?,
                     session_review_id: row.get(1)?, 

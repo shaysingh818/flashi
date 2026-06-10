@@ -14,6 +14,13 @@ use crate::handlers::session::{
     view_session_decks,
 };
 
+use crate::handlers::session_review::{
+    create_session_review, 
+    edit_session_review, 
+    view_session_reviews,
+    view_session_review_questions,
+};
+
 use crate::handlers::subject::{
     create_subject, 
     delete_subject, 
@@ -99,6 +106,12 @@ pub fn run() {
             add_deck_to_session, 
             remove_deck_from_session,
             view_session_decks,
+
+            /* Session Review */ 
+            create_session_review, 
+            edit_session_review, 
+            view_session_reviews,
+            view_session_review_questions,
 
             /* Subjects  */
             create_subject, 

@@ -2,11 +2,11 @@
   <div class="flex col-center w-100">
     <br />
     <div
-      class="flex col-center rounded-2 gap-1 p-2"
+      class="flex col-center rounded-2 gap-1 p-4"
       style="background-color: rgb(28 25 23); width: 90%"
     >
       <div class="flex row-center gap-2">
-        <PlayButton icon="fa-solid fa-play" />
+        <PlayButton icon="fa-solid fa-play" @click="startSessionReview" />
         <p>Resume current session</p>
       </div>
 
@@ -17,35 +17,42 @@
       
     </div>
     <br />
-    <SearchComponent text="Search review sessions" @search="search" />
-    <br />
     <SessionReviewTable />
     <HoverButton icon="fa-solid fa-play" @click="createSession" />
   </div>
 </template>
 
-<script>
+<script setup>
+import { useRouter } from "vue-router";
+import { sessionReviewStore } from "../../api"; 
 import SessionReviewTable from "../../components/session/SessionReviewTable.vue";
 import HoverButton from "../../components/shared/buttons/HoverButton.vue";
 import PlayButton from "../../components/shared/buttons/PlayButton.vue";
 import SearchComponent from "../../components/shared/forms/SearchComponent.vue";
 import ProgressBar from "../../components/shared/progress/ProgressBar.vue";
 
-export default {
-  name: "SessionReview",
-  components: {
-    SessionReviewTable,
-    HoverButton,
-    PlayButton,
-    SearchComponent,
-    ProgressBar,
+
+const props = defineProps({
+  sessionId: {
+    type: String,
+    required: true,
   },
-  methods: {
-    questionDetail() {
-      this.$router.push({ path: "/question/view" });
-    },
-  },
-};
+});
+
+const router = useRouter();
+
+async function questionDetail() {
+  router.push({ path: "/question/view" });
+}
+
+async function startSessionReview() {
+  console.log("starting session review"); 
+  const session = await sessionReviewStore.createSessionReview(`${props.sessionId}`);
+  console.log(session);
+  await sessionReviewStore.loadSessionReviewQuestions(`${session.id}`);
+  console.log(sessionReviewStore.session_review_questions);
+}
+
 </script>
 
 <style scoped>

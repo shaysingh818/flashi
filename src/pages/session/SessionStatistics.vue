@@ -28,7 +28,7 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import MetricCard from "../../components/shared/analytics/MetricCard.vue";
 import DoughnutChart from "../../components/shared/analytics/DoughnutChart.vue";
 import PieChart from "../../components/shared/analytics/PieChart.vue";
@@ -36,20 +36,11 @@ import BarChart from "../../components/shared/analytics/BarChart.vue";
 import LineChart from "../../components/shared/analytics/LineChart.vue";
 import DataView from "../../components/shared/analytics/DataView.vue";
 
-export default {
-  name: "SessionStatistics",
-  components: {
-    MetricCard,
-    DoughnutChart,
-    PieChart,
-    BarChart,
-    LineChart,
-    DataView,
+
+const props = defineProps({
+  sessionId: {
+    type: String,
+    required: true,
   },
-  methods: {
-    test() {
-      console.log("test");
-    },
-  },
-};
+});
 </script>
