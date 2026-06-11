@@ -122,3 +122,27 @@ pub fn view_session_review_questions(db_path: &str, session_review_id: &str) -> 
     }
 }
 
+
+
+#[tauri::command]
+pub fn view_session_review_question(db_path: &str, id: &str) -> Result<SessionReviewQuestion, String> {
+
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            let err_msg = format!("Database connection error: {:?}", e);
+            return Err(err_msg.to_string());
+        }
+    };
+
+    match SessionReviewQuestion::view(&conn, id) {
+        Ok(session_question) => {
+            return Ok(session_question);
+        }
+        Err(e) => {
+            let err_msg = format!("Error retrieving session question with id: {:?} Cause: {:?}", id, e);
+            return Err(err_msg.to_string());
+        }
+    }
+}

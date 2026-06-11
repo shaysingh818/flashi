@@ -68,6 +68,8 @@ import EditQuestionForm from "../../components/question/EditQuestionForm.vue";
 import { 
   deckStore,
   questionStore,
+  sessionStore,
+  sessionReviewStore,
   answerTypeStore,
   openEndedStore,
   orderedSequenceStore,
@@ -77,8 +79,12 @@ import {
 
 const route = useRoute();
 const router = useRouter();
-const questionId = route.params.id;
-const question = ref(null); 
+const sessionQuestionId = route.params.id;
+const sessionId = route.params.session_id;
+
+const sessionQuestion = ref(null); 
+const session = ref(null);
+const question = ref(null);
 const deck = ref(null); 
 const answerType = ref('');
 
@@ -103,24 +109,7 @@ const isDropdownOpen = ref(false);
 
 async function skipQuestion() {
 
-  /*
-  const result = await multipleChoiceStore.validateMultipleChoice(
-    `${question.value.answer_id}`, 
-    ["20"]
-  );
-  console.log(result); */
-
-  questionStore.cycleNextQuestion();
-  const currId = questionStore.questions[questionStore.getCurrQuestion()].id;
-  router.push({path: `/question/view/${currId}`, replace: true});
 }
-
-function previousQuestion() {
-  questionStore.cyclePreviousQuestion();
-  const currId = questionStore.questions[questionStore.getCurrQuestion()].id;
-  router.push({path: `/question/view/${currId}`, replace: true});
-}
-
 
 function showDropdown() {
   isDropdownOpen.value = !isDropdownOpen.value;
@@ -131,7 +120,9 @@ function showDropdown() {
 
 async function loadData(id) {
 
-  question.value = await questionStore.viewQuestion(`${id}`);
+  session.value = await sessionStore.viewSession(`${sessionId}`);
+  sessionQuestion.value = await sessionReviewStore.viewSessionReviewQuestion(`${sessionQuestionId}`);
+  question.value = await questionStore.viewQuestion(`${sessionQuestion.value.question_id}`);
   const answerTypeText = await answerTypeStore.viewAnswerType(`${question.value.answer_type_id}`);
   answerType.value = answerTypeText.name;
   deck.value = await deckStore.viewDeck(`${question.value.deck_id}`); 
@@ -164,67 +155,13 @@ async function validateAnswer() {
 
   if (answerType.value === 'Open Ended') {
 
-    const editResult = await openEndedStore.editOpenEndedAnswer(
-        `${question.value.answer_id}`,
-        openEndedAnswer.value, 
-        '',
-        openEndedAnswerKeywords.value 
-    );
-    loadData(question.value.id);
   }
 
   if (answerType.value === 'Ordered Sequence') {
 
-    const preservedAnswerOrder = [];
-    for (const [index, item] of updatedOrderedSequences.value.entries()) {
-      preservedAnswerOrder.push(item);
-    }
-
-    const editResult = await orderedSequenceStore.editOrderedSequenceAnswer(
-      `${question.value.answer_id}`,
-      preservedAnswerOrder,
-      '',
-    );
-    loadData(question.value.id);
   }
 
   if (answerType.value === 'Multiple Choice') {
-
-    if(multipleChoiceAnswer.value != '') {
-      await multipleChoiceAnswerStore.createMultipleChoiceAnswer( 
-        `${question.value.answer_id}`,
-        multipleChoiceAnswer.value,
-        '',
-        false
-      );
-      loadData(question.value.id);
-      multipleChoiceAnswer.value = '';
-    }
-
-    if(multipleChoiceDeleteIndex.value != null) {
-      const multipleChoiceAnswer = multipleChoiceAnswers.value[multipleChoiceDeleteIndex.value];
-      await multipleChoiceAnswerStore.deleteMultipleChoiceAnswer(
-        `${multipleChoiceAnswer.id}`
-      );
-      loadData(question.value.id);
-      multipleChoiceDeleteIndex.value = null;
-    }
-
-
-
-    if (updatedMultipleChoiceAnswers.value.length > 0) {
-      for(const item of updatedMultipleChoiceAnswers.value) {  
-        await multipleChoiceAnswerStore.editMultipleChoiceAnswer(
-          `${item.id}`,
-          `${item.answer_id}`,
-          item.answer, 
-          '',
-          item.is_correct
-        );
-      }
-      loadData(question.value.id);
-      updatedMultipleChoiceAnswers.value = [];
-    }
 
   }
 

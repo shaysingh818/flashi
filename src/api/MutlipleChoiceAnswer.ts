@@ -1,48 +1,8 @@
 import { invoke } from "@tauri-apps/api/core";
 import { dataDir} from '@tauri-apps/api/path';
 import { reactive } from 'vue';
+import { MultipleChoiceAnswer } from './types'; 
 
-
-export interface MultipleChoiceAnswer {
-  answer_id: number;
-  is_correct: boolean;
-  answer: string;
-  explanation: string;
-  created: string; 
-  updated: string;
-}
-
-export class MultipleChoiceAnswer {
-  answer_id: number;
-  is_correct: boolean;
-  answer: string;
-  explanation: string;
-  created: string; 
-  updated: string;
-
-  constructor({
-    answer_id,
-    is_correct,
-    answer,
-    explanation,
-    created,
-    updated
-  }: {
-    answer_id: number;
-    is_correct: boolean;
-    answer: string;
-    explanation: string;
-    created: string; 
-    updated: string;
-  }) {
-    this.answer_id = answer_id;
-    this.is_correct = is_correct;
-    this.answer = answer;
-    this.explanation = explanation;
-    this.created = created;
-    this.updated = updated;
-  }
-}
 
 export const multipleChoiceAnswerStore = reactive({
 

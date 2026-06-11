@@ -1,50 +1,8 @@
 import { invoke } from "@tauri-apps/api/core";
 import { dataDir} from '@tauri-apps/api/path';
 import { reactive } from 'vue';
+import { OpenEndedAnswer } from './types'; 
 
-
-export interface OpenEndedAnswer {
-  answer_id: number;
-  answer: string;
-  explanation: string;
-  keywords: string[];
-  created: string; 
-  updated: string;
-}
-
-export class OpenEndedAnswer {
-  
-  answer_id: number;
-  answer: string;  
-  explanation: string;
-  keywords: string[];
-  created: string; 
-  updated: string;
-
-  constructor({
-    answer_id,
-    answer,  
-    explanation,
-    keywords,
-    created, 
-    updated
-    
-  }: {    
-    answer_id: number;
-    answer: string;  
-    explanation: string;
-    keywords: string[];
-    created: string; 
-    updated: string; 
-  }) {
-    this.answer_id = answer_id;
-    this.answer = answer;
-    this.explanation = explanation;
-    this.keywords = keywords;
-    this.created = created;
-    this.updated = updated;
-  }
-}
 
 export const openEndedStore = reactive({
 

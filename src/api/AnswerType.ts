@@ -1,38 +1,8 @@
 import { invoke } from "@tauri-apps/api/core";
 import { dataDir} from '@tauri-apps/api/path';
 import { reactive } from 'vue';
+import { AnswerType } from './types';
 
-
-export interface AnswerType {
-  id: number;
-  name: string;
-  created: string; 
-  updated: string;
-}
-
-export class AnswerType {
-  id: number;
-  name: string;
-  created: string; 
-  updated: string;
-
-  constructor({
-    id,
-    name,
-    created,
-    updated
-  }: {
-    id: number;
-    name: string;
-    created: string;
-    updated: string;
-  }) {
-    this.id = id;
-    this.name = name;
-    this.created = created;
-    this.updated = updated;
-  }
-}
 
 export const answerTypeStore = reactive({
 

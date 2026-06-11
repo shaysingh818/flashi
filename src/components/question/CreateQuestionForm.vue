@@ -53,12 +53,13 @@ import CreateOrderedSequenceForm from "../answer/ordered_sequence/CreateOrderedS
 
 import { 
   questionStore,
-  AnswerType, answerTypeStore,
+  answerTypeStore,
   openEndedStore,
   orderedSequenceStore,
   multipleChoiceStore,
   multipleChoiceAnswerStore
 } from "../../api";
+
 
 const props = defineProps({
   deckId: {

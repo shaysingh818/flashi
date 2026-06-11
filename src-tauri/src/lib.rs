@@ -19,6 +19,7 @@ use crate::handlers::session_review::{
     edit_session_review, 
     view_session_reviews,
     view_session_review_questions,
+    view_session_review_question,
 };
 
 use crate::handlers::subject::{
@@ -112,6 +113,7 @@ pub fn run() {
             edit_session_review, 
             view_session_reviews,
             view_session_review_questions,
+            view_session_review_question,
 
             /* Subjects  */
             create_subject, 

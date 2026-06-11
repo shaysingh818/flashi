@@ -1,3 +1,14 @@
+export interface Deck {
+  id: number;
+  subject_id: number;
+  name: string;
+  tags: string[];
+  description: string;
+  created: string; 
+  updated: string;
+}
+
+
 export class Deck {
   id: number;
   subject_id: number;

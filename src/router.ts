@@ -14,6 +14,7 @@ import CreateQuestion from "./pages/question/CreateQuestion.vue";
 import ViewQuestion from "./pages/question/ViewQuestion.vue";
 import EditQuestion from "./pages/question/EditQuestion.vue";
 import SessionDetail from "./pages/session/SessionDetail.vue";
+import SessionQuestionDetail from "./pages/session/SessionQuestionDetail.vue";
 import CreateSession from "./pages/session/CreateSession.vue";
 import EditSession from "./pages/session/EditSession.vue";
 import AddDeckToSession from "./pages/session/AddDeckToSession.vue";
@@ -45,6 +46,7 @@ const routes: Array<RouteRecordRaw> = [
   { path: "/sessions/edit/:id", component: EditSession },
   { path: "/sessions/detail/:id", component: SessionDetail },
   { path: "/sessions/deck/add/:id", component: AddDeckToSession },
+  { path: "/sessions/review/:session_id/question/:id", component: SessionQuestionDetail },
 
   // metrics
   { path: "/metrics", component: MetricsPage },

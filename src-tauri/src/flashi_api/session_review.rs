@@ -417,8 +417,22 @@ impl SessionReviewQuestion {
     }
 
     pub fn view(conn: &Connection, id: &str) -> Result<SessionReviewQuestion> {
+
+        let query = "
+        SELECT
+	        ID,
+            SESSION_REVIEW_ID,
+            QUESTION_ID,
+            PRIORITY_INDEX,
+            INCORRECT_COUNT,
+            REVIEW_COUNT,
+            ACTIVE,
+            UPDATED::VARCHAR,
+            CREATED::VARCHAR
+        FROM SESSION_REVIEW_QUESTION WHERE ID = ?"; 
+
         conn.query_row(
-            "SELECT * FROM SESSION_REVIEW_QUESTION WHERE ID = ?",
+            query,
             &[&id],
             |row| {
                 Ok(SessionReviewQuestion {
