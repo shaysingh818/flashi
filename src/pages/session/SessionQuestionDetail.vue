@@ -22,18 +22,12 @@
         v-if="answerType === 'Ordered Sequence'" 
         :visible="false"
         :items="orderedSequences"
-        @update:items="updatedOrderedSequences = $event;"
-        @update:delete="updatedOrderedSequences = $event; editAnswer()"
-        @update:add="updatedOrderedSequences = $event; editAnswer()"
       />
 
       <MultipleChoicePreview 
         v-if="answerType === 'Multiple Choice'"
         :visible="false"
         :items="multipleChoiceAnswers"
-        @update:item="updatedMultipleChoiceAnswer = $event; appendChoice()"
-        @update:add="multipleChoiceAnswer = $event; editAnswer()"
-        @update:delete="multipleChoiceDeleteIndex = $event; editAnswer()"
       />
       
       <OpenEndedPreview
@@ -41,7 +35,6 @@
         :visible="false"
         :placeholderText="openEndedAnswer"
         :keywords="openEndedAnswerKeywords"
-        @update:keywords="openEndedAnswerKeywords = $event"
         @update:text="openEndedAnswer = $event"
       />
     </div>
@@ -56,7 +49,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, toRaw, watch } from "vue";
+import { onMounted, computed, ref, toRaw, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import BackBar from "../../components/shared/navigation/BackBar.vue";
 import QuestionTextPreview from "../../components/question/QuestionTextPreview.vue";
@@ -79,8 +72,8 @@ import {
 
 const route = useRoute();
 const router = useRouter();
-const sessionQuestionId = route.params.id;
-const sessionId = route.params.session_id;
+const sessionQuestionId = computed(() => route.params.id);
+const sessionId = computed(() => route.params.session_id);
 
 const sessionQuestion = ref(null); 
 const session = ref(null);
@@ -91,16 +84,9 @@ const answerType = ref('');
 /* answers */
 const openEndedAnswer = ref(''); 
 const multipleChoiceAnswer = ref('');
-const multipleChoiceDeleteIndex = ref(null);
-const openEndedAnswerKeywords = ref([]);
 const orderedSequences = ref([]); 
 const multipleChoiceAnswers = ref([]); 
-const newMultipleChoiceAnswers = ref([]);
 
-/* updated answers */
-const updatedOrderedSequences = ref([]);
-const updatedMultipleChoiceAnswer = ref(null); 
-const updatedMultipleChoiceAnswers = ref([]); 
 
 /* edit toggles */ 
 const editQuestionOpen = ref(false); 
@@ -109,6 +95,13 @@ const isDropdownOpen = ref(false);
 
 async function skipQuestion() {
 
+    const next = await sessionReviewStore.nextQuestion();
+    openEndedAnswer.value = ''; 
+    try {
+      await router.push({ path: `/sessions/review/${sessionId.value}/question/${next.id}` });
+    } catch (err) {
+      console.error('Navigation failed:', err);
+    }
 }
 
 function showDropdown() {
@@ -118,10 +111,10 @@ function showDropdown() {
   }
 }
 
-async function loadData(id) {
+async function loadData() {
 
-  session.value = await sessionStore.viewSession(`${sessionId}`);
-  sessionQuestion.value = await sessionReviewStore.viewSessionReviewQuestion(`${sessionQuestionId}`);
+  session.value = await sessionStore.viewSession(sessionId.value);
+  sessionQuestion.value = await sessionReviewStore.viewSessionReviewQuestion(sessionQuestionId.value);
   question.value = await questionStore.viewQuestion(`${sessionQuestion.value.question_id}`);
   const answerTypeText = await answerTypeStore.viewAnswerType(`${question.value.answer_type_id}`);
   answerType.value = answerTypeText.name;
@@ -146,7 +139,6 @@ async function loadData(id) {
       `${question.value.answer_id}`
     );
     openEndedAnswer.value = answer.answer;
-    openEndedAnswerKeywords.value = answer.keywords;
   }
 }
 
@@ -154,6 +146,23 @@ async function loadData(id) {
 async function validateAnswer() {
 
   if (answerType.value === 'Open Ended') {
+
+    const [result, msg] = await openEndedStore.validateOpenEndedAnswer(
+      `${question.value.answer_id}`, 
+      openEndedAnswer.value
+    );
+    
+    if(result === true) {
+      /* notify user they were correct */
+      openEndedAnswer.value = '';
+      const next = await sessionReviewStore.nextQuestion();
+      try {
+        await router.push({ path: `/sessions/review/${sessionId}/question/${next.id}` });
+      } catch (err) {
+        console.error('Navigation failed:', err);
+      }
+
+    }
 
   }
 
@@ -167,10 +176,10 @@ async function validateAnswer() {
 
 }
 
-onMounted(() => loadData(route.params.id)); 
+onMounted(() => loadData(route.params.session_id, route.params.id)); 
 
 watch(() => route.params.id, (newId) => {
-  if (newId) loadData(newId);
+  if (newId) loadData();
 });
 
 </script>

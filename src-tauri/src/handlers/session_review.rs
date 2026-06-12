@@ -146,3 +146,45 @@ pub fn view_session_review_question(db_path: &str, id: &str) -> Result<SessionRe
         }
     }
 }
+
+
+#[tauri::command]
+pub fn edit_session_review_question(
+    db_path: &str, 
+    id: &str,
+    priority_index: usize, 
+    review_count: usize,
+    incorrect_count: usize,
+    active: bool) -> String {
+
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            let err_msg = format!("Database connection error: {:?}", e);
+            return Err(err_msg.to_string());
+        }
+    };
+
+    match SessionReviewQuestion::view(&conn, id) {
+        Ok(session_question) => {
+
+            session_question.priority_index = priority_index;
+            session_question.review_count = review_count;
+            session_question.incorrect_count = incorrect_count;
+            session_question.active = active; 
+            
+            match session_question.update(&conn, id) {
+                Ok(()) => {
+                    let _ = conn.close();
+                    return "Success".to_string();
+                }
+                Err(e) => format!("Failed to update session review question: {}", e),
+            }
+        }
+        Err(e) => {
+            let err_msg = format!("Error retrieving session question with id: {:?} Cause: {:?}", id, e);
+            return err_msg.to_string();
+        }
+    }
+}

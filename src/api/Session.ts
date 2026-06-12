@@ -76,6 +76,7 @@ export const sessionReviewStore = reactive({
 
   session_reviews: [] as SessionReview[],
   session_review_questions: [] as SessionReviewQuestion[],
+  current_question: 0 as number,
 
   async getDbPath(): Promise<string> {    
     const dataDirPath = await dataDir();
@@ -131,6 +132,18 @@ export const sessionReviewStore = reactive({
       EndTime,
       dbPath 
     });  
+  },
+
+  async nextQuestion(): Promise<SessionReviewQuestion> {
+    console.log(this.current_question);
+    console.log(this.session_review_questions.length); 
+    if(this.current_question === this.session_review_questions.length-1) {
+      this.current_question = 0;
+      return this.session_review_questions[this.current_question]; 
+    } else {
+      this.current_question += 1;
+      return this.session_review_questions[this.current_question];
+    }
   },
   
 })
