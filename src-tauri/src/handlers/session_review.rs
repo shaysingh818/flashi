@@ -162,12 +162,12 @@ pub fn edit_session_review_question(
         Err(e) => {
             println!("{:?}", e);
             let err_msg = format!("Database connection error: {:?}", e);
-            return Err(err_msg.to_string());
+            return err_msg.to_string();
         }
     };
 
     match SessionReviewQuestion::view(&conn, id) {
-        Ok(session_question) => {
+        Ok(mut session_question) => {
 
             session_question.priority_index = priority_index;
             session_question.review_count = review_count;
