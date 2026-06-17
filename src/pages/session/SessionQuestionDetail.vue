@@ -28,6 +28,7 @@
         v-if="answerType === 'Multiple Choice'"
         :visible="false"
         :items="multipleChoiceAnswers"
+        @select:item="selectedMultipleChoiceAnswers = $event"
       />
       
       <OpenEndedPreview
@@ -86,6 +87,7 @@ const openEndedAnswer = ref('');
 const multipleChoiceAnswer = ref('');
 const orderedSequences = ref([]); 
 const multipleChoiceAnswers = ref([]); 
+const selectedMultipleChoiceAnswers = ref([]);
 
 
 /* edit toggles */ 
@@ -113,8 +115,8 @@ function showDropdown() {
 
 async function loadData() {
 
-  session.value = await sessionStore.viewSession(sessionId.value);
-  sessionQuestion.value = await sessionReviewStore.viewSessionReviewQuestion(sessionQuestionId.value);
+  session.value = await sessionStore.viewSession(`${sessionId.value}`);
+  sessionQuestion.value = await sessionReviewStore.viewSessionReviewQuestion(`${sessionQuestionId.value}`);
   question.value = await questionStore.viewQuestion(`${sessionQuestion.value.question_id}`);
   const answerTypeText = await answerTypeStore.viewAnswerType(`${question.value.answer_type_id}`);
   answerType.value = answerTypeText.name;
@@ -153,11 +155,14 @@ async function validateAnswer() {
     );
     
     if(result === true) {
+
       /* notify user they were correct */
+
+      /* update database with stats associated with question */
       openEndedAnswer.value = '';
       const next = await sessionReviewStore.nextQuestion();
       try {
-        await router.push({ path: `/sessions/review/${sessionId}/question/${next.id}` });
+        await router.push({ path: `/sessions/review/${sessionId.value}/question/${next.id}` });
       } catch (err) {
         console.error('Navigation failed:', err);
       }
@@ -171,6 +176,31 @@ async function validateAnswer() {
   }
 
   if (answerType.value === 'Multiple Choice') {
+
+    const answerIds = selectedMultipleChoiceAnswers.value.map(item => item.id.toString());
+    const [result, msg] = await multipleChoiceStore.validateMultipleChoice(
+      `${question.value.answer_id}`, 
+      answerIds
+    );
+
+
+    if(result === true) {
+
+      /* notify user they were correct */
+
+      /* update database with stats associated with question */
+
+      selectedMultipleChoiceAnswers.value = [];
+      const next = await sessionReviewStore.nextQuestion();
+      try {
+        await router.push({ path: `/sessions/review/${sessionId.value}/question/${next.id}` });
+      } catch (err) {
+        console.error('Navigation failed:', err);
+      }
+
+    } else {
+
+    }
 
   }
 

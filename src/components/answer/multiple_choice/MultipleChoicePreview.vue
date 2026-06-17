@@ -30,9 +30,12 @@
     <MultipleChoicePreviewItem
       v-if="props.visible === false"
       v-for="(item, index) in items"
-      :key="index"
+      :key="index" 
+      :visible="props.visible"
+      :index="index"
       :text="item.answer"
       :isSelected="false"
+      @update:selected="selectedItem = $event; selectAnswer(index)"
     />
   </div> 
 
@@ -57,12 +60,30 @@ const props = defineProps({
 
 const newItem = ref('');
 const selectedItem = ref(null);
+const selectedItems  = ref([]);
 const deleteIndex = ref(null);
 const emit = defineEmits([
+  "select:item",
   "update:item", 
   "update:add", 
   "update:delete"
 ]); 
+
+
+function selectAnswer(index) {
+  const localProps = [...props.items];
+  const selected = localProps[index];
+  const itemIndex = selectedItems.value.findIndex(item => item.id === selected.id);
+
+  if(itemIndex >= 0) {
+    selectedItems.value.splice(itemIndex, 1);
+  } else {
+    selectedItems.value.push(selected);
+  }
+
+  emit("select:item", selectedItems.value);
+}
+
 
 function updateAnswer(index) {
   const localProps = [...props.items];

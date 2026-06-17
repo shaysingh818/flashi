@@ -30,6 +30,7 @@
       :key="index"
       :index="index+1"
       text=""
+      @submit:text="newItem = $event; newIndex = index; emitSelectedItem()"
     />
   </div>
 </template>
@@ -51,11 +52,13 @@ const props = defineProps({
 });
 
 
+const selectedItems = ref([]);
 const newItem = ref('');
 const newIndex= ref('');
 const newSequence = ref('');
 const deleteIndex = ref('');
 const emit = defineEmits([
+  "submit:text",
   "update:text", 
   "update:index", 
   "update:items", 
@@ -63,6 +66,9 @@ const emit = defineEmits([
   "update:add"
 ]);
 
+
+function emitSelectedItem() {
+}
 
 function emitUpdateItem() {
   emit('update:text', newItem.value);

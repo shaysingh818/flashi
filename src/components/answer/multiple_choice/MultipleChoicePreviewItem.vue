@@ -1,17 +1,20 @@
 <template>
 
-  <label for="item" v-if="props.visible === false">
-    <input 
-      type="checkbox" 
-      :id="text" 
-      :name="text" 
-      value="yes" 
-      :checked="isSelected"
-    />
-    {{ text }}
-  </label>
+  <div class="flex row-center gap-2 w-100">
 
-  <div v-if="props.visible === true" class="flex row-center gap-2 w-100">
+    <div class="flex row-center w-85"> 
+      <label for="item" v-if="props.visible === false">
+        <input 
+          type="checkbox" 
+          :id="text" 
+          :name="text" 
+          value="yes" 
+          :checked="isSelected"
+          @change="emit('update:selected', $event.target.checked)"
+        />
+        {{ text }}
+      </label>
+    </div>
 
       <div class="fw-10">
         <label for="item" v-if="props.visible === true">
@@ -25,7 +28,7 @@
         </label>
       </div>
 
-      <div class="flex row-center fw-75 gap-2" style="height: 35px;">
+      <div v-if="props.visible === true" class="flex row-center fw-75 gap-2" style="height: 35px;">
         <FormInputField 
           :text="text" 
           :placeholder="text" 
