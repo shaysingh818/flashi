@@ -22,9 +22,10 @@
         v-if="answerType === 'Ordered Sequence'" 
         :visible="false"
         :items="orderedSequences"
+        @update:items="submittedOrderedSequences = $event"
       />
 
-      <MultipleChoicePreview 
+      <MultipleChoicePreview
         v-if="answerType === 'Multiple Choice'"
         :visible="false"
         :items="multipleChoiceAnswers"
@@ -87,13 +88,14 @@ const openEndedAnswer = ref('');
 const multipleChoiceAnswer = ref('');
 const orderedSequences = ref([]); 
 const multipleChoiceAnswers = ref([]); 
-const selectedMultipleChoiceAnswers = ref([]);
 
+const submittedOrderedSequences = ref([]);
+const selectedMultipleChoice = ref(null); 
+const selectedMultipleChoiceAnswers = ref([]);
 
 /* edit toggles */ 
 const editQuestionOpen = ref(false); 
 const isDropdownOpen = ref(false);
-
 
 async function skipQuestion() {
 
@@ -130,6 +132,7 @@ async function loadData() {
   }
   
   if (answerType.value === 'Multiple Choice') {
+    selectedMultipleChoiceAnswers.value = []; 
     await multipleChoiceAnswerStore.loadMultipleChoiceAnswers(
       `${question.value.answer_id}`
     );
@@ -153,6 +156,7 @@ async function validateAnswer() {
       `${question.value.answer_id}`, 
       openEndedAnswer.value
     );
+
     
     if(result === true) {
 
@@ -173,6 +177,27 @@ async function validateAnswer() {
 
   if (answerType.value === 'Ordered Sequence') {
 
+    const [result, msg] = await orderedSequenceStore.validateOrderedSequenceAnswer(
+      `${question.value.answer_id}`, 
+      submittedOrderedSequences.value
+    );
+
+    console.log(result); 
+    console.log(msg); 
+
+    if(result === true) {
+      submittedOrderedSequences.value = [];
+      const next = await sessionReviewStore.nextQuestion();
+      try {
+        await router.push({ path: `/sessions/review/${sessionId.value}/question/${next.id}` });
+      } catch (err) {
+        console.error('Navigation failed:', err);
+      }
+
+    } else {
+      console.log("Incorrect"); 
+    }
+
   }
 
   if (answerType.value === 'Multiple Choice') {
@@ -190,7 +215,6 @@ async function validateAnswer() {
 
       /* update database with stats associated with question */
 
-      selectedMultipleChoiceAnswers.value = [];
       const next = await sessionReviewStore.nextQuestion();
       try {
         await router.push({ path: `/sessions/review/${sessionId.value}/question/${next.id}` });
@@ -209,7 +233,13 @@ async function validateAnswer() {
 onMounted(() => loadData(route.params.session_id, route.params.id)); 
 
 watch(() => route.params.id, (newId) => {
-  if (newId) loadData();
+
+  if (newId) {
+    console.log("new session question: ", newId); 
+    loadData();
+  } else {
+    console.log(selectedMultipleChoiceAnswers.value); 
+  }
 });
 
 </script>

@@ -34,7 +34,7 @@
       :visible="props.visible"
       :index="index"
       :text="item.answer"
-      :isSelected="false"
+      :isSelected="selectedItems.some(s => s.id === item.id)"
       @update:selected="selectedItem = $event; selectAnswer(index)"
     />
   </div> 
@@ -42,7 +42,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import FormInputField from '../../shared/forms/FormInputField.vue';
 import MultipleChoicePreviewItem from './MultipleChoicePreviewItem.vue';
 import { multipleChoiceStore, multipleChoiceAnswerStore } from "../../../api";
@@ -59,11 +59,20 @@ const props = defineProps({
 });
 
 const newItem = ref('');
-const selectedItem = ref(null);
+const selectedItem = ref(null); 
 const selectedItems  = ref([]);
 const deleteIndex = ref(null);
+
+watch(() => props.items, () => {
+  console.log("Clearing state"); 
+  selectedItem.value = null;
+  selectedItems.value = [];
+}, { immediate: true });
+
+
 const emit = defineEmits([
   "select:item",
+  "select:clear",
   "update:item", 
   "update:add", 
   "update:delete"
@@ -71,6 +80,7 @@ const emit = defineEmits([
 
 
 function selectAnswer(index) {
+
   const localProps = [...props.items];
   const selected = localProps[index];
   const itemIndex = selectedItems.value.findIndex(item => item.id === selected.id);
@@ -81,7 +91,8 @@ function selectAnswer(index) {
     selectedItems.value.push(selected);
   }
 
-  emit("select:item", selectedItems.value);
+  console.log(selectedItems.value); 
+  emit("select:item", selectedItems.value);  
 }
 
 

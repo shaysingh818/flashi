@@ -8,8 +8,8 @@
           type="checkbox" 
           :id="text" 
           :name="text" 
+          :checked="props.isSelected"
           value="yes" 
-          :checked="isSelected"
           @change="emit('update:selected', $event.target.checked)"
         />
         {{ text }}
@@ -22,7 +22,7 @@
               type="checkbox" 
               :id="text" 
               :name="text" 
-              :checked="isSelected"
+              :checked="props.isSelected"
               @change="emit('update:selected', $event.target.checked)"
             />
         </label>

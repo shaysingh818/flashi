@@ -203,12 +203,13 @@ impl SessionReview {
             ),
             QUESTIONS AS (
 	            SELECT 
-                ID, 
-                DECK_ID, 
-                CORRECT, 
-                INCORRECT, 
-                REVIEWED 
-            FROM QUESTION 
+                    Q.ID, 
+                    Q.DECK_ID, 
+                    Q.CORRECT, 
+                    Q.INCORRECT, 
+                    Q.REVIEWED 
+            FROM QUESTION Q
+            WHERE Q.DECK_ID IN (SELECT DECK_ID FROM DECK_IDS)
             )
             SELECT 
                 Q.ID
