@@ -160,7 +160,7 @@ async function validateAnswer() {
     
     if(result === true) {
 
-      /* notify user they were correct */
+      
 
       /* update database with stats associated with question */
       openEndedAnswer.value = '';
@@ -177,13 +177,11 @@ async function validateAnswer() {
 
   if (answerType.value === 'Ordered Sequence') {
 
+    const sequenceAnswers = submittedOrderedSequences.value.map(item => item.item.toString());
     const [result, msg] = await orderedSequenceStore.validateOrderedSequenceAnswer(
       `${question.value.answer_id}`, 
-      submittedOrderedSequences.value
+      sequenceAnswers
     );
-
-    console.log(result); 
-    console.log(msg); 
 
     if(result === true) {
       submittedOrderedSequences.value = [];

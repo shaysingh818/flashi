@@ -134,6 +134,24 @@ export const sessionReviewStore = reactive({
     });  
   },
 
+
+  async editSessionReviewQuestion(
+    sessionReviewQuestionId: string, 
+    priorityIndex: boolean, 
+    reviewCount: number, 
+    incorrectCount: number, 
+    active: string): Promise<string> {   
+
+    const dbPath = await this.getDbPath();
+    return await invoke("edit_session_review_question", { 
+      sessionReviewQuestionId, 
+      priorityIndex, 
+      reviewCount,
+      incorrectCount,
+      active,
+    });  
+  },
+
   async nextQuestion(): Promise<SessionReviewQuestion> {
     console.log(this.current_question);
     console.log(this.session_review_questions.length); 

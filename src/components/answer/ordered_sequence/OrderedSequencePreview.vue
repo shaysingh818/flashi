@@ -74,20 +74,13 @@ function emitSubmittedItem() {
     index: newIndex.value,
   }
 
-  const itemIndex = selectedItems.value.findIndex(item => item.index === obj.id);
-  console.log(itemIndex); 
-
+  const itemIndex = selectedItems.value.findIndex(item => item.index === obj.index);
   if(itemIndex >= 0) {
-    selectedItems.value.splice(itemIndex, 1);
     selectedItems.value[itemIndex].item = obj.item;
-    console.log("This is being hit"); 
   } else {
-    console.log("This is being hit, new answer"); 
     selectedItems.value.push(obj);
   }
 
-  console.log("From the event"); 
-  console.log(selectedItems.value); 
   emit('update:items', selectedItems.value);
 }
 
