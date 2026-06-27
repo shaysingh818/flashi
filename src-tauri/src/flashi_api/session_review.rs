@@ -65,7 +65,7 @@ impl SessionReview {
         )
     }
 
-    pub fn check_complete_sessions(&mut self, conn: &Connection) -> Result<i64> {
+    pub fn session_review_complete(conn: &Connection, session_id: &str) -> Result<i64> {
         let query = "
         SELECT 
             ID
@@ -73,7 +73,7 @@ impl SessionReview {
 
         let mut stmt = conn.prepare(query)?; 
         let session_id: Option<i64> = stmt.query_row(
-            params![self.session_id],
+            params![session_id],
             |row| row.get(0)
         ).optional()?;
 
@@ -97,7 +97,7 @@ impl SessionReview {
         let mut stmt = conn.prepare(query)?;
 
         let sessions: Result<Vec<SessionReview>> = stmt
-            .query_map([], |row| {
+            .query_map([session_id], |row| {
                 Ok(SessionReview {
                     id: row.get(0)?,
                     session_id: row.get(1)?, 
@@ -113,7 +113,7 @@ impl SessionReview {
             .collect();
         sessions
     }
-
+    
     pub fn update(&mut self, conn: &Connection, id: &str) -> Result<()> {
         self.updated = chrono::offset::Local::now().to_string();
 
@@ -215,7 +215,7 @@ impl SessionReview {
                 Q.ID
             FROM QUESTIONS AS Q
             LEFT JOIN DECK_IDS AS DIDS
-            ON Q.DECK_ID = DIDS.DECK_ID
+            ON Q.DECK_ID = DIDS.DECK_ID            
             ORDER BY Q.CORRECT DESC";
 
         let mut stmt = conn.prepare(query)?; 
@@ -237,7 +237,7 @@ impl SessionReview {
         Ok(())
 
     }
-
+    
 }
 
 
@@ -335,7 +335,7 @@ impl SessionReviewQuestion {
 
         let query = "
         SELECT 
-	        ID,
+	          ID,
             SESSION_REVIEW_ID,
             QUESTION_ID,
             PRIORITY_INDEX,
@@ -366,18 +366,75 @@ impl SessionReviewQuestion {
         sessions
     }
 
+    
+    pub fn retrieve_active_questions(conn: &Connection, session_id: &str) -> Result<Vec<SessionReviewQuestion>> {
+        let query = "
+            WITH DECK_IDS AS (
+	            SELECT 
+                    DECK_ID 
+                FROM SESSION_DECK WHERE SESSION_ID = ?
+            ),
+            QUESTIONS AS (
+	            SELECT 
+                    Q.ID, 
+                    Q.DECK_ID, 
+                    Q.CORRECT, 
+                    Q.INCORRECT, 
+                    Q.REVIEWED 
+            FROM QUESTION Q
+            WHERE Q.DECK_ID IN (SELECT DECK_ID FROM DECK_IDS)
+            )
+            SELECT 
+              SRQ.ID,
+              SRQ.SESSION_REVIEW_ID,
+              SRQ.QUESTION_ID,
+              SRQ.PRIORITY_INDEX,
+              SRQ.INCORRECT_COUNT,
+              SRQ.REVIEW_COUNT,
+              SRQ.ACTIVE,
+              SRQ.UPDATED::VARCHAR,
+              SRQ.CREATED::VARCHAR
+            FROM QUESTIONS AS Q
+            LEFT JOIN DECK_IDS AS DIDS
+            ON Q.DECK_ID = DIDS.DECK_ID            
+            LEFT JOIN SESSION_REVIEW_QUESTION AS SRQ
+            ON Q.ID = SRQ.QUESTION_ID
+            WHERE SRQ.ACTIVE = TRUE
+            ORDER BY Q.CORRECT DESC";
+
+
+        let mut stmt = conn.prepare(query)?;        
+        let sessions: Result<Vec<SessionReviewQuestion>> = stmt
+            .query_map([session_id], |row| {
+                Ok(SessionReviewQuestion {
+                    id: row.get(0)?,
+                    session_review_id: row.get(1)?, 
+                    question_id: row.get(2)?,
+                    priority_index: row.get(3)?,
+                    incorrect_count: row.get(4)?, 
+                    review_count: row.get(5)?,
+                    active: row.get(6)?,
+                    created: row.get(7)?,
+                    updated: row.get(8)?,
+                })
+            })?
+            .collect();
+         
+        sessions
+    }
+
     pub fn update(&mut self, conn: &Connection, id: &str) -> Result<()> {
-        self.updated = chrono::offset::Local::now().to_string();
+        self.updated = chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();        
 
         let result = conn.execute(
             "UPDATE SESSION_REVIEW_QUESTION
                 SET SESSION_REVIEW_ID=?1,
                     QUESTION_ID=?2,
-                    PRIORITY_INDEX=?3
-                    INCORRECT_COUNT=?4
-                    REVIEW_COUNT=?5
-                    ACTIVE=?6
-                    UPDATED=?7
+                    PRIORITY_INDEX=?3,
+                    INCORRECT_COUNT=?4,
+                    REVIEW_COUNT=?5,
+                    ACTIVE=?6,
+                    UPDATED=?7,
                 WHERE ID=?8",
             params![
                 &self.session_review_id,

@@ -15,7 +15,6 @@
       />
     </div>
     
-
     <div class="flex centered-all w-100">
       
       <OrderedSequencePreview 
@@ -65,6 +64,7 @@ import {
   questionStore,
   sessionStore,
   sessionReviewStore,
+  getCurrentTimestamp,
   answerTypeStore,
   openEndedStore,
   orderedSequenceStore,
@@ -79,6 +79,7 @@ const sessionId = computed(() => route.params.session_id);
 
 const sessionQuestion = ref(null); 
 const session = ref(null);
+const sessionReview = ref(null); 
 const question = ref(null);
 const deck = ref(null); 
 const answerType = ref('');
@@ -119,6 +120,7 @@ async function loadData() {
 
   session.value = await sessionStore.viewSession(`${sessionId.value}`);
   sessionQuestion.value = await sessionReviewStore.viewSessionReviewQuestion(`${sessionQuestionId.value}`);
+  sessionReview.value = await sessionReviewStore.viewSessionReview(`${sessionQuestion.value.session_review_id}`); 
   question.value = await questionStore.viewQuestion(`${sessionQuestion.value.question_id}`);
   const answerTypeText = await answerTypeStore.viewAnswerType(`${question.value.answer_type_id}`);
   answerType.value = answerTypeText.name;
@@ -156,17 +158,34 @@ async function validateAnswer() {
       `${question.value.answer_id}`, 
       openEndedAnswer.value
     );
-
     
-    if(result === true) {
-
-      
-
+    if (result === true) {
+ 
       /* update database with stats associated with question */
+      await sessionReviewStore.editSessionReviewQuestion(
+        `${sessionQuestion.value.id}`,
+        sessionQuestion.value.priority_index,
+        sessionQuestion.value.review_count + 1,
+        sessionQuestion.value.incorrect_count,
+        false
+      );
+      
       openEndedAnswer.value = '';
-      const next = await sessionReviewStore.nextQuestion();
+      const next = await sessionReviewStore.nextQuestion(`${sessionId.value}`);
       try {
-        await router.push({ path: `/sessions/review/${sessionId.value}/question/${next.id}` });
+        if (sessionReviewStore.session_review_questions.length === 0) {
+          await sessionReviewStore.editSession(
+            `${sessionReview.value.session_review_id}`,
+            true,
+            0,
+            sessionReview.value.current_question,
+            getCurrentTimestamp(),
+            getCurrentTimestamp()
+          );          
+          await router.push({ path: `/sessions/detail/${sessionId.value}` });
+        } else {  
+          await router.push({ path: `/sessions/review/${sessionId.value}/question/${next.id}` });
+        }
       } catch (err) {
         console.error('Navigation failed:', err);
       }
@@ -183,17 +202,65 @@ async function validateAnswer() {
       sequenceAnswers
     );
 
-    if(result === true) {
+    if (result === true) {
+
+      await sessionReviewStore.editSessionReviewQuestion(
+        `${sessionQuestion.value.id}`,
+        sessionQuestion.value.priority_index,
+        sessionQuestion.value.review_count + 1,
+        sessionQuestion.value.incorrect_count,
+        false
+      );
+      
       submittedOrderedSequences.value = [];
-      const next = await sessionReviewStore.nextQuestion();
+      const next = await sessionReviewStore.nextQuestion(`${sessionId.value}`);
       try {
-        await router.push({ path: `/sessions/review/${sessionId.value}/question/${next.id}` });
+        if (sessionReviewStore.session_review_questions.length === 0) {
+          await sessionReviewStore.editSession(
+            `${sessionReview.value.session_review_id}`,
+            true,
+            0,
+            sessionReview.value.current_question,
+            getCurrentTimestamp(),
+            getCurrentTimestamp()
+          );          
+          await router.push({ path: `/sessions/detail/${sessionId.value}` });
+        } else {  
+          await router.push({ path: `/sessions/review/${sessionId.value}/question/${next.id}` });
+        }
       } catch (err) {
         console.error('Navigation failed:', err);
       }
 
     } else {
-      console.log("Incorrect"); 
+
+      await sessionReviewStore.editSessionReviewQuestion(
+        `${sessionQuestion.value.id}`,
+        sessionQuestion.value.priority_index,
+        sessionQuestion.value.review_count + 1,
+        sessionQuestion.value.incorrect_count,
+        false
+      );
+      
+      const next = await sessionReviewStore.nextQuestion(`${sessionId.value}`);
+      try {
+        if (sessionReviewStore.session_review_questions.length === 0) {
+          await sessionReviewStore.editSession(
+            `${sessionReview.value.session_review_id}`,
+            true,
+            0,
+            sessionReview.value.current_question,
+            getCurrentTimestamp(),
+            getCurrentTimestamp()
+          );          
+          await router.push({ path: `/sessions/detail/${sessionId.value}`});
+        } else {  
+          await router.push({ path: `/sessions/review/${sessionId.value}/question/${next.id}` });
+        }
+      } catch (err) {
+        console.error('Navigation failed:', err);
+      }
+      
     }
 
   }
@@ -206,14 +273,18 @@ async function validateAnswer() {
       answerIds
     );
 
-
     if(result === true) {
 
-      /* notify user they were correct */
-
       /* update database with stats associated with question */
-
-      const next = await sessionReviewStore.nextQuestion();
+      await sessionReviewStore.editSessionReviewQuestion(
+        `${sessionQuestion.value.id}`,
+        sessionQuestion.value.priority_index,
+        sessionQuestion.value.review_count + 1,
+        sessionQuestion.value.incorrect_count,
+        false
+      );
+      
+      const next = await sessionReviewStore.nextQuestion(`${sessionId.value}`);
       try {
         await router.push({ path: `/sessions/review/${sessionId.value}/question/${next.id}` });
       } catch (err) {
@@ -222,6 +293,21 @@ async function validateAnswer() {
 
     } else {
 
+      await sessionReviewStore.editSessionReviewQuestion(
+        `${sessionQuestion.value.id}`,
+        sessionQuestion.value.priority_index,
+        sessionQuestion.value.review_count + 1,
+        sessionQuestion.value.incorrect_count + 1,
+        sessionQuestion.value.active,
+      );
+      
+      const next = await sessionReviewStore.nextQuestion(`${sessionId.value}`);
+      try {
+        await router.push({ path: `/sessions/review/${sessionId.value}/question/${next.id}` });
+      } catch (err) {
+        console.error('Navigation failed:', err);
+      }
+      
     }
 
   }

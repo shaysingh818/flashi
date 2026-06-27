@@ -46,12 +46,20 @@ async function questionDetail() {
 }
 
 async function startSessionReview() {
-  console.log("starting session review"); 
-  const session = await sessionReviewStore.createSessionReview(`${props.sessionId}`);
-  await sessionReviewStore.loadSessionReviewQuestions(`${session.id}`);
-  const firstQuestion = sessionReviewStore.session_review_questions[0];
-  console.log(sessionReviewStore.session_review_questions); 
-  router.push({ path: `/sessions/review/${props.sessionId}/question/${firstQuestion.id}` });
+  const existingSession = await sessionReviewStore.checkSessionReviewComplete(`${props.sessionId}`);
+  console.log(existingSession); 
+  if (existingSession === -1) { 
+    const session = await sessionReviewStore.createSessionReview(`${props.sessionId}`);
+    await sessionReviewStore.loadSessionReviewQuestions(`${session.id}`);
+    const firstQuestion = sessionReviewStore.session_review_questions[0];
+    router.push({ path: `/sessions/review/${props.sessionId}/question/${firstQuestion.id}` });
+  } else {   
+    console.log(props.sessionId); 
+    await sessionReviewStore.loadActiveSessionReviewQuestions(`${props.sessionId}`);
+    console.log(sessionReviewStore.session_review_questions); 
+    const firstQuestion = sessionReviewStore.session_review_questions[0];
+    router.push({ path: `/sessions/review/${props.sessionId}/question/${firstQuestion.id}` });
+  }
 }
 
 </script>

@@ -1,7 +1,6 @@
 pub mod flashi_api; 
 pub mod handlers;
 
-
 use crate::handlers::session::{
     create_session, 
     delete_session, 
@@ -17,9 +16,13 @@ use crate::handlers::session::{
 use crate::handlers::session_review::{
     create_session_review, 
     edit_session_review, 
+    view_session_review,
     view_session_reviews,
+    check_session_review_complete,
     view_session_review_questions,
     view_session_review_question,
+    view_active_session_review_questions,
+    edit_session_review_question,
 };
 
 use crate::handlers::subject::{
@@ -111,9 +114,13 @@ pub fn run() {
             /* Session Review */ 
             create_session_review, 
             edit_session_review, 
-            view_session_reviews,
+            view_session_review,
+            view_session_reviews, 
+            check_session_review_complete,
             view_session_review_questions,
+            view_active_session_review_questions,
             view_session_review_question,
+            edit_session_review_question,
 
             /* Subjects  */
             create_subject, 

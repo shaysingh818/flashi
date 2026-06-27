@@ -4,6 +4,19 @@ import { reactive } from 'vue';
 import { Deck, Session, SessionReview, SessionReviewQuestion } from './types'; 
 
 
+export function getCurrentTimestamp(): string {
+  const now = new Date();
+  
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
 export const sessionStore = reactive({
 
   sessions: [] as Session[],
@@ -83,7 +96,7 @@ export const sessionReviewStore = reactive({
     const dbPath = `${dataDirPath}/flashi/metadata/flashi.db`;
     return dbPath;
   },
-
+  
   async loadSessionReviews(sessionId: string) {
     try { 
       const dbPath = await this.getDbPath();
@@ -94,19 +107,9 @@ export const sessionReviewStore = reactive({
     }
   },
 
-  async loadSessionReviewQuestions(sessionReviewId: string) {
-    try { 
-      const dbPath = await this.getDbPath();
-      const questions = await invoke<Session[]>('view_session_review_questions', { dbPath, sessionReviewId });
-      this.session_review_questions = questions;
-    } catch (error) {
-      console.error("Error loading session review questions: ", error);
-    }
-  },
-
-  async viewSessionReviewQuestion(id: string) {
+  async viewSessionReview(sessionReviewId: string) {
     const dbPath = await this.getDbPath();
-    return await invoke("view_session_review_question", { dbPath, id });
+    return await invoke("view_session_review", { dbPath, sessionReviewId });
   },
 
   async createSessionReview(sessionId: string): Promise<SessionReview> {
@@ -129,22 +132,52 @@ export const sessionReviewStore = reactive({
       cycle,
       currentQuestion,
       startTime,
-      EndTime,
+      endTime,
       dbPath 
     });  
   },
 
+  async checkSessionReviewComplete(sessionId: string): Promise<number> {    
+    const dbPath = await this.getDbPath();    
+    return await invoke("check_session_review_complete", { dbPath, sessionId });
+  },
+  
+  async loadSessionReviewQuestions(sessionReviewId: string) {
+    try { 
+      const dbPath = await this.getDbPath();
+      const questions = await invoke<Session[]>('view_session_review_questions', { dbPath, sessionReviewId });
+      this.session_review_questions = questions;
+    } catch (error) {
+      console.error("Error loading session review questions: ", error);
+    }
+  },
+  
+  async loadActiveSessionReviewQuestions(sessionId: string) {
+    try { 
+      const dbPath = await this.getDbPath();
+      const questions = await invoke<Session[]>('view_active_session_review_questions', { dbPath, sessionId });
+      this.session_review_questions = questions;
+    } catch (error) {
+      console.error("Error loading session review questions: ", error);
+    }
+  },
 
+  async viewSessionReviewQuestion(id: string) {
+    const dbPath = await this.getDbPath();
+    return await invoke("view_session_review_question", { dbPath, id });
+  },
+  
   async editSessionReviewQuestion(
-    sessionReviewQuestionId: string, 
+    id: string, 
     priorityIndex: boolean, 
     reviewCount: number, 
     incorrectCount: number, 
     active: string): Promise<string> {   
 
     const dbPath = await this.getDbPath();
-    return await invoke("edit_session_review_question", { 
-      sessionReviewQuestionId, 
+    return await invoke("edit_session_review_question", {
+      dbPath, 
+      id, 
       priorityIndex, 
       reviewCount,
       incorrectCount,
@@ -152,11 +185,14 @@ export const sessionReviewStore = reactive({
     });  
   },
 
-  async nextQuestion(): Promise<SessionReviewQuestion> {
-    console.log(this.current_question);
-    console.log(this.session_review_questions.length); 
+  async nextQuestion(sessionId: string): Promise<SessionReviewQuestion> {
     if(this.current_question === this.session_review_questions.length-1) {
-      this.current_question = 0;
+      const lastQuestion = this.session_review_questions[this.current_question]; 
+      this.current_question = 0;      
+      await this.loadActiveSessionReviewQuestions(sessionId);
+      if (this.session_review_questions.length === 0) {
+        return lastQuestion;
+      }
       return this.session_review_questions[this.current_question]; 
     } else {
       this.current_question += 1;
