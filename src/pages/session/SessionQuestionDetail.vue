@@ -152,6 +152,8 @@ async function loadData() {
 
 async function validateAnswer() {
 
+  console.log("validating answer for: ", sessionReview.value.id); 
+
   if (answerType.value === 'Open Ended') {
 
     const [result, msg] = await openEndedStore.validateOpenEndedAnswer(
@@ -173,9 +175,8 @@ async function validateAnswer() {
       openEndedAnswer.value = '';
       const next = await sessionReviewStore.nextQuestion(`${sessionId.value}`);
       try {
-        const sessionComplete = await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.id}`);
-        console.log("Session complete: ", sessionComplete); 
-        if (sessionReviewStore.checkSessionReviewComplete(`${sessionReview.id}`)) {
+        const sessionComplete = await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.value.id}`);
+        if (sessionComplete) {
           await sessionReviewStore.editSession(
             `${sessionReview.value.session_review_id}`,
             true,
@@ -217,10 +218,8 @@ async function validateAnswer() {
       submittedOrderedSequences.value = [];
       const next = await sessionReviewStore.nextQuestion(`${sessionId.value}`);
       try {         
-        const sessionComplete = await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.id}`);
-        console.log("Session complete: ", sessionComplete); 
-        if (sessionReviewStore.checkSessionReviewComplete(`${sessionReview.id}`)) {
-          console.log("Session is complete, we should be updating here"); 
+        const sessionComplete = await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.value.id}`);
+        if (sessionComplete) {
           await sessionReviewStore.editSession(
             `${sessionReview.value.session_review_id}`,
             true,
@@ -250,9 +249,8 @@ async function validateAnswer() {
       
       const next = await sessionReviewStore.nextQuestion(`${sessionId.value}`);
       try {        
-        const sessionComplete = await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.id}`);
-        console.log("Session complete: ", sessionComplete); 
-        if (await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.id}`)) {
+        const sessionComplete = await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.value.id}`);
+        if (sessionComplete) {
           await sessionReviewStore.editSession(
             `${sessionReview.value.session_review_id}`,
             true,
@@ -294,9 +292,8 @@ async function validateAnswer() {
       
       const next = await sessionReviewStore.nextQuestion(`${sessionId.value}`);
       try {        
-        const sessionComplete = await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.id}`);
-        console.log("Session complete: ", sessionComplete); 
-        if (await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.id}`)) {
+        const sessionComplete = await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.value.id}`);
+        if (sessionComplete) {
           await sessionReviewStore.editSession(
             `${sessionReview.value.session_review_id}`,
             true,
@@ -323,9 +320,9 @@ async function validateAnswer() {
         sessionQuestion.value.active,
       );
       
-      const next = await sessionReviewStore.nextQuestion(`${sessionId.value}`);      
+      const next = await sessionReviewStore.nextQuestion(`${sessionId.value.id}`);      
       try {
-        if (await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.id}`)) {
+        if (await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.value.id}`)) {
           await sessionReviewStore.editSession(
             `${sessionReview.value.session_review_id}`,
             true,
