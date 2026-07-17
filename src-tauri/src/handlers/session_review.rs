@@ -117,7 +117,7 @@ pub fn view_session_review(db_path: &str, session_review_id: &str) -> Result<Ses
 }
 
 #[tauri::command]
-pub fn check_session_review_complete(db_path: &str, session_id: &str) -> Result<i64, String> {
+pub fn check_session_review_active(db_path: &str, session_id: &str) -> Result<i64, String> {
   
   let conn = match Connection::open(db_path) {
       Ok(connection) => connection,
@@ -128,12 +128,35 @@ pub fn check_session_review_complete(db_path: &str, session_id: &str) -> Result<
       }
   };
 
-  match SessionReview::session_review_complete(&conn, session_id) {
+  match SessionReview::session_review_active(&conn, session_id) {
       Ok(result) => {
           return Ok(result);
       }
       Err(e) => {
-          let err_msg = format!("Error checking session review complete: {:?} Cause: {:?}", session_id, e);
+          let err_msg = format!("Error checking session review active: {:?} Cause: {:?}", session_id, e);
+          return Err(err_msg.to_string());
+      }
+  }
+}
+
+#[tauri::command]
+pub fn check_session_review_complete(db_path: &str, session_review_id: &str) -> Result<bool, String> {
+  
+  let conn = match Connection::open(db_path) {
+      Ok(connection) => connection,
+      Err(e) => {
+          println!("{:?}", e);
+          let err_msg = format!("Database connection error: {:?}", e);
+          return Err(err_msg.to_string());
+      }
+  };
+
+  match SessionReview::session_review_complete(&conn, session_review_id) {
+      Ok(result) => {
+          return Ok(result);
+      }
+      Err(e) => {
+          let err_msg = format!("Error checking session review complete: {:?} Cause: {:?}", session_review_id, e);
           return Err(err_msg.to_string());
       }
   }

@@ -173,7 +173,9 @@ async function validateAnswer() {
       openEndedAnswer.value = '';
       const next = await sessionReviewStore.nextQuestion(`${sessionId.value}`);
       try {
-        if (sessionReviewStore.session_review_questions.length === 0) {
+        const sessionComplete = await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.id}`);
+        console.log("Session complete: ", sessionComplete); 
+        if (sessionReviewStore.checkSessionReviewComplete(`${sessionReview.id}`)) {
           await sessionReviewStore.editSession(
             `${sessionReview.value.session_review_id}`,
             true,
@@ -214,8 +216,11 @@ async function validateAnswer() {
       
       submittedOrderedSequences.value = [];
       const next = await sessionReviewStore.nextQuestion(`${sessionId.value}`);
-      try {
-        if (sessionReviewStore.session_review_questions.length === 0) {
+      try {         
+        const sessionComplete = await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.id}`);
+        console.log("Session complete: ", sessionComplete); 
+        if (sessionReviewStore.checkSessionReviewComplete(`${sessionReview.id}`)) {
+          console.log("Session is complete, we should be updating here"); 
           await sessionReviewStore.editSession(
             `${sessionReview.value.session_review_id}`,
             true,
@@ -226,6 +231,7 @@ async function validateAnswer() {
           );          
           await router.push({ path: `/sessions/detail/${sessionId.value}` });
         } else {  
+          console.log("This is actually what's being hit.."); 
           await router.push({ path: `/sessions/review/${sessionId.value}/question/${next.id}` });
         }
       } catch (err) {
@@ -243,8 +249,10 @@ async function validateAnswer() {
       );
       
       const next = await sessionReviewStore.nextQuestion(`${sessionId.value}`);
-      try {
-        if (sessionReviewStore.session_review_questions.length === 0) {
+      try {        
+        const sessionComplete = await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.id}`);
+        console.log("Session complete: ", sessionComplete); 
+        if (await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.id}`)) {
           await sessionReviewStore.editSession(
             `${sessionReview.value.session_review_id}`,
             true,
@@ -285,12 +293,26 @@ async function validateAnswer() {
       );
       
       const next = await sessionReviewStore.nextQuestion(`${sessionId.value}`);
-      try {
-        await router.push({ path: `/sessions/review/${sessionId.value}/question/${next.id}` });
+      try {        
+        const sessionComplete = await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.id}`);
+        console.log("Session complete: ", sessionComplete); 
+        if (await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.id}`)) {
+          await sessionReviewStore.editSession(
+            `${sessionReview.value.session_review_id}`,
+            true,
+            0,
+            sessionReview.value.current_question,
+            getCurrentTimestamp(),
+            getCurrentTimestamp()
+          );          
+          await router.push({ path: `/sessions/detail/${sessionId.value}`});
+        } else {  
+          await router.push({ path: `/sessions/review/${sessionId.value}/question/${next.id}` });
+        }
       } catch (err) {
         console.error('Navigation failed:', err);
       }
-
+      
     } else {
 
       await sessionReviewStore.editSessionReviewQuestion(
@@ -301,9 +323,21 @@ async function validateAnswer() {
         sessionQuestion.value.active,
       );
       
-      const next = await sessionReviewStore.nextQuestion(`${sessionId.value}`);
+      const next = await sessionReviewStore.nextQuestion(`${sessionId.value}`);      
       try {
-        await router.push({ path: `/sessions/review/${sessionId.value}/question/${next.id}` });
+        if (await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.id}`)) {
+          await sessionReviewStore.editSession(
+            `${sessionReview.value.session_review_id}`,
+            true,
+            0,
+            sessionReview.value.current_question,
+            getCurrentTimestamp(),
+            getCurrentTimestamp()
+          );          
+          await router.push({ path: `/sessions/detail/${sessionId.value}`});
+        } else {  
+          await router.push({ path: `/sessions/review/${sessionId.value}/question/${next.id}` });
+        }
       } catch (err) {
         console.error('Navigation failed:', err);
       }

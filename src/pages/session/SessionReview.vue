@@ -11,10 +11,10 @@
       </div>
 
       <div class="flex row-center gap-4 w-100" style="height: 10px;">
-        <ProgressBar progress="50" />  
+        <ProgressBar progress="50" />
         <p>50/100</p>
       </div>
-      
+
     </div>
     <br />
     <SessionReviewTable />
@@ -24,7 +24,7 @@
 
 <script setup>
 import { useRouter } from "vue-router";
-import { sessionReviewStore } from "../../api"; 
+import { sessionReviewStore } from "../../api";
 import SessionReviewTable from "../../components/session/SessionReviewTable.vue";
 import HoverButton from "../../components/shared/buttons/HoverButton.vue";
 import PlayButton from "../../components/shared/buttons/PlayButton.vue";
@@ -46,17 +46,18 @@ async function questionDetail() {
 }
 
 async function startSessionReview() {
-  const existingSession = await sessionReviewStore.checkSessionReviewComplete(`${props.sessionId}`);
-  console.log(existingSession); 
-  if (existingSession === -1) { 
+  const existingSession = await sessionReviewStore.checkSessionReviewActive(`${props.sessionId}`);
+  console.log("Checking if session review exists...");
+  console.log(existingSession);
+  if (existingSession === -1) {
     const session = await sessionReviewStore.createSessionReview(`${props.sessionId}`);
     await sessionReviewStore.loadSessionReviewQuestions(`${session.id}`);
     const firstQuestion = sessionReviewStore.session_review_questions[0];
     router.push({ path: `/sessions/review/${props.sessionId}/question/${firstQuestion.id}` });
-  } else {   
-    console.log(props.sessionId); 
+  } else {
+    console.log(props.sessionId);
     await sessionReviewStore.loadActiveSessionReviewQuestions(`${props.sessionId}`);
-    console.log(sessionReviewStore.session_review_questions); 
+    console.log(sessionReviewStore.session_review_questions);
     const firstQuestion = sessionReviewStore.session_review_questions[0];
     router.push({ path: `/sessions/review/${props.sessionId}/question/${firstQuestion.id}` });
   }

@@ -65,7 +65,7 @@ impl SessionReview {
         )
     }
 
-    pub fn session_review_complete(conn: &Connection, session_id: &str) -> Result<i64> {
+    pub fn session_review_active(conn: &Connection, session_id: &str) -> Result<i64> {
         let query = "
         SELECT 
             ID
@@ -80,6 +80,26 @@ impl SessionReview {
         Ok(session_id.unwrap_or(-1))
     }
 
+    pub fn session_review_complete(conn: &Connection, session_review_id: &str) -> Result<bool> {
+        
+        let query = "
+            WITH ACTIVE_QUESTIONS AS (
+                SELECT 
+                    * 
+                FROM SESSION_REVIEW_QUESTION 
+                WHERE SESSION_REVIEW_ID = ? AND ACTIVE = TRUE
+            )
+            SELECT COUNT(*) AS ACTIVE_QUESTIONS_COUNT FROM ACTIVE_QUESTIONS";
+
+        let mut stmt = conn.prepare(query)?; 
+        let active_question_count: i64 = stmt.query_row(
+            params![session_review_id],
+            |row| row.get(0)
+        )?;
+
+        Ok(active_question_count == 0)
+    }
+    
     pub fn retrieve(conn: &Connection, session_id: &str) -> Result<Vec<SessionReview>> {
 
         let query = "
