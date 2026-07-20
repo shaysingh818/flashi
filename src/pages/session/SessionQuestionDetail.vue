@@ -153,47 +153,16 @@ async function loadData() {
 async function validateAnswer() {
 
   if (answerType.value === 'Open Ended') {
-
-    const [result, msg] = await openEndedStore.validateOpenEndedAnswer(
-      `${question.value.answer_id}`, 
-      openEndedAnswer.value
-    );
-    
-    if (result === true) {
- 
-      /* update database with stats associated with question */
-      await sessionReviewStore.editSessionReviewQuestion(
-        `${sessionQuestion.value.id}`,
-        sessionQuestion.value.priority_index,
-        sessionQuestion.value.review_count + 1,
-        sessionQuestion.value.incorrect_count,
-        false
-      );
       
-      openEndedAnswer.value = '';
-      const next = await sessionReviewStore.nextQuestion(`${sessionId.value}`);
-      try {
-        const sessionComplete = await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.value.id}`);
-        if (sessionComplete === true) {
-          const result = await sessionReviewStore.editSession(
-            `${sessionReview.value.id}`,
-            true,
-            0,
-            sessionReview.value.current_question,
-            getCurrentTimestamp(),
-            getCurrentTimestamp()
-          );          
-          console.log(result); 
-          await router.push({ path: `/sessions/detail/${sessionId.value}` });
-        } else {               
-          await router.push({ path: `/sessions/review/${sessionId.value}/question/${next.id}` });
-        }
-      } catch (err) {
-        console.error('Navigation failed:', err);
-      }
-
-    }
-
+    await openEndedStore.completeOpenEndedAnswer(
+      `${question.value.id}`,
+      sessionQuestion.value,
+      sessionReview.value,
+      openEndedAnswer.value,
+      sessionId,
+      router
+    ); 
+    
   }
 
   if (answerType.value === 'Ordered Sequence') {

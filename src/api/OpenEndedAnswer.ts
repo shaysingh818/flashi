@@ -1,8 +1,10 @@
 import { invoke } from "@tauri-apps/api/core";
 import { dataDir} from '@tauri-apps/api/path';
 import { reactive } from 'vue';
-import { OpenEndedAnswer } from './types'; 
-
+import { OpenEndedAnswer, SessionReview, SessionReviewQuestion } from './types';
+import { sessionReviewStore } from './Session'; 
+import { getCurrentTimestamp } from "./Session";
+import { Router } from "vue-router";
 
 export const openEndedStore = reactive({
 
@@ -50,4 +52,57 @@ export const openEndedStore = reactive({
   },
 
  
+  async completeOpenEndedAnswer(
+    questionId: string,
+    sessionQuestion: SessionReviewQuestion,
+    sessionReview: SessionReview,
+    openEndedAnswerValue: string,
+    sessionId: string,
+    router: Router) {
+    
+    const [result, msg] = await  this.validateOpenEndedAnswer(
+      questionId,
+      openEndedAnswerValue
+    );
+
+    console.log("Validated open ended answer..."); 
+            
+    if (result === true) {
+
+      console.log("Answer was correct... "); 
+      
+      await sessionReviewStore.editSessionReviewQuestion(
+        `${sessionQuestion.id}`,
+        sessionQuestion.priority_index,
+        sessionQuestion.review_count + 1,
+        sessionQuestion.incorrect_count,
+        false
+      );
+
+      console.log("Proceeding to next question.. "); 
+      const next = await sessionReviewStore.nextQuestion(sessionId);
+      try {
+        const sessionComplete = await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.id}`);
+        if (sessionComplete === true) {
+          const result = await sessionReviewStore.editSession(
+            `${sessionReview.id}`,
+            true,
+            0,
+            sessionReview.current_question,
+            getCurrentTimestamp(),
+            getCurrentTimestamp()
+          );          
+          console.log(result); 
+          console.log("Session was updated after completed..."); 
+          await router.push({ path: `/sessions/detail/${sessionId}` });
+        } else {               
+          await router.push({ path: `/sessions/review/${sessionId}/question/${next.id}` });
+        }
+      } catch (err) {
+        console.error('Navigation failed:', err);
+      }
+      
+    }  
+  },
+  
 })

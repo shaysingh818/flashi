@@ -174,7 +174,7 @@ export const sessionReviewStore = reactive({
 
   async editSessionReviewQuestion(
     id: string,
-    priorityIndex: boolean,
+    priorityIndex: number,
     reviewCount: number,
     incorrectCount: number,
     active: string): Promise<string> {
