@@ -152,8 +152,6 @@ async function loadData() {
 
 async function validateAnswer() {
 
-  console.log("validating answer for: ", sessionReview.value.id); 
-
   if (answerType.value === 'Open Ended') {
 
     const [result, msg] = await openEndedStore.validateOpenEndedAnswer(
@@ -176,17 +174,18 @@ async function validateAnswer() {
       const next = await sessionReviewStore.nextQuestion(`${sessionId.value}`);
       try {
         const sessionComplete = await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.value.id}`);
-        if (sessionComplete) {
-          await sessionReviewStore.editSession(
-            `${sessionReview.value.session_review_id}`,
+        if (sessionComplete === true) {
+          const result = await sessionReviewStore.editSession(
+            `${sessionReview.value.id}`,
             true,
             0,
             sessionReview.value.current_question,
             getCurrentTimestamp(),
             getCurrentTimestamp()
           );          
+          console.log(result); 
           await router.push({ path: `/sessions/detail/${sessionId.value}` });
-        } else {  
+        } else {               
           await router.push({ path: `/sessions/review/${sessionId.value}/question/${next.id}` });
         }
       } catch (err) {
@@ -219,9 +218,9 @@ async function validateAnswer() {
       const next = await sessionReviewStore.nextQuestion(`${sessionId.value}`);
       try {         
         const sessionComplete = await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.value.id}`);
-        if (sessionComplete) {
+        if (sessionComplete === true) {
           await sessionReviewStore.editSession(
-            `${sessionReview.value.session_review_id}`,
+            `${sessionReview.value.id}`,
             true,
             0,
             sessionReview.value.current_question,
@@ -229,8 +228,8 @@ async function validateAnswer() {
             getCurrentTimestamp()
           );          
           await router.push({ path: `/sessions/detail/${sessionId.value}` });
-        } else {  
-          console.log("This is actually what's being hit.."); 
+        } else {           
+          console.log("Nothing happened, going to default");
           await router.push({ path: `/sessions/review/${sessionId.value}/question/${next.id}` });
         }
       } catch (err) {
@@ -250,9 +249,9 @@ async function validateAnswer() {
       const next = await sessionReviewStore.nextQuestion(`${sessionId.value}`);
       try {        
         const sessionComplete = await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.value.id}`);
-        if (sessionComplete) {
+        if (sessionComplete === true) {          
           await sessionReviewStore.editSession(
-            `${sessionReview.value.session_review_id}`,
+            `${sessionReview.value.id}`,
             true,
             0,
             sessionReview.value.current_question,
@@ -260,7 +259,7 @@ async function validateAnswer() {
             getCurrentTimestamp()
           );          
           await router.push({ path: `/sessions/detail/${sessionId.value}`});
-        } else {  
+        } else {           
           await router.push({ path: `/sessions/review/${sessionId.value}/question/${next.id}` });
         }
       } catch (err) {
@@ -293,9 +292,9 @@ async function validateAnswer() {
       const next = await sessionReviewStore.nextQuestion(`${sessionId.value}`);
       try {        
         const sessionComplete = await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.value.id}`);
-        if (sessionComplete) {
+        if (sessionComplete === true) {          
           await sessionReviewStore.editSession(
-            `${sessionReview.value.session_review_id}`,
+            `${sessionReview.value.id}`,
             true,
             0,
             sessionReview.value.current_question,
@@ -324,7 +323,7 @@ async function validateAnswer() {
       try {
         if (await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.value.id}`)) {
           await sessionReviewStore.editSession(
-            `${sessionReview.value.session_review_id}`,
+            `${sessionReview.value.id}`,
             true,
             0,
             sessionReview.value.current_question,

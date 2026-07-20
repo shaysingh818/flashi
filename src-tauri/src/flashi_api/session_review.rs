@@ -135,24 +135,24 @@ impl SessionReview {
     }
     
     pub fn update(&mut self, conn: &Connection, id: &str) -> Result<()> {
-        self.updated = chrono::offset::Local::now().to_string();
 
+        self.updated = chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+        self.end_time = chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+        
         let result = conn.execute(
             "UPDATE SESSION_REVIEW
-                SET SESSION_ID=?1,
-                    COMPLETE=?2,
-                    CYCLE=?3
-                    CURRENT_QUESTION=?4
-                    START_TIME=?5
-                    END_TIME=?6
-                    UPDATED=?7
-                WHERE ID=?8",
+                SET COMPLETE=?1,
+                    CYCLE=?2,
+                    CURRENT_QUESTION=?3,
+                    START_TIME=?4,
+                    END_TIME=?5,
+                    UPDATED=?6
+                WHERE ID=?7",
             params![
-                &self.session_id,
                 &self.complete,
                 &self.cycle,
                 &self.current_question,
-                &self.start_time,
+                &self.start_time.to_string(),
                 &self.end_time,
                 &self.updated, 
                 id,
