@@ -71,9 +71,9 @@ export const openEndedStore = reactive({
       await sessionReviewStore.editSessionReviewQuestion(
         `${sessionQuestion.id}`,
         sessionQuestion.priority_index,
-        sessionQuestion.review_count + 1,
+        parseInt(sessionQuestion.review_count) + 1, 
         sessionQuestion.incorrect_count,
-        false
+        "false"
       );
 
       console.log("Proceeding to next question.. "); 
@@ -98,7 +98,18 @@ export const openEndedStore = reactive({
         console.error('Navigation failed:', err);
       }
       
-    }  
+    } else {
+      await sessionReviewStore.editSessionReviewQuestion(
+        `${sessionQuestion.id}`,
+        sessionQuestion.priority_index,
+        parseInt(sessionQuestion.review_count) + 1,
+        sessionQuestion.incorrect_count + 1,
+        "true"
+      );
+      
+      const next = await sessionReviewStore.nextQuestion(`${sessionId}`);      
+      nextId = next.id;
+    }
     return [nextQuestion, nextId]
   },
   

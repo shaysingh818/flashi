@@ -3,7 +3,7 @@ import { dataDir} from '@tauri-apps/api/path';
 import { reactive } from 'vue';
 import { MultipleChoiceAnswer } from './types'; 
 import { sessionReviewStore, getCurrentTimestamp } from './Session'; 
-import { OrderedSequenceAnswer, SessionReview, SessionReviewQuestion } from './types';
+import { SessionReview, SessionReviewQuestion } from './types';
 
 export const multipleChoiceAnswerStore = reactive({
 
@@ -127,9 +127,9 @@ export const multipleChoiceStore = reactive({
       await sessionReviewStore.editSessionReviewQuestion(
         `${sessionQuestion.id}`,
         sessionQuestion.priority_index,
-        sessionQuestion.review_count + 1,
+        parseInt(sessionQuestion.review_count) + 1,
         sessionQuestion.incorrect_count,
-        false
+        "false"
       );
       
       const next = await sessionReviewStore.nextQuestion(`${sessionId}`);
@@ -158,9 +158,9 @@ export const multipleChoiceStore = reactive({
       await sessionReviewStore.editSessionReviewQuestion(
         `${sessionQuestion.id}`,
         sessionQuestion.priority_index,
-        sessionQuestion.review_count + 1,
+        parseInt(sessionQuestion.review_count) + 1,
         sessionQuestion.incorrect_count + 1,
-        true
+        "true"
       );
       
       const next = await sessionReviewStore.nextQuestion(`${sessionId}`);      
