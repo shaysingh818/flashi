@@ -53,23 +53,20 @@ export const openEndedStore = reactive({
 
  
   async completeOpenEndedAnswer(
-    questionId: string,
+    answerId: string,
     sessionQuestion: SessionReviewQuestion,
     sessionReview: SessionReview,
     openEndedAnswerValue: string,
-    sessionId: string,
-    router: Router) {
-    
+    sessionId: string): Promise<[boolean, number | null]> {
+
+    let nextQuestion = true;
+    let nextId: number | null = null;
     const [result, msg] = await  this.validateOpenEndedAnswer(
-      questionId,
+      answerId,
       openEndedAnswerValue
     );
-
-    console.log("Validated open ended answer..."); 
-            
+    
     if (result === true) {
-
-      console.log("Answer was correct... "); 
       
       await sessionReviewStore.editSessionReviewQuestion(
         `${sessionQuestion.id}`,
@@ -91,18 +88,18 @@ export const openEndedStore = reactive({
             sessionReview.current_question,
             getCurrentTimestamp(),
             getCurrentTimestamp()
-          );          
-          console.log(result); 
-          console.log("Session was updated after completed..."); 
-          await router.push({ path: `/sessions/detail/${sessionId}` });
-        } else {               
-          await router.push({ path: `/sessions/review/${sessionId}/question/${next.id}` });
+          );   
+          console.log("Session completion result: ", result); 
+          nextQuestion = false;
+        } else {          
+          nextId = next.id;
         }
       } catch (err) {
         console.error('Navigation failed:', err);
       }
       
     }  
+    return [nextQuestion, nextId]
   },
   
 })

@@ -152,163 +152,56 @@ async function loadData() {
 
 async function validateAnswer() {
 
-  if (answerType.value === 'Open Ended') {
-      
-    await openEndedStore.completeOpenEndedAnswer(
-      `${question.value.id}`,
+  if (answerType.value === 'Open Ended') { 
+    const [result, nextId] = await openEndedStore.completeOpenEndedAnswer(
+      `${question.value.answer_id}`,
       sessionQuestion.value,
       sessionReview.value,
       openEndedAnswer.value,
-      sessionId,
-      router
-    ); 
+      sessionId
+    );
     
+    if (result === true) {    
+      openEndedAnswer.value = '';
+      await router.push({ path: `/sessions/review/${sessionId.value}/question/${nextId}` });
+    } else {      
+      await router.push({ path: `/sessions/detail/${sessionId.value}` });
+    }
   }
 
   if (answerType.value === 'Ordered Sequence') {
-
-    const sequenceAnswers = submittedOrderedSequences.value.map(item => item.item.toString());
-    const [result, msg] = await orderedSequenceStore.validateOrderedSequenceAnswer(
-      `${question.value.answer_id}`, 
-      sequenceAnswers
+    const [result, nextId] = await orderedSequenceStore.completeOrderSequenceAnswer(
+      `${question.value.answer_id}`,
+      sessionQuestion.value,
+      sessionReview.value,
+      submittedOrderedSequences.value,
+      sessionId
     );
 
-    if (result === true) {
-
-      await sessionReviewStore.editSessionReviewQuestion(
-        `${sessionQuestion.value.id}`,
-        sessionQuestion.value.priority_index,
-        sessionQuestion.value.review_count + 1,
-        sessionQuestion.value.incorrect_count,
-        false
-      );
-      
+    if (result === true) {      
       submittedOrderedSequences.value = [];
-      const next = await sessionReviewStore.nextQuestion(`${sessionId.value}`);
-      try {         
-        const sessionComplete = await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.value.id}`);
-        if (sessionComplete === true) {
-          await sessionReviewStore.editSession(
-            `${sessionReview.value.id}`,
-            true,
-            0,
-            sessionReview.value.current_question,
-            getCurrentTimestamp(),
-            getCurrentTimestamp()
-          );          
-          await router.push({ path: `/sessions/detail/${sessionId.value}` });
-        } else {           
-          console.log("Nothing happened, going to default");
-          await router.push({ path: `/sessions/review/${sessionId.value}/question/${next.id}` });
-        }
-      } catch (err) {
-        console.error('Navigation failed:', err);
-      }
-
-    } else {
-
-      await sessionReviewStore.editSessionReviewQuestion(
-        `${sessionQuestion.value.id}`,
-        sessionQuestion.value.priority_index,
-        sessionQuestion.value.review_count + 1,
-        sessionQuestion.value.incorrect_count,
-        false
-      );
-      
-      const next = await sessionReviewStore.nextQuestion(`${sessionId.value}`);
-      try {        
-        const sessionComplete = await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.value.id}`);
-        if (sessionComplete === true) {          
-          await sessionReviewStore.editSession(
-            `${sessionReview.value.id}`,
-            true,
-            0,
-            sessionReview.value.current_question,
-            getCurrentTimestamp(),
-            getCurrentTimestamp()
-          );          
-          await router.push({ path: `/sessions/detail/${sessionId.value}`});
-        } else {           
-          await router.push({ path: `/sessions/review/${sessionId.value}/question/${next.id}` });
-        }
-      } catch (err) {
-        console.error('Navigation failed:', err);
-      }
-      
+      await router.push({ path: `/sessions/review/${sessionId.value}/question/${nextId}` });
+    } else { 
+      await router.push({ path: `/sessions/detail/${sessionId.value}` });
     }
-
   }
 
   if (answerType.value === 'Multiple Choice') {
-
-    const answerIds = selectedMultipleChoiceAnswers.value.map(item => item.id.toString());
-    const [result, msg] = await multipleChoiceStore.validateMultipleChoice(
-      `${question.value.answer_id}`, 
-      answerIds
+    
+    const [result, nextId] = await multipleChoiceStore.completeMultipleChoiceAnswer(
+      `${question.value.answer_id}`,
+      sessionQuestion.value,
+      sessionReview.value,
+      selectedMultipleChoiceAnswers.value,
+      sessionId
     );
-
-    if(result === true) {
-
-      /* update database with stats associated with question */
-      await sessionReviewStore.editSessionReviewQuestion(
-        `${sessionQuestion.value.id}`,
-        sessionQuestion.value.priority_index,
-        sessionQuestion.value.review_count + 1,
-        sessionQuestion.value.incorrect_count,
-        false
-      );
-      
-      const next = await sessionReviewStore.nextQuestion(`${sessionId.value}`);
-      try {        
-        const sessionComplete = await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.value.id}`);
-        if (sessionComplete === true) {          
-          await sessionReviewStore.editSession(
-            `${sessionReview.value.id}`,
-            true,
-            0,
-            sessionReview.value.current_question,
-            getCurrentTimestamp(),
-            getCurrentTimestamp()
-          );          
-          await router.push({ path: `/sessions/detail/${sessionId.value}`});
-        } else {  
-          await router.push({ path: `/sessions/review/${sessionId.value}/question/${next.id}` });
-        }
-      } catch (err) {
-        console.error('Navigation failed:', err);
-      }
-      
-    } else {
-
-      await sessionReviewStore.editSessionReviewQuestion(
-        `${sessionQuestion.value.id}`,
-        sessionQuestion.value.priority_index,
-        sessionQuestion.value.review_count + 1,
-        sessionQuestion.value.incorrect_count + 1,
-        sessionQuestion.value.active,
-      );
-      
-      const next = await sessionReviewStore.nextQuestion(`${sessionId.value.id}`);      
-      try {
-        if (await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.value.id}`)) {
-          await sessionReviewStore.editSession(
-            `${sessionReview.value.id}`,
-            true,
-            0,
-            sessionReview.value.current_question,
-            getCurrentTimestamp(),
-            getCurrentTimestamp()
-          );          
-          await router.push({ path: `/sessions/detail/${sessionId.value}`});
-        } else {  
-          await router.push({ path: `/sessions/review/${sessionId.value}/question/${next.id}` });
-        }
-      } catch (err) {
-        console.error('Navigation failed:', err);
-      }
-      
+    
+    if (result === true) {      
+      selectedMultipleChoiceAnswers.value = [];
+      await router.push({ path: `/sessions/review/${sessionId.value}/question/${nextId}` });
+    } else { 
+      await router.push({ path: `/sessions/detail/${sessionId.value}` });
     }
-
   }
 
 }

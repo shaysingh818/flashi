@@ -1,8 +1,8 @@
 import { invoke } from "@tauri-apps/api/core";
 import { dataDir} from '@tauri-apps/api/path';
 import { reactive } from 'vue';
-import { OrderedSequenceAnswer } from './types'; 
-
+import { sessionReviewStore, getCurrentTimestamp } from './Session'; 
+import { OrderedSequenceAnswer, SessionReview, SessionReviewQuestion } from './types';
 
 export const orderedSequenceStore = reactive({
 
@@ -48,5 +48,68 @@ export const orderedSequenceStore = reactive({
     const dbPath = await this.getDbPath();    
     return await invoke("validate_ordered_sequence_answer", { dbPath, id, answer });  
   },
+
+  async completeOrderSequenceAnswer(
+    answerId: string,
+    sessionQuestion: SessionReviewQuestion, 
+    sessionReview: SessionReview, 
+    submittedOrderedSequenceValue: string[],
+    sessionId: string): Promise<[boolean, number | null]> {
+    
+    let nextQuestion = true;
+    let nextId: number | null = null;
+    const sequenceAnswers = submittedOrderedSequenceValue.map(item => item.item.toString());
+
+    const [result, msg] = await  this.validateOrderedSequenceAnswer(
+      answerId,
+      sequenceAnswers
+    );
+
+    if (result === true) {
+      
+      await sessionReviewStore.editSessionReviewQuestion(
+        `${sessionQuestion.id}`,
+        sessionQuestion.priority_index,
+        sessionQuestion.review_count + 1,
+        sessionQuestion.incorrect_count,
+        false
+      );
+
+      const next = await sessionReviewStore.nextQuestion(`${sessionId}`);
+      try {         
+        const sessionComplete = await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.id}`);
+        if (sessionComplete === true) {
+          await sessionReviewStore.editSession(
+            `${sessionReview.id}`,
+            true,
+            0,
+            sessionReview.current_question,
+            getCurrentTimestamp(),
+            getCurrentTimestamp()
+          );        
+          console.log("Session complete result: ", result); 
+          nextQuestion = false;
+        } else {           
+          nextId = next.id;
+        }
+      } catch (err) {
+        console.error('Navigation failed:', err);
+      }
+      
+    } else {
+
+      await sessionReviewStore.editSessionReviewQuestion(
+        `${sessionQuestion.id}`,
+        sessionQuestion.priority_index,
+        sessionQuestion.review_count + 1,
+        sessionQuestion.incorrect_count + 1,
+        true
+      );
+      
+      const next = await sessionReviewStore.nextQuestion(`${sessionId}`);      
+      nextId = next.id;
+    }
+    return [nextQuestion, nextId]
+  }
  
 })
