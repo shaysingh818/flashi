@@ -72,7 +72,7 @@ export const orderedSequenceStore = reactive({
         sessionQuestion.priority_index,
         parseInt(sessionQuestion.review_count) + 1,
         sessionQuestion.incorrect_count,
-        "false"
+        false
       );
 
       const next = await sessionReviewStore.nextQuestion(`${sessionId}`);
@@ -103,7 +103,7 @@ export const orderedSequenceStore = reactive({
         sessionQuestion.priority_index,
         parseInt(sessionQuestion.review_count) + 1,
         sessionQuestion.incorrect_count + 1,
-        "true"
+        true
       );
       
       const next = await sessionReviewStore.nextQuestion(`${sessionId}`);      

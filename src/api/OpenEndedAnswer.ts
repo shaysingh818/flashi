@@ -73,7 +73,7 @@ export const openEndedStore = reactive({
         sessionQuestion.priority_index,
         parseInt(sessionQuestion.review_count) + 1, 
         sessionQuestion.incorrect_count,
-        "false"
+        false
       );
 
       console.log("Proceeding to next question.. "); 
@@ -104,7 +104,7 @@ export const openEndedStore = reactive({
         sessionQuestion.priority_index,
         parseInt(sessionQuestion.review_count) + 1,
         sessionQuestion.incorrect_count + 1,
-        "true"
+        true
       );
       
       const next = await sessionReviewStore.nextQuestion(`${sessionId}`);      
