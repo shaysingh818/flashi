@@ -177,7 +177,7 @@ export const sessionReviewStore = reactive({
     priorityIndex: number,
     reviewCount: number,
     incorrectCount: number,
-    active: string): Promise<string> {
+    active: boolean): Promise<string> {
 
     const dbPath = await this.getDbPath();
     return await invoke("edit_session_review_question", {
@@ -191,7 +191,7 @@ export const sessionReviewStore = reactive({
   },
 
   async nextQuestion(sessionId: string): Promise<SessionReviewQuestion> {
-    if(this.current_question === this.session_review_questions.length-1) {
+    if (this.current_question === this.session_review_questions.length - 1) {
       const lastQuestion = this.session_review_questions[this.current_question];
       this.current_question = 0;
       await this.loadActiveSessionReviewQuestions(sessionId);
@@ -200,7 +200,9 @@ export const sessionReviewStore = reactive({
       }
       return this.session_review_questions[this.current_question];
     } else {
+      console.log(this.session_review_questions); 
       this.current_question += 1;
+      console.log(this.session_review_questions[this.current_question]); 
       return this.session_review_questions[this.current_question];
     }
   },

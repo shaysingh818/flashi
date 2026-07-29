@@ -76,9 +76,11 @@ export const orderedSequenceStore = reactive({
       );
 
       const next = await sessionReviewStore.nextQuestion(`${sessionId}`);
+      console.log("Next ordered sequence beginning: ", next.id); 
       try {         
         const sessionComplete = await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.id}`);
         if (sessionComplete === true) {
+          console.log(`${sessionReview.id}`); 
           await sessionReviewStore.editSession(
             `${sessionReview.id}`,
             true,
@@ -107,8 +109,11 @@ export const orderedSequenceStore = reactive({
       );
       
       const next = await sessionReviewStore.nextQuestion(`${sessionId}`);      
+      console.log("Next ordered sequence end: ", next.id); 
       nextId = next.id;
     }
+
+    console.log(nextId);
     return [nextQuestion, nextId]
   }
  

@@ -4,7 +4,6 @@ import { reactive } from 'vue';
 import { OpenEndedAnswer, SessionReview, SessionReviewQuestion } from './types';
 import { sessionReviewStore } from './Session'; 
 import { getCurrentTimestamp } from "./Session";
-import { Router } from "vue-router";
 
 export const openEndedStore = reactive({
 
@@ -77,7 +76,8 @@ export const openEndedStore = reactive({
       );
 
       console.log("Proceeding to next question.. "); 
-      const next = await sessionReviewStore.nextQuestion(sessionId);
+      const next = await sessionReviewStore.nextQuestion(sessionId);      
+      console.log("Next open ended beginning: ", next.id); 
       try {
         const sessionComplete = await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.id}`);
         if (sessionComplete === true) {
@@ -99,6 +99,7 @@ export const openEndedStore = reactive({
       }
       
     } else {
+      
       await sessionReviewStore.editSessionReviewQuestion(
         `${sessionQuestion.id}`,
         sessionQuestion.priority_index,
@@ -108,6 +109,7 @@ export const openEndedStore = reactive({
       );
       
       const next = await sessionReviewStore.nextQuestion(`${sessionId}`);      
+      console.log("Next open ended end: ", next); 
       nextId = next.id;
     }
     return [nextQuestion, nextId]

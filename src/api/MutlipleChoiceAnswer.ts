@@ -114,8 +114,7 @@ export const multipleChoiceStore = reactive({
   
     let nextQuestion = true;
     let nextId: number | null = null;
-
-    
+ 
     const answerIds = submittedMultipleChoiceAnswersValue.map(item => item.id.toString());
     const [result, msg] = await multipleChoiceStore.validateMultipleChoice(
       `${answerId}`, 
@@ -133,6 +132,7 @@ export const multipleChoiceStore = reactive({
       );
       
       const next = await sessionReviewStore.nextQuestion(`${sessionId}`);
+      console.log("Next multiple choice beginning: ", next.id); 
       try {         
         const sessionComplete = await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.id}`);
         if (sessionComplete === true) {
@@ -164,6 +164,7 @@ export const multipleChoiceStore = reactive({
       );
       
       const next = await sessionReviewStore.nextQuestion(`${sessionId}`);      
+      console.log("Next multiple choice end: ", next.id); 
       nextId = next.id;
     }
 
