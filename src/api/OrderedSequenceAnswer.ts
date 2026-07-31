@@ -100,6 +100,7 @@ export const orderedSequenceStore = reactive({
       
     } else {
 
+      console.log("Incorrect order sequence answer")
       await sessionReviewStore.editSessionReviewQuestion(
         `${sessionQuestion.id}`,
         sessionQuestion.priority_index,

@@ -147,6 +147,13 @@ async function loadData() {
     );
     openEndedAnswer.value = answer.answer;
   }
+
+  console.log("SESSION STORE INFO..."); 
+  const currQuestionIdx = sessionReviewStore.current_question;  
+  console.log("Current question: ", currQuestionIdx);
+  console.log("SESSION QUESTIONS..."); 
+  console.log(sessionReviewStore.session_review_questions); 
+  
 }
 
 

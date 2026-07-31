@@ -192,6 +192,7 @@ export const sessionReviewStore = reactive({
 
   async nextQuestion(sessionId: string): Promise<SessionReviewQuestion> {
     if (this.current_question === this.session_review_questions.length - 1) {
+      console.log("End of question bank, going back to start point.."); 
       const lastQuestion = this.session_review_questions[this.current_question];
       this.current_question = 0;
       await this.loadActiveSessionReviewQuestions(sessionId);
@@ -200,6 +201,7 @@ export const sessionReviewStore = reactive({
       }
       return this.session_review_questions[this.current_question];
     } else {
+      console.log("Still more questions to go through.."); 
       console.log(this.session_review_questions); 
       this.current_question += 1;
       console.log(this.session_review_questions[this.current_question]); 

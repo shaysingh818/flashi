@@ -51,7 +51,7 @@ async function startSessionReview() {
   console.log(existingSession);
   if (existingSession === -1) {
     const session = await sessionReviewStore.createSessionReview(`${props.sessionId}`);
-    await sessionReviewStore.loadSessionReviewQuestions(`${session.id}`);
+    await sessionReviewStore.loadActiveSessionReviewQuestions(`${props.sessionId}`);
     const firstQuestion = sessionReviewStore.session_review_questions[0];
     router.push({ path: `/sessions/review/${props.sessionId}/question/${firstQuestion.id}` });
   } else {
