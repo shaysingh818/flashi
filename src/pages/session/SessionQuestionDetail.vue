@@ -147,12 +147,6 @@ async function loadData() {
     );
     openEndedAnswer.value = answer.answer;
   }
-
-  console.log("SESSION STORE INFO..."); 
-  const currQuestionIdx = sessionReviewStore.current_question;  
-  console.log("Current question: ", currQuestionIdx);
-  console.log("SESSION QUESTIONS..."); 
-  console.log(sessionReviewStore.session_review_questions); 
   
 }
 
@@ -160,55 +154,51 @@ async function loadData() {
 async function validateAnswer() {
 
   if (answerType.value === 'Open Ended') { 
-    const [result, nextId] = await openEndedStore.completeOpenEndedAnswer(
+    const [result, msg] = await sessionReviewStore.completeAnswerMetadata(
       `${question.value.answer_id}`,
       sessionQuestion.value,
-      sessionReview.value,
-      openEndedAnswer.value,
-      sessionId
-    );
-    
-    if (result === true) {    
-      openEndedAnswer.value = '';
-      await router.push({ path: `/sessions/review/${sessionId.value}/question/${nextId}` });
-    } else {      
-      await router.push({ path: `/sessions/detail/${sessionId.value}` });
-    }
+      openEndedAnswer.value
+    );  
   }
 
   if (answerType.value === 'Ordered Sequence') {
-    const [result, nextId] = await orderedSequenceStore.completeOrderSequenceAnswer(
+    const [result, msg] = await sessionReviewStore.completeAnswerMetadata(
       `${question.value.answer_id}`,
       sessionQuestion.value,
-      sessionReview.value,
-      submittedOrderedSequences.value,
-      sessionId
+      undefined,      
+      undefined,
+      submittedOrderedSequences.value
     );
-
-    if (result === true) {      
-      submittedOrderedSequences.value = [];
-      await router.push({ path: `/sessions/review/${sessionId.value}/question/${nextId}` });
-    } else { 
-      await router.push({ path: `/sessions/detail/${sessionId.value}` });
-    }
   }
 
   if (answerType.value === 'Multiple Choice') {
-    
-    const [result, nextId] = await multipleChoiceStore.completeMultipleChoiceAnswer(
+    const [result, msg] = await sessionReviewStore.completeAnswerMetadata(
       `${question.value.answer_id}`,
       sessionQuestion.value,
-      sessionReview.value,
+      undefined,
       selectedMultipleChoiceAnswers.value,
-      sessionId
-    );
-    
-    if (result === true) {      
-      selectedMultipleChoiceAnswers.value = [];
-      await router.push({ path: `/sessions/review/${sessionId.value}/question/${nextId}` });
-    } else { 
+      undefined
+    );  
+  }
+
+  const nextId = await sessionReviewStore.nextQuestion(`${sessionId.value}`, sessionReview.value);
+  try {
+    const sessionComplete = await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.value.id}`);
+    if (sessionComplete === true) {
+      await sessionReviewStore.editSession(
+        `${sessionReview.value.id}`,
+        true,
+        sessionReview.value.cycle,
+        sessionReview.value.current_question,
+        sessionReview.value.start_time,
+        getCurrentTimestamp()
+      ); 
       await router.push({ path: `/sessions/detail/${sessionId.value}` });
+    } else {      
+      await router.push({ path: `/sessions/review/${sessionId.value}/question/${nextId}` });
     }
+  } catch (err) {
+    console.log("Error completing session: ", err); 
   }
 
 }

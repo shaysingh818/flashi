@@ -11,14 +11,14 @@
       </div>
 
       <div class="flex row-center gap-4 w-100" style="height: 10px;">
-        <ProgressBar progress="50" />
+        <ProgressBar progress=50 />
         <p>50/100</p>
       </div>
 
     </div>
     <br />
     <SessionReviewTable />
-    <HoverButton icon="fa-solid fa-play" @click="createSession" />
+    <HoverButton icon="fa-solid fa-play" @click="startSessionReview" />
   </div>
 </template>
 
@@ -47,8 +47,7 @@ async function questionDetail() {
 
 async function startSessionReview() {
   const existingSession = await sessionReviewStore.checkSessionReviewActive(`${props.sessionId}`);
-  console.log("Checking if session review exists...");
-  console.log(existingSession);
+  sessionReviewStore.current_question = 0;
   if (existingSession === -1) {
     const session = await sessionReviewStore.createSessionReview(`${props.sessionId}`);
     await sessionReviewStore.loadActiveSessionReviewQuestions(`${props.sessionId}`);

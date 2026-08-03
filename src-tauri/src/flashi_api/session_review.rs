@@ -420,7 +420,7 @@ impl SessionReviewQuestion {
             LEFT JOIN SESSION_REVIEW_QUESTION AS SRQ
             ON Q.ID = SRQ.QUESTION_ID
             WHERE SRQ.ACTIVE = TRUE
-            ORDER BY Q.CORRECT DESC";
+            ORDER BY SRQ.INCORRECT_COUNT, SRQ.REVIEW_COUNT ASC";
 
 
         let mut stmt = conn.prepare(query)?;        
@@ -556,6 +556,32 @@ impl SessionReviewMetrics {
         review_time: f64) -> SessionReviewMetrics {
 
         let now = chrono::offset::Local::now().to_string();
+
+        let query = "
+          WITH SRQ_METRICS AS (
+           	SELECT
+           	    SUM(CASE WHEN SRQ.INCORRECT_COUNT > 0 THEN 1 ELSE 0 END) AS TOTAL_INCORRECT_COUNT,
+           	    SUM(CASE WHEN SRQ.INCORRECT_COUNT = 0 THEN 1 ELSE 0 END) AS TOTAL_CORRECT_COUNT,
+           	    SUM(SRQ.REVIEW_COUNT) AS TOTAL_QUESTIONS_REVIEWED
+           	FROM SESSION_REVIEW_QUESTION AS SRQ
+           	WHERE SRQ.SESSION_REVIEW_ID = ?
+                      ),
+                      SR_CYCLE AS (
+           	SELECT
+            		ID, 
+            		CYCLE 
+           	FROM SESSION_REVIEW WHERE ID = ?
+                      )
+                      SELECT 
+           	SR_CYCLE.ID, 
+           	SR_CYCLE.CYCLE,
+           	TOTAL_CORRECT_COUNT,
+           	TOTAL_INCORRECT_COUNT,
+           	TOTAL_QUESTIONS_REVIEWED,
+           	TOTAL_CORRECT_COUNT / TOTAL_INCORRECT_COUNT AS ACCURACY
+          FROM SRQ_METRICS
+          CROSS JOIN SR_CYCLE
+        "; 
 
         SessionReviewMetrics {
             id: 0,

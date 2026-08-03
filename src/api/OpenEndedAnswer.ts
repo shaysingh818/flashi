@@ -50,21 +50,16 @@ export const openEndedStore = reactive({
     return await invoke("validate_open_ended_answer", { dbPath, id, answer });  
   },
 
- 
-  async completeOpenEndedAnswer(
+  async completeOpenEndedAnswerMetadata(    
     answerId: string,
     sessionQuestion: SessionReviewQuestion,
-    sessionReview: SessionReview,
-    openEndedAnswerValue: string,
-    sessionId: string): Promise<[boolean, number | null]> {
-
-    let nextQuestion = true;
-    let nextId: number | null = null;
+    openEndedAnswerValue: string) {
+ 
     const [result, msg] = await  this.validateOpenEndedAnswer(
       answerId,
       openEndedAnswerValue
     );
-    
+
     if (result === true) {
       
       await sessionReviewStore.editSessionReviewQuestion(
@@ -74,30 +69,7 @@ export const openEndedStore = reactive({
         sessionQuestion.incorrect_count,
         false
       );
-
-      console.log("Proceeding to next question.. "); 
-      const next = await sessionReviewStore.nextQuestion(sessionId);      
-      console.log("Next open ended beginning: ", next.id); 
-      try {
-        const sessionComplete = await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.id}`);
-        if (sessionComplete === true) {
-          const result = await sessionReviewStore.editSession(
-            `${sessionReview.id}`,
-            true,
-            0,
-            sessionReview.current_question,
-            getCurrentTimestamp(),
-            getCurrentTimestamp()
-          );   
-          console.log("Session completion result: ", result); 
-          nextQuestion = false;
-        } else {          
-          nextId = next.id;
-        }
-      } catch (err) {
-        console.error('Navigation failed:', err);
-      }
-      
+        
     } else {
       
       await sessionReviewStore.editSessionReviewQuestion(
@@ -108,11 +80,9 @@ export const openEndedStore = reactive({
         true
       );
       
-      const next = await sessionReviewStore.nextQuestion(`${sessionId}`);      
-      console.log("Next open ended end: ", next); 
-      nextId = next.id;
     }
-    return [nextQuestion, nextId]
+
+    return [result, msg];
   },
-  
+ 
 })
