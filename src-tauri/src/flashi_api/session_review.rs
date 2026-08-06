@@ -585,7 +585,7 @@ impl SessionReviewMetrics {
                 total_review_count: row.get(4)?,
                 number_of_cycles: row.get(5)?,
                 review_time: row.get(6)?,
-                created: row.get(7)?,
+                created: now,
             })
         })
     }
