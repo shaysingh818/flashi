@@ -184,8 +184,10 @@ async function validateAnswer() {
   const nextId = await sessionReviewStore.nextQuestion(`${sessionId.value}`, sessionReview.value);
   try {
     const sessionComplete = await sessionReviewStore.checkSessionReviewComplete(`${sessionReview.value.id}`);
+    console.log('Session complete: ', sessionComplete); 
     if (sessionComplete === true) {
-      await sessionReviewStore.editSession(
+
+      const completeResult = await sessionReviewStore.editSession(
         `${sessionReview.value.id}`,
         true,
         sessionReview.value.cycle,
@@ -193,6 +195,15 @@ async function validateAnswer() {
         sessionReview.value.start_time,
         getCurrentTimestamp()
       ); 
+      if (completeResult === "Success") {
+        console.log("Successfully edited session with completes status: ", sessionReview.value.id); 
+      }
+
+      const sessionMetricsResult = await sessionReviewStore.generateSessionReviewMetrics(`${sessionReview.value.id}`);
+      if (sessionMetricsResult === "Success") {
+        console.log("Successfully generated session review metrics: ", sessionReview.value.id); 
+      }
+      
       await router.push({ path: `/sessions/detail/${sessionId.value}` });
     } else {      
       await router.push({ path: `/sessions/review/${sessionId.value}/question/${nextId}` });
