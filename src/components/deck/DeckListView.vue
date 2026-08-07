@@ -17,6 +17,7 @@
 <script setup>
 import DeckListItem from "./DeckListItem.vue";
 import { deckStore, sessionStore } from "../../api";
+import { message } from '@tauri-apps/plugin-dialog'; 
 
 
 const props = defineProps({
@@ -38,11 +39,21 @@ const props = defineProps({
 const emit = defineEmits(["update:items"]);
 
 async function addDeckToSession(deckId) {
-  await sessionStore.addDeckToSession(props.sessionId, deckId);
+  const result = await sessionStore.addDeckToSession(props.sessionId, deckId);
+  if (result === "Success") {
+    await message('Added deck to session review', { title: 'Alert', kind: 'info'})
+  } else { 
+    await message('Could not add deck to session review', { title: 'Alert', kind: 'info'})
+  }
 }
 
 async function removeDeckFromSession(deckId) {
-  await sessionStore.removeDeckFromSession(props.sessionId, deckId);
+  const result = await sessionStore.removeDeckFromSession(props.sessionId, deckId);
+  if (result === "Success") {
+    alert("Removed deck from session review");
+  } else {
+    alert("Could not remove deck from session review"); 
+  }
   emit("update:items", deckId); 
 }
 
