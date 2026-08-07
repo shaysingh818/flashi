@@ -575,7 +575,7 @@ impl SessionReviewMetrics {
             CROSS JOIN SR_CYCLE
         ";
 
-        conn.query_row(query, &[&session_review_id], |row| {
+        conn.query_row(query, &[&session_review_id, &session_review_id], |row| {
             Ok(SessionReviewMetrics {
                 id: 0,
                 session_review_id: row.get(0)?,
@@ -601,7 +601,7 @@ impl SessionReviewMetrics {
                     TOTAL_REVIEW_COUNT,
                     NUMBER_OF_CYCLES,
                     REVIEW_TIME,
-                    CREATED,
+                    CREATED
                 )
             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
             params![
