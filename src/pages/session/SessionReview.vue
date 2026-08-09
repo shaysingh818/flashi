@@ -24,7 +24,8 @@
 
 <script setup>
 import { useRouter } from "vue-router";
-import { sessionReviewStore } from "../../api";
+import { message } from '@tauri-apps/plugin-dialog'; 
+import { sessionReviewStore, sessionStore } from "../../api";
 import SessionReviewTable from "../../components/session/SessionReviewTable.vue";
 import HoverButton from "../../components/shared/buttons/HoverButton.vue";
 import PlayButton from "../../components/shared/buttons/PlayButton.vue";
@@ -46,20 +47,30 @@ async function questionDetail() {
 }
 
 async function startSessionReview() {
+  
   const existingSession = await sessionReviewStore.checkSessionReviewActive(`${props.sessionId}`);
   sessionReviewStore.current_question = 0;
-  if (existingSession === -1) {
-    const session = await sessionReviewStore.createSessionReview(`${props.sessionId}`);
-    await sessionReviewStore.loadActiveSessionReviewQuestions(`${props.sessionId}`);
-    const firstQuestion = sessionReviewStore.session_review_questions[0];
-    router.push({ path: `/sessions/review/${props.sessionId}/question/${firstQuestion.id}` });
+  const sessionDecks = await sessionStore.viewSessionDecks(`${props.sessionId}`);
+
+  if (sessionDecks.length > 0) { 
+    if (existingSession === -1) {
+      const session = await sessionReviewStore.createSessionReview(`${props.sessionId}`);
+      await sessionReviewStore.loadActiveSessionReviewQuestions(`${props.sessionId}`);
+      const firstQuestion = sessionReviewStore.session_review_questions[0];
+      router.push({ path: `/sessions/review/${props.sessionId}/question/${firstQuestion.id}` });
+    } else {
+      await sessionReviewStore.loadActiveSessionReviewQuestions(`${props.sessionId}`);
+      console.log(sessionReviewStore.session_review_questions);
+      const firstQuestion = sessionReviewStore.session_review_questions[0];
+      router.push({ path: `/sessions/review/${props.sessionId}/question/${firstQuestion.id}` });
+    }
   } else {
-    console.log(props.sessionId);
-    await sessionReviewStore.loadActiveSessionReviewQuestions(`${props.sessionId}`);
-    console.log(sessionReviewStore.session_review_questions);
-    const firstQuestion = sessionReviewStore.session_review_questions[0];
-    router.push({ path: `/sessions/review/${props.sessionId}/question/${firstQuestion.id}` });
+    await message(
+      'There are no decks added to this session. Add decks to the session in order to start a review session',
+      { title: 'Recalli', kind: 'info' }
+    );
   }
+  
 }
 
 </script>

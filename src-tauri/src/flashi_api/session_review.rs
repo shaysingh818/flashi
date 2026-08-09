@@ -182,6 +182,23 @@ impl SessionReview {
             }
         }
     }
+    
+    pub fn delete_from_session(&mut self, conn: &Connection, session_id: &str) -> Result<()> {
+        let result = conn.execute("DELETE FROM SESSION_REVIEW WHERE SESSION_ID=?", [session_id]);
+        match result {
+            Ok(_) => {
+                println!("Successfully removed session review's from existing session");
+                Ok(())
+            }
+            Err(err) => {
+                println!(
+                    "[session_review::delete_from_session] Error deleting session review metrics {:?}",
+                    err
+                );
+                Err(err)
+            }
+        }
+    }
 
     pub fn view(conn: &Connection, id: &str) -> Result<SessionReview> {
         conn.query_row(
@@ -668,7 +685,7 @@ impl SessionReviewMetrics {
             }
         }
     }
-
+    
     pub fn view(conn: &Connection, id: &str) -> Result<SessionReviewMetrics> {
         conn.query_row(
             "SELECT * FROM SESSION_REVIEW_METRICS WHERE ID = ?",

@@ -127,14 +127,139 @@ impl Session {
     }
 
     pub fn delete(&mut self, conn: &Connection, id: &str) -> Result<()> {
+
+        let session_questions = self.delete_session_review_questions(conn, id);
+        match session_questions {
+            Ok(_) => {                
+                println!("[session::delete] Successfully deleted session review questions as part of delete session routine");
+            }
+            Err(err) => {                
+                println!("[session::delete] Error deleting session review questions as part of the delete session routine {:?}", err);
+            }
+        }
+
+        let session_metrics = self.delete_session_review_metrics(conn, id);
+        match session_metrics {
+            Ok(_) => {                
+                println!("[session::delete] Successfully deleted session review questions as part of delete session routine");
+            }
+            Err(err) => {                
+                println!("[session::delete] Error deleting session review questions as part of the delete session routine {:?}", err);
+            }
+        }
+        
+        let session_reviews = self.delete_session_reviews(conn, id);
+        match session_reviews {
+            Ok(_) => {                
+                println!("[session::delete] Successfully deleted session reviews as part of delete session routine");
+            }
+            Err(err) => {                
+                println!("[session::delete] Error deleting session reviews as part of the delete session routine {:?}", err);
+            }
+        }
+        
+        let decks = self.delete_decks(conn, id);
+        match decks {
+            Ok(_) => {                
+                println!("[session::delete] Successfully deleted session decks as part of delete session routine");
+            }
+            Err(err) => {                
+                println!("[session::delete] Error deleting decks as part of session delete routine: {:?}", err);
+            }
+        };
+        
         let result = conn.execute("DELETE FROM SESSION WHERE ID=?", [id]);
         match result {
             Ok(_) => {
-                println!("Successfully deleted session");
+                println!("[session::delete] Successfully deleted session");
                 Ok(())
             },
             Err(err) => {
                 println!("[session::delete] Error deleting session {:?}", err);
+                Err(err)
+            }
+        }
+    }
+    
+    pub fn delete_session_reviews(&mut self, conn: &Connection, id: &str) -> Result<()> {
+        let result = conn.execute("DELETE FROM SESSION_REVIEW WHERE SESSION_ID=?", [id]);
+        match result {
+            Ok(_) => {
+                println!("[session::delete_session_reviews] Successfully removed session review's from existing session");
+                Ok(())
+            }
+            Err(err) => {
+                println!(
+                    "[session::delete_session_reviews] Error deleting session review metrics {:?}",
+                    err
+                );
+                Err(err)
+            }
+        }
+    }
+    
+    pub fn delete_session_review_questions(&mut self, conn: &Connection, id: &str) -> Result<()> {
+
+        let query = "
+            DELETE FROM SESSION_REVIEW_QUESTION 
+            WHERE SESSION_REVIEW_ID IN (
+                SELECT ID FROM SESSION_REVIEW WHERE SESSION_ID = ?
+            )
+        ";
+        
+        let result = conn.execute(query, [id]);
+        match result {
+            Ok(_) => {
+                println!("[session::delete_session_review_questions] Successfully removed session review questions from existing session");
+                Ok(())
+            }
+            Err(err) => {
+                println!(
+                    "[session::delete_session_review_questions] Error deleting session review questions from existing session {:?}",
+                    err
+                );
+                Err(err)
+            }
+        }
+    }
+
+    pub fn delete_session_review_metrics(&mut self, conn: &Connection, id: &str) -> Result<()> {
+
+        let query = "
+            DELETE FROM SESSION_REVIEW_METRICS 
+            WHERE SESSION_REVIEW_ID IN (
+                SELECT ID FROM SESSION_REVIEW WHERE SESSION_ID = ?
+            )
+        ";
+        
+        let result = conn.execute(query, [id]);
+        match result {
+            Ok(_) => {
+                println!("[session::delete_session_review_metrics] Successfully removed session review metrics from existing session");
+                Ok(())
+            }
+            Err(err) => {
+                println!(
+                    "[session::delete_session_review_metrics] Error deleting session review metrics from existing session {:?}",
+                    err
+                );
+                Err(err)
+            }
+        }
+    }
+    
+    pub fn delete_decks(&mut self, conn: &Connection, id: &str) -> Result<()> {
+        let result = conn.execute("DELETE FROM SESSION_DECK WHERE SESSION_ID=?", [id]);
+        match result {
+            Ok(_) => {
+                println!("[session::delete_decks] Successfully removed all decks associated with session");
+                Ok(())
+            }
+            Err(err) => {
+                println!(
+                    "[session::delete_decks] Error deleting decks associated with session {:?}",
+                    err
+                );
                 Err(err)
             }
         }
