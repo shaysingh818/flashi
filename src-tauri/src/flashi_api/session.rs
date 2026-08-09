@@ -362,5 +362,29 @@ impl Session {
     }
 
 
+    pub fn session_progress_status(conn: &Connection, id: &str) -> Result<(usize, usize)> {
+
+        let query = "
+            WITH SESSION_QUESTIONS AS (
+                SELECT * FROM SESSION_REVIEW_QUESTION 
+                WHERE SESSION_REVIEW_ID IN (
+                    SELECT ID FROM SESSION_REVIEW WHERE COMPLETE != TRUE AND SESSION_ID = ?)
+            )
+            SELECT 
+                COUNT_IF(ACTIVE = FALSE) AS COMPLETED,
+                COUNT(*) AS TOTAL
+            FROM SESSION_QUESTIONS; 
+        "; 
+        
+        conn.query_row(
+            query,
+            &[&id],
+            |row| {
+                let completed: Option<i64> = row.get(0)?; 
+                let total: Option<i64> = row.get(1)?; 
+                Ok((completed.unwrap_or(0) as usize, total.unwrap_or(0) as usize))
+            }
+        )
+    }
 
 }

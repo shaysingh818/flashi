@@ -7,22 +7,23 @@
     >
       <div class="flex row-center gap-2">
         <PlayButton icon="fa-solid fa-play" @click="startSessionReview" />
-        <p>Resume current session</p>
+        <p>{{ sessionProgressMessage }}</p>
       </div>
 
       <div class="flex row-center gap-4 w-100" style="height: 10px;">
-        <ProgressBar progress=50 />
-        <p>50/100</p>
+        <ProgressBar :progress="completionPercentage" />
+        <p>{{ completed }}/{{ total }}</p>
       </div>
 
     </div>
     <br />
-    <SessionReviewTable />
+    <SessionReviewTable :sessionId="props.sessionId" />
     <HoverButton icon="fa-solid fa-play" @click="startSessionReview" />
   </div>
 </template>
 
 <script setup>
+import { ref, onMounted } from "vue"; 
 import { useRouter } from "vue-router";
 import { message } from '@tauri-apps/plugin-dialog'; 
 import { sessionReviewStore, sessionStore } from "../../api";
@@ -41,6 +42,10 @@ const props = defineProps({
 });
 
 const router = useRouter();
+const completed = ref(0); 
+const total = ref(0); 
+const completionPercentage = ref(0.00); 
+const sessionProgressMessage = ref(''); 
 
 async function questionDetail() {
   router.push({ path: "/question/view" });
@@ -51,7 +56,7 @@ async function startSessionReview() {
   const existingSession = await sessionReviewStore.checkSessionReviewActive(`${props.sessionId}`);
   sessionReviewStore.current_question = 0;
   const sessionDecks = await sessionStore.viewSessionDecks(`${props.sessionId}`);
-
+ 
   if (sessionDecks.length > 0) { 
     if (existingSession === -1) {
       const session = await sessionReviewStore.createSessionReview(`${props.sessionId}`);
@@ -64,6 +69,7 @@ async function startSessionReview() {
       const firstQuestion = sessionReviewStore.session_review_questions[0];
       router.push({ path: `/sessions/review/${props.sessionId}/question/${firstQuestion.id}` });
     }
+ 
   } else {
     await message(
       'There are no decks added to this session. Add decks to the session in order to start a review session',
@@ -72,6 +78,21 @@ async function startSessionReview() {
   }
   
 }
+
+onMounted(async () => {
+
+  const existingSession = await sessionReviewStore.checkSessionReviewActive(`${props.sessionId}`);
+  if (existingSession === -1) {
+    sessionProgressMessage.value = "Start a new session review"; 
+  } else {
+    sessionProgressMessage.value = "Resume current session"; 
+  }
+  
+  const [sComplete, sTotal] = await sessionStore.viewSessionProgressStatus(`${props.sessionId}`); 
+  completed.value = sComplete; 
+  total.value = sTotal;
+  completionPercentage.value = completed.value / total.value * 100; 
+}); 
 
 </script>
 

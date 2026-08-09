@@ -215,3 +215,26 @@ pub fn remove_deck_from_session(db_path: &str, session_id: &str, deck_id: &str) 
         }
     }
 }
+
+
+#[tauri::command]
+pub fn session_progress_status(db_path: &str, session_id: &str) -> (usize, usize) {
+  
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return (0, 0);
+        }
+    };
+
+    match Session::session_progress_status(&conn, session_id) {
+        Ok((completed, total)) => {
+            return (completed, total);
+        }
+        Err(e) => {
+            println!("Error retrieving session progress status: {:?} Cause: {:?}", session_id, e);
+            return (0, 0); 
+        }
+    }
+}

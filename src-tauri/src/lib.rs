@@ -3,14 +3,14 @@ pub mod handlers;
 
 use crate::handlers::session::{
     add_deck_to_session, create_session, delete_session, edit_session, remove_deck_from_session,
-    search_sessions, view_session, view_session_decks, view_sessions,
+    search_sessions, view_session, view_session_decks, view_sessions, session_progress_status
 };
 
 use crate::handlers::session_review::{
     check_session_review_active, check_session_review_complete, create_session_review,
     edit_session_review, edit_session_review_question, generate_session_review_metrics,
     view_active_session_review_questions, view_session_review, view_session_review_question,
-    view_session_review_questions, view_session_reviews,
+    view_session_review_questions, view_session_reviews, retrieve_session_metrics_history
 };
 
 use crate::handlers::subject::{
@@ -65,6 +65,7 @@ pub fn run() {
             add_deck_to_session,
             remove_deck_from_session,
             view_session_decks,
+            session_progress_status,
             /* Session Review */
             create_session_review,
             edit_session_review,
@@ -77,6 +78,7 @@ pub fn run() {
             view_session_review_question,
             edit_session_review_question,
             generate_session_review_metrics,
+            retrieve_session_metrics_history,
             /* Subjects  */
             create_subject,
             delete_subject,

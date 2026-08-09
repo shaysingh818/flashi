@@ -283,6 +283,28 @@ pub fn edit_session_review_question(
     }
 }
 
+
+#[tauri::command]
+pub fn retrieve_session_metrics_history(db_path: &str, session_id: &str) -> Vec<SessionReviewMetrics> {
+       
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return Vec::new();
+        }
+    };
+    
+    match SessionReviewMetrics::session_metrics_history(&conn, session_id) {
+        Ok(session_metrics) => session_metrics,
+        Err(e) => {
+            println!("{:?}", e);
+            Vec::new()
+        }
+    }
+
+}
+
 #[tauri::command]
 pub fn generate_session_review_metrics(session_review_id: &str, db_path: &str) -> String {
     let conn = match Connection::open(db_path) {

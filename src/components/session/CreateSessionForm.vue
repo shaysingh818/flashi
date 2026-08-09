@@ -48,13 +48,13 @@ async function submitSession() {
     );
     if (insertResult === "Success") { 
       await message(
-        'Create session, you can now add decks and start reviewing questions under this session',
+        'Created session, you can now add decks and start reviewing questions under this session',
         { title: 'Recalli', kind: 'info' }
       );
     }
   } else {    
     await message(
-      'Name or description is empty, could not create session',
+      'Could not create session, name and description field required',
       { title: 'Recalli', kind: 'info' }
     );
   }

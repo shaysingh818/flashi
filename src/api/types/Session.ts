@@ -150,3 +150,62 @@ export class SessionReviewQuestion {
     this.updated = updated;
   }
 }
+
+export interface SessionReviewMetrics {
+  id: number;
+  session_review_id: number;
+  questions_correct: number;  
+  questions_incorrect: number;
+  accuracy: number;
+  total_review_count: number;
+  number_of_cycles: number;
+  reviewTime: number;
+  created: string;
+}
+
+export class SessionReviewMetrics {
+
+  id: number;
+  session_review_id: number;
+  questions_correct: number;
+  questions_incorrect: number;
+  accuracy: number; 
+  total_review_count: number;
+  number_of_cycles: number; 
+  review_time: number;
+  created: string;
+
+  constructor({
+    id,
+    session_review_id,
+    questions_correct,
+    questions_incorrect,
+    accuracy,
+    total_review_count,
+    number_of_cycles,
+    review_time,
+    created
+  }: {
+    id: number;
+    session_review_id: number;
+    questions_correct: number ;
+    questions_incorrect: number;
+    accuracy: number; 
+    total_review_count: number;
+    number_of_cycles: number; 
+    review_time: number;
+    created: string;
+
+
+  }) {
+    this.id = id;
+    this.session_review_id = session_review_id;
+    this.questions_correct = questions_correct;
+    this.questions_incorrect = questions_incorrect;
+    this.accuracy = accuracy; 
+    this.total_review_count = total_review_count;
+    this.number_of_cycles = number_of_cycles;
+    this.review_time = review_time;
+    this.created = created;
+  }
+}

@@ -668,6 +668,44 @@ impl SessionReviewMetrics {
             .collect();
         sessions
     }
+    
+    pub fn session_metrics_history(conn: &Connection, session_id: &str) -> Result<Vec<SessionReviewMetrics>> {
+
+        let query = "
+            SELECT 
+                ID,
+                SESSION_REVIEW_ID,
+                QUESTIONS_CORRECT,
+                QUESTIONS_INCORRECT,
+                ACCURACY,
+                TOTAL_REVIEW_COUNT,
+                NUMBER_OF_CYCLES,
+                REVIEW_TIME,
+                CREATED::VARCHAR
+            FROM SESSION_REVIEW_METRICS
+            WHERE SESSION_REVIEW_ID IN (
+                SELECT ID FROM SESSION_REVIEW WHERE COMPLETE = TRUE AND SESSION_ID = ?
+            ) ORDER BY CREATED DESC
+        "; 
+        
+        let mut stmt = conn.prepare(query)?;
+        let sessions: Result<Vec<SessionReviewMetrics>> = stmt
+            .query_map([session_id], |row| {
+                Ok(SessionReviewMetrics {
+                    id: row.get(0)?,
+                    session_review_id: row.get(1)?,
+                    questions_correct: row.get(2)?,
+                    questions_incorrect: row.get(3)?,
+                    accuracy: row.get(4)?,
+                    total_review_count: row.get(5)?,
+                    number_of_cycles: row.get(6)?,
+                    review_time: row.get(7)?,
+                    created: row.get(8)?,
+                })
+            })?
+            .collect();
+        sessions
+    }
 
     pub fn delete(&mut self, conn: &Connection, id: &str) -> Result<()> {
         let result = conn.execute("DELETE FROM SESSION_REVIEW_QUESTION WHERE ID=?", [id]);

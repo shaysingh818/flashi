@@ -4,7 +4,7 @@ import { reactive } from 'vue';
 import { openEndedStore } from './OpenEndedAnswer';
 import { multipleChoiceStore } from "./MutlipleChoiceAnswer";
 import { orderedSequenceStore } from "./OrderedSequenceAnswer";
-import { Deck, Session, SessionReview, SessionReviewQuestion } from './types';
+import { Deck, Session, SessionReview, SessionReviewQuestion, SessionReviewMetrics } from './types';
 
 
 export function getCurrentTimestamp(): string {
@@ -75,6 +75,11 @@ export const sessionStore = reactive({
     return await invoke("view_session_decks", { dbPath, sessionId });
   },
 
+  async viewSessionProgressStatus(sessionId: string): Promise<[number, number]> {    
+    const dbPath = await this.getDbPath();
+    return await invoke("session_progress_status", { dbPath, sessionId });
+  },
+
   async searchSessions(searchTerm: string) {
     try {
       const dbPath = await this.getDbPath();
@@ -92,6 +97,7 @@ export const sessionReviewStore = reactive({
 
   session_reviews: [] as SessionReview[],
   session_review_questions: [] as SessionReviewQuestion[],
+  session_review_metrics: [] as SessionReviewMetrics[],
   current_question: 0 as number,
 
   async getDbPath(): Promise<string> {
@@ -103,7 +109,7 @@ export const sessionReviewStore = reactive({
   async loadSessionReviews(sessionId: string) {
     try {
       const dbPath = await this.getDbPath();
-      const session_reviews = await invoke<Session[]>('view_session_reviews', { dbPath, sessionId });
+      const session_reviews = await invoke<SessionReview[]>('view_session_reviews', { dbPath, sessionId });
       this.session_reviews = session_reviews;
     } catch (error) {
       console.error("Error loading session reviews: ", error);
@@ -153,7 +159,7 @@ export const sessionReviewStore = reactive({
   async loadSessionReviewQuestions(sessionReviewId: string) {
     try {
       const dbPath = await this.getDbPath();
-      const questions = await invoke<Session[]>('view_session_review_questions', { dbPath, sessionReviewId });
+      const questions = await invoke<SessionReviewQuestion[]>('view_session_review_questions', { dbPath, sessionReviewId });
       this.session_review_questions = questions;
     } catch (error) {
       console.error("Error loading session review questions: ", error);
@@ -163,13 +169,24 @@ export const sessionReviewStore = reactive({
   async loadActiveSessionReviewQuestions(sessionId: string) {
     try {
       const dbPath = await this.getDbPath();
-      const questions = await invoke<Session[]>('view_active_session_review_questions', { dbPath, sessionId });
+      const questions = await invoke<SessionReviewQuestion[]>('view_active_session_review_questions', { dbPath, sessionId });
       this.session_review_questions = questions;
     } catch (error) {
       console.error("Error loading session review questions: ", error);
     }
   },
 
+  async loadSessionReviewMetricsHistory(sessionId: string) {   
+    try { 
+      const dbPath = await this.getDbPath();
+      const sessionMetrics = await invoke<SessionReviewMetrics[]>('retrieve_session_metrics_history', { dbPath, sessionId });
+      this.session_review_metrics = sessionMetrics;
+      console.log(this.session_review_metrics)
+    } catch (error) {      
+      console.error("Error loading session review metrics: ", error);
+    }
+  },
+  
   async viewSessionReviewQuestion(id: string) {
     const dbPath = await this.getDbPath();
     return await invoke("view_session_review_question", { dbPath, id });
