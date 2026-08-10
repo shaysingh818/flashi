@@ -29,6 +29,7 @@ const props = defineProps({
 
 .text {
   padding: 10px;
+  margin: 15px; 
 }
 
 h1 {

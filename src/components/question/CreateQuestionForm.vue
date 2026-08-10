@@ -41,15 +41,16 @@
 import { ref } from "vue";
 import { onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { message } from '@tauri-apps/plugin-dialog';
 import FormInputField from "../../components/shared/forms/FormInputField.vue";
 import FormTextField from "../../components/shared/forms/FormTextField.vue";
 import PrimaryButton from "../../components/shared/buttons/PrimaryButton.vue";
 import SecondaryButton from "../../components/shared/buttons/SecondaryButton.vue";
-import Tag from "../shared/Tag.vue";
 import DropDownFormField from "../shared/forms/DropDownFormField.vue";
 import CreateMultipleChoiceForm from "../answer/multiple_choice/CreateMultipleChoiceForm.vue";
 import CreateOpenEndedForm from "../answer/open_ended/CreateOpenEndedForm.vue";
 import CreateOrderedSequenceForm from "../answer/ordered_sequence/CreateOrderedSequenceForm.vue";
+import Tag from "../shared/Tag.vue";
 
 import { 
   questionStore,
@@ -102,6 +103,11 @@ function retrieveAnswerTypeId(key) {
 async function submitMultipleChoice(multipleChoiceAnswers) { 
   const answer = await multipleChoiceStore.createMultipleChoice();
   const answerId = answer.answer_id; 
+  console.log(multipleChoiceAnswers); 
+  if (multipleChoiceAnswers.length === 0) {
+    return -1;
+  }
+  
   for (const item of multipleChoiceAnswers) {
     await multipleChoiceAnswerStore.createMultipleChoiceAnswer(
       `${answerId}`,
@@ -119,6 +125,10 @@ async function submitOpenEnded(answerText, explanation, keywords) {
     explanation,
     keywords
   );
+  if (answerText.length === 0) {
+    return -1;
+  }
+  
   return answer.answer_id; 
 }
 
@@ -126,7 +136,11 @@ async function submitOrderedSequence(sequence, explanation) {
   const answer = await orderedSequenceStore.createOrderedSequenceAnswer(
     sequence,
     explanation
-  ); 
+  );  
+  console.log(sequence); 
+  if (sequence.length === 0) {
+    return -1;
+  }
   return answer.answer_id;
 }
 
@@ -137,47 +151,98 @@ async function submitQuestion() {
   if (selectedOption.value === 'Multiple Choice') {    
     const answerTypeId = retrieveAnswerTypeId('Multiple Choice');
     const answerId = await submitMultipleChoice(multipleChoiceAnswers.value);     
-    const insertResult = await questionStore.createQuestion(
-      deckId,
-      answerTypeId.toString(),
-      answerId.toString(),
-      text.value
-    );
-    console.log(insertResult); 
-  }
-
-  if (selectedOption.value === 'Open Ended') { 
+    if (answerId !== -1) { 
+      const insertResult = await questionStore.createQuestion(
+        deckId,
+        answerTypeId.toString(),
+        answerId.toString(),
+        text.value
+      );
+      if (insertResult === "Success") { 
+        await message(
+          'Created multiple choice question for deck',
+          { title: 'Recalli', kind: 'info' }
+        );
+      } else { 
+        await message(
+          `Could not create multiple choice question: ${insertResult}`,
+          { title: 'Recalli', kind: 'info' }
+        );
+      }
+    } else {      
+      await message(
+        'Could not create multiple choice question, please fill out all required fields',
+        { title: 'Recalli', kind: 'info' }
+      );
+    }
+  } else if (selectedOption.value === 'Open Ended') { 
     const answerTypeId = retrieveAnswerTypeId('Open Ended');
     const answerId = await submitOpenEnded(
       openEndedText.value,
       '',
       openEndedKeywords.value
     );
+    if (answerId !== -1) { 
+      const insertResult = await questionStore.createQuestion(
+        deckId,
+        answerTypeId.toString(),
+        answerId.toString(),
+        text.value
+      );    
+      if (insertResult === "Success") { 
+        await message(
+          'Created open ended question for deck',
+          { title: 'Recalli', kind: 'info' }
+        );
+      } else { 
+        await message(          
+          `Could not create open ended question: ${insertResult}`,
+          { title: 'Recalli', kind: 'info' }
+        );
+      }
+    } else {      
+      await message(
+        'Could not create open ended question, please fill out all required fields',
+        { title: 'Recalli', kind: 'info' }
+      );
+    }
 
-    const insertResult = await questionStore.createQuestion(
-      deckId,
-      answerTypeId.toString(),
-      answerId.toString(),
-      text.value
-    );
-    console.log(insertResult); 
-
-  }
-  
-  if (selectedOption.value === 'Ordered Sequence') { 
+  } else if (selectedOption.value === 'Ordered Sequence') { 
     const answerTypeId = retrieveAnswerTypeId('Ordered Sequence');
     const answerId = await submitOrderedSequence(
       orderedSequences.value,
       ''
     );
+    if (answerId !== -1) { 
+      const insertResult = await questionStore.createQuestion(
+        deckId,
+        answerTypeId.toString(),
+        answerId.toString(),
+        text.value
+      );
+      if (insertResult === "Success") { 
+        await message(
+          'Created ordered sequence question for deck',
+          { title: 'Recalli', kind: 'info' }
+        );
+      } else { 
+        await message(          
+          `Could not create ordered sequence question: ${insertResult}`,
+          { title: 'Recalli', kind: 'info' }
+        );
+      }
+    } else {      
+      await message(
+        'Could not create ordered sequence question, please fill out all required fields',
+        { title: 'Recalli', kind: 'info' }
+      );
+    }
     
-    const insertResult = await questionStore.createQuestion(
-      deckId,
-      answerTypeId.toString(),
-      answerId.toString(),
-      text.value
+  } else { 
+    await message(
+      'Could not create question, select question type and fill out required fields',
+      { title: 'Recalli', kind: 'info' }
     );
-    console.log(insertResult); 
   }
 }
 
