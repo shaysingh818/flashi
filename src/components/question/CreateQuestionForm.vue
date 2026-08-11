@@ -125,7 +125,7 @@ async function submitOpenEnded(answerText, explanation, keywords) {
     explanation,
     keywords
   );
-  if (answerText.length === 0) {
+  if (answerText.length === 0 || keywords.length === 0) {
     return -1;
   }
   

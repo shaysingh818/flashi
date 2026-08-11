@@ -64,7 +64,6 @@ const selectedItems  = ref([]);
 const deleteIndex = ref(null);
 
 watch(() => props.items, () => {
-  console.log("Clearing state"); 
   selectedItem.value = null;
   selectedItems.value = [];
 }, { immediate: true });
