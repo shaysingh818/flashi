@@ -40,7 +40,7 @@ function emitSequence() {
 }
 
 function removeSequence(index) {
-  console.log("Did this happen? ", index); 
-  sequences.value.splice(index, 1); 
+  sequences.value.splice(index, 1);
+  emitSequence();  
 }
 </script>
