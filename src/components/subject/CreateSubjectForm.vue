@@ -18,6 +18,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { message } from '@tauri-apps/plugin-dialog';
 import FormInputField from "../../components/shared/forms/FormInputField.vue";
 import FormTextField from "../../components/shared/forms/FormTextField.vue";
 import PrimaryButton from "../../components/shared/buttons/PrimaryButton.vue";
@@ -53,7 +54,18 @@ function goBack() {
 
 async function submitForm() {
   const insertSubject = await subjectStore.createSubject(name.value, description.value); 
-  console.log(insertSubject); 
+  if (insertSubject === "Success") {    
+    await message(
+      'Created subject, you can now add decks under this subject',
+      { title: 'Recalli', kind: 'info' }
+    );
+  } else {    
+    await message(
+      'Could not create subject, please add all required fields',
+      { title: 'Recalli', kind: 'info' }
+    );
+  }
+  
 }
 </script>
 

@@ -138,8 +138,15 @@ pub fn delete_question(db_path: &str, question_id: &str) -> String {
 
     match Question::view(&conn, question_id) {
         Ok(mut question) => {
-            let _ = question.delete(&conn, question_id);
-            return format!("Success");
+
+            match question.delete(&conn, question_id) {
+                Ok(_) => {
+                    return format!("Success");
+                },
+                Err(err) => {
+                    return format!("Error deleting question {}: {:?}", question_id, err); 
+                }
+            }    
         }
         Err(e) => {
             return format!("Error retrieving question with id: {:?} Cause: {:?}", question_id, e);

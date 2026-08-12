@@ -49,7 +49,7 @@ async function handleDelete(id) {
     await questionStore.loadQuestions(`${props.deckId}`);
   } else {    
     await message(
-      'Could not delete question from deck',
+      'Could not delete question from deck. This question is currently being used in a session. You must remove the session that has this question before deleting it.',
       { title: 'Recalli', kind: 'info' }
     );
   }
