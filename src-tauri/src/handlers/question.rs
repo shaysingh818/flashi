@@ -32,7 +32,7 @@ pub fn create_question(deck_id: &str, answer_type_id: &str, answer_id: &str, raw
 }
 
 #[tauri::command]
-pub fn edit_question(id: &str, raw: &str, db_path: &str) -> String {
+pub fn edit_question(id: &str, raw: &str, reviewed: usize, correct: usize, incorrect: usize, db_path: &str) -> String {
 
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
@@ -45,7 +45,10 @@ pub fn edit_question(id: &str, raw: &str, db_path: &str) -> String {
     match Question::view(&conn, id) {
         Ok(mut question) => {
           
-            question.raw = raw.to_string();            
+            question.raw = raw.to_string();           
+            question.reviewed = reviewed;
+            question.correct = correct; 
+            question.incorrect = incorrect;
             
             match question.update(&conn, id) {
                 Ok(()) => {

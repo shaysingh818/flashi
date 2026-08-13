@@ -57,9 +57,9 @@ export const questionStore = reactive({
     return await invoke("create_question", { deckId, answerTypeId, answerId, raw, dbPath });
   },
 
-  async editQuestion(id: string, raw: string): Promise<string> {        
+  async editQuestion(id: string, raw: string, reviewed: number, correct: number, incorrect: number): Promise<string> {        
     const dbPath = await this.getDbPath();
-    return await invoke("edit_question", { id, raw, dbPath });  
+    return await invoke("edit_question", { id, raw, reviewed, correct, incorrect, dbPath });  
   },
 
   async deleteQuestion(questionId: string): Promise<string> {    

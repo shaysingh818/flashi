@@ -56,11 +56,18 @@ function goBack(){
 
 
 async function submitQuestionText() {
-  console.log(newText.value);
-  const result = await questionStore.editQuestion(props.questionId, newText.value);
-  console.log(result); 
+  const currQuestion = await questionStore.viewQuestion(props.questionId);
+  const result = await questionStore.editQuestion(
+    props.questionId,
+    newText.value,
+    currQuestion.reviewed,
+    currQuestion.correct,
+    currQuestion.incorrect
+  ); 
   if (result === "Success") {
     props.closeFormHandler(); 
+  } else {
+    console.error("Error editing question"); 
   }
 }
 

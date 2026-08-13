@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { dataDir} from '@tauri-apps/api/path';
 import { reactive } from 'vue';
 import { openEndedStore } from './OpenEndedAnswer';
+import { questionStore } from "./Question";
 import { multipleChoiceStore } from "./MutlipleChoiceAnswer";
 import { orderedSequenceStore } from "./OrderedSequenceAnswer";
 import { Deck, Session, SessionReview, SessionReviewQuestion, SessionReviewMetrics } from './types';
@@ -243,6 +244,7 @@ export const sessionReviewStore = reactive({
     }
 
     if (result === true) {
+      
       const editResult = await sessionReviewStore.editSessionReviewQuestion(
         `${sessionQuestion.id}`,
         sessionQuestion.priority_index,
@@ -252,8 +254,26 @@ export const sessionReviewStore = reactive({
       );
 
       if (editResult === "Success") {
-        console.log("Updated question with metadata for correct answer...")
+        console.log("Updated session review question with metadata for correct answer...")
+      } else {
+        console.error("Could not update session review question metadata for correct answer: ", editResult); 
       }
+
+      const currQuestion = await questionStore.viewQuestion(`${sessionQuestion.question_id}`);
+      const questionResult = await questionStore.editQuestion(
+        `${sessionQuestion.question_id}`,
+        currQuestion.raw,
+        currQuestion.reviewed + 1,
+        currQuestion.correct + 1,
+        currQuestion.incorrect
+      ); 
+      
+      if (questionResult === "Success") {
+        console.log("Updated question entity with metadata for correct answer...")
+      } else {        
+        console.error("Could not update question entity metadata for correct answer: ", questionResult); 
+      }
+      
     } else {
       const editResult = await sessionReviewStore.editSessionReviewQuestion(
         `${sessionQuestion.id}`,

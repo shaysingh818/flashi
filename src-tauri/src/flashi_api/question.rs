@@ -10,6 +10,8 @@ pub struct Question {
     pub answer_type_id: usize,
     pub answer_id: usize,
     pub reviewed: usize,
+    pub correct: usize, 
+    pub incorrect: usize,
     pub raw: String,
     pub created: String,
     pub updated: String
@@ -27,6 +29,8 @@ impl Question {
             answer_type_id,
             answer_id,
             reviewed: 0,
+            correct: 0, 
+            incorrect: 0,
             raw: raw.to_string(),
             created: now.clone(),
             updated: now,
@@ -36,14 +40,16 @@ impl Question {
     pub fn insert(&mut self, conn: &Connection) -> Result<()> {
         let result = conn.execute(
             "INSERT INTO QUESTION 
-                (DECK_ID, ANSWER_TYPE_ID, ANSWER_ID, REVIEWED, RAW, CREATED, UPDATED)
-            VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+                (DECK_ID, ANSWER_TYPE_ID, ANSWER_ID, REVIEWED, CORRECT, INCORRECT, RAW, CREATED, UPDATED)
+            VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
             params![
                 &self.deck_id,
                 &self.answer_type_id,
                 &self.answer_id,
                 &self.reviewed,
                 &self.raw,
+                &self.correct,
+                &self.incorrect,
                 &self.created,
                 &self.updated,
             ],
@@ -63,7 +69,7 @@ impl Question {
 
     pub fn retrieve(conn: &Connection, deck_id: &str) -> Result<Vec<Question>> {
  
-        let mut stmt = conn.prepare("SELECT ID, DECK_ID, ANSWER_TYPE_ID, ANSWER_ID, REVIEWED, RAW, CREATED::VARCHAR, UPDATED::VARCHAR FROM QUESTION WHERE DECK_ID = ?")?;
+        let mut stmt = conn.prepare("SELECT ID, DECK_ID, ANSWER_TYPE_ID, ANSWER_ID, REVIEWED, CORRECT, INCORRECT, RAW, CREATED::VARCHAR, UPDATED::VARCHAR FROM QUESTION WHERE DECK_ID = ?")?;
 
         let questions: Result<Vec<Question>> = stmt
             .query_map([&deck_id], |row| {
@@ -73,9 +79,11 @@ impl Question {
                     answer_type_id: row.get(2)?,
                     answer_id: row.get(3)?,
                     reviewed: row.get(4)?,
-                    raw: row.get(5)?,
-                    created: row.get(6)?,
-                    updated: row.get(7)?,
+                    correct: row.get(5)?, 
+                    incorrect: row.get(6)?,
+                    raw: row.get(7)?,
+                    created: row.get(8)?,
+                    updated: row.get(9)?,
                 })
             })?
             .collect();
@@ -88,11 +96,18 @@ impl Question {
 
         let result = conn.execute(
             "UPDATE QUESTION
-                SET RAW=?1,
-                    UPDATED=?2
-                WHERE ID=?3",
+                SET 
+                    RAW=?1,
+                    REVIEWED=?2, 
+                    CORRECT=?3, 
+                    INCORRECT=?4,
+                    UPDATED=?5
+                WHERE ID=?6",
             params![
                 &self.raw,
+                &self.reviewed,
+                &self.correct,
+                &self.incorrect,
                 &self.updated,
                 id,
             ],
@@ -126,7 +141,7 @@ impl Question {
 
     pub fn view(conn: &Connection, id: &str) -> Result<Question> {
         conn.query_row(
-            "SELECT ID, DECK_ID, ANSWER_TYPE_ID, ANSWER_ID, REVIEWED, RAW, CREATED::VARCHAR, UPDATED::VARCHAR FROM QUESTION WHERE ID = ?",
+            "SELECT ID, DECK_ID, ANSWER_TYPE_ID, ANSWER_ID, REVIEWED, CORRECT, INCORRECT, RAW, CREATED::VARCHAR, UPDATED::VARCHAR FROM QUESTION WHERE ID = ?",
             &[&id],
             |row| {
                 Ok(Question {
@@ -135,9 +150,11 @@ impl Question {
                     answer_type_id: row.get(2)?,
                     answer_id: row.get(3)?,
                     reviewed: row.get(4)?,
-                    raw: row.get(5)?,
-                    created: row.get(6)?,
-                    updated: row.get(7)?,
+                    correct: row.get(5)?,
+                    incorrect: row.get(6)?,
+                    raw: row.get(7)?,
+                    created: row.get(8)?,
+                    updated: row.get(9)?,
                 })
             }
         )
@@ -158,9 +175,11 @@ impl Question {
                     answer_type_id: row.get(2)?,
                     answer_id: row.get(3)?,
                     reviewed: row.get(4)?,
-                    raw: row.get(5)?,
-                    created: row.get(6)?,
-                    updated: row.get(7)?,
+                    correct: row.get(5)?,
+                    incorrect: row.get(6)?,
+                    raw: row.get(7)?,
+                    created: row.get(8)?,
+                    updated: row.get(9)?,
                 })
             })?
             .collect();
