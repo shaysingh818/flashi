@@ -44,9 +44,9 @@ export const deckStore = reactive({
     return await invoke("create_deck", { subjectId , name, tags, description, dbPath });
   },
 
-  async editDeck(deckId: string, name: string, description: string, tags: string[]): Promise<string> {        
+  async editDeck(deckId: string, name: string, description: string, tags: string[], reviewed: number): Promise<string> {        
     const dbPath = await this.getDbPath();
-    return await invoke("edit_deck", { deckId, name, description, tags, dbPath });  
+    return await invoke("edit_deck", { deckId, name, description, tags, reviewed, dbPath });  
   },
 
   async deleteDeck(deckId: string): Promise<string> {    

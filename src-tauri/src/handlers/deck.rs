@@ -30,7 +30,7 @@ pub fn create_deck(subject_id: &str, name: &str, tags: Vec<String>, description:
 }
 
 #[tauri::command]
-pub fn edit_deck(deck_id: &str, name: &str, description: &str, tags: Vec<String>, db_path: &str) -> String {
+pub fn edit_deck(deck_id: &str, name: &str, description: &str, tags: Vec<String>, reviewed: usize, db_path: &str) -> String {
 
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
@@ -45,6 +45,7 @@ pub fn edit_deck(deck_id: &str, name: &str, description: &str, tags: Vec<String>
           
             deck.name = name.to_string();            
             deck.description = description.to_string();
+            deck.reviewed = reviewed;
             deck.tags = tags;
             
             match deck.update(&conn, deck_id) {

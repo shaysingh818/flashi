@@ -149,4 +149,32 @@ impl Subject {
             .collect();
         subjects
     }
+
+    pub fn metrics(conn: &Connection, id: &str) -> Result<(usize, usize, f64)> {
+
+        let query = "
+            WITH ALL_QUESTIONS AS (
+                SELECT COUNT(*) AS TOTAL_QUESTION_COUNT
+                FROM QUESTION
+                WHERE DECK_ID IN (SELECT DISTINCT ID FROM DECK WHERE SUBJECT_ID = 1)
+            ),
+            QUESTIONS_REVIEWED AS (
+                SELECT SUM(REVIEWED) AS TOTAL_REVIEWED
+                FROM QUESTION
+                WHERE DECK_ID IN (SELECT DISTINCT ID FROM DECK WHERE SUBJECT_ID = 1)
+            ),
+            QUESTIONS_ACCURACY AS (
+              	 SELECT 
+             	 	SUM(REVIEWED) AS TOTAL_REVIEWED,
+             	 	SUM(CORRECT) AS TOTAL_CORRECT
+              	 FROM QUESTION WHERE DECK_ID IN (SELECT DISTINCT ID FROM DECK WHERE SUBJECT_ID = 1)
+              	 GROUP BY CORRECT, REVIEWED
+            )
+            SELECT
+                ALL_QUESTIONS.TOTAL_QUESTION_COUNT,
+                QUESTIONS_REVIEWED.TOTAL_REVIEWED,
+                (QUESTIONS_ACCURACY.TOTAL_CORRECT / QUESTIONS_ACCURACY.TOTAL_REVIEWED) AS TOTAL_ACCURACY
+            FROM ALL_QUESTIONS, QUESTIONS_REVIEWED, QUESTIONS_ACCURACY;
+        ";
+    }
 }

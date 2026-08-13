@@ -285,7 +285,25 @@ export const sessionReviewStore = reactive({
 
       if (editResult === "Success") {
         console.log("Updated question with metadata for incorrect answer...")
+      } else {        
+        console.error("Could not update question entity metadata for incorrect answer: ", questionResult); 
       }
+
+      const currQuestion = await questionStore.viewQuestion(`${sessionQuestion.question_id}`);
+      const questionResult = await questionStore.editQuestion(
+        `${sessionQuestion.question_id}`,
+        currQuestion.raw,
+        currQuestion.reviewed + 1,
+        currQuestion.correct,
+        currQuestion.incorrect + 1
+      ); 
+      
+      if (questionResult === "Success") {
+        console.log("Updated question entity with metadata for incorrect answer...")
+      } else {        
+        console.error("Could not update question entity metadata for incorrect answer: ", questionResult); 
+      }
+      
     }
 
     return [result, msg];

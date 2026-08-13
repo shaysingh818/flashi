@@ -56,7 +56,8 @@ async function handleDelete(id) {
 }
 
 onMounted(async () => {
-  await questionStore.loadQuestions(`${props.deckId}`);
+  const result = await questionStore.loadQuestions(`${props.deckId}`);
+  console.log("THIS IS THE RESULT: ", questionStore.questions); 
   questionStore.currQuestion = 0;
 })
 

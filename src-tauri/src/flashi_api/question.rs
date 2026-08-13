@@ -25,9 +25,9 @@ impl Question {
       
         Question {
             id: 0,
-            deck_id,
-            answer_type_id,
-            answer_id,
+            deck_id: deck_id,
+            answer_type_id: answer_type_id,
+            answer_id: answer_id,
             reviewed: 0,
             correct: 0, 
             incorrect: 0,
@@ -69,21 +69,21 @@ impl Question {
 
     pub fn retrieve(conn: &Connection, deck_id: &str) -> Result<Vec<Question>> {
  
-        let mut stmt = conn.prepare("SELECT ID, DECK_ID, ANSWER_TYPE_ID, ANSWER_ID, REVIEWED, CORRECT, INCORRECT, RAW, CREATED::VARCHAR, UPDATED::VARCHAR FROM QUESTION WHERE DECK_ID = ?")?;
+        let mut stmt = conn.prepare("SELECT ID, DECK_ID, ANSWER_TYPE_ID, ANSWER_ID, REVIEWED, CORRECT, INCORRECT, RAW, CREATED::VARCHAR AS CREATED, UPDATED::VARCHAR AS UPDATED FROM QUESTION WHERE DECK_ID = ?")?;
 
         let questions: Result<Vec<Question>> = stmt
             .query_map([&deck_id], |row| {
                 Ok(Question {
-                    id: row.get(0)?,
-                    deck_id: row.get(1)?,
-                    answer_type_id: row.get(2)?,
-                    answer_id: row.get(3)?,
-                    reviewed: row.get(4)?,
-                    correct: row.get(5)?, 
-                    incorrect: row.get(6)?,
-                    raw: row.get(7)?,
-                    created: row.get(8)?,
-                    updated: row.get(9)?,
+                    id: row.get("ID")?,
+                    deck_id: row.get("DECK_ID")?,
+                    answer_type_id: row.get("ANSWER_TYPE_ID")?,
+                    answer_id: row.get("ANSWER_ID")?,
+                    reviewed: row.get("REVIEWED")?,
+                    correct: row.get("CORRECT")?, 
+                    incorrect: row.get("INCORRECT")?,
+                    raw: row.get("RAW")?,
+                    created: row.get("CREATED")?,
+                    updated: row.get("UPDATED")?,
                 })
             })?
             .collect();
@@ -162,7 +162,7 @@ impl Question {
 
     pub fn search(conn: &Connection, search_term: &str) -> Result<Vec<Question>> {
         let query = format!(
-            "SELECT * FROM QUESTION WHERE RAW LIKE '%{}%'",
+            "SELECT ID, DECK_ID, ANSWER_TYPE_ID, ANSWER_ID, REVIEWED, CORRECT, INCORRECT, RAW, CREATED::VARCHAR, UPDATED::VARCHAR FROM QUESTION WHERE RAW LIKE '%{}%'",
             search_term
         );
         let mut stmt = conn.prepare(&query)?;

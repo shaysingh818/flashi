@@ -72,7 +72,7 @@ impl Session {
     pub fn retrieve_session_decks(conn: &Connection, session_id: usize) -> Result<Vec<Deck>> {
 
         let mut stmt = conn.prepare(
-            "SELECT d.ID, d.SUBJECT_ID, d.NAME, d.TAGS::VARCHAR, d.DESCRIPTION, 
+            "SELECT d.ID, d.SUBJECT_ID, d.NAME, d.TAGS::VARCHAR, d.DESCRIPTION, d.REVIEWED, 
                     d.CREATED::VARCHAR, d.UPDATED::VARCHAR
              FROM DECK d
              INNER JOIN SESSION_DECK sd ON sd.DECK_ID = d.ID
@@ -88,8 +88,9 @@ impl Session {
                     name: row.get(2)?,
                     tags: Deck::parse_tags(tags_raw),
                     description: row.get(4)?,
-                    created: row.get(5)?,
-                    updated: row.get(6)?,
+                    reviewed: row.get(5)?,
+                    created: row.get(6)?,
+                    updated: row.get(7)?,
                 })
             })?
             .collect();
