@@ -52,6 +52,11 @@ export const subjectStore = reactive({
     } catch (error) {
       console.error("Error loading subjects from search term: ", error); 
     }
+  },
+
+  async subjectMetrics(subjectId: string): Promise<[number, number, number]> {    
+    const dbPath = await this.getDbPath();    
+    return await invoke("subject_metrics", { dbPath, subjectId });  
   }
   
 })

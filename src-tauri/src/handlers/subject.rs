@@ -143,3 +143,25 @@ pub fn delete_subject(db_path: &str, subject_id: &str) -> String {
         }
     }
 }
+
+#[tauri::command]
+pub fn subject_metrics(db_path: &str, subject_id: &str) -> (usize, usize, f64) {
+  
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return (0, 0, 0.0); 
+        }
+    };
+
+    match Subject::metrics(&conn, subject_id) {
+        Ok((question_count, total_reviewed, total_accuracy)) => {
+            (question_count, total_reviewed, total_accuracy)
+        }
+        Err(e) => {
+            println!("Error retrieving subject with id: {:?} Cause: {:?}", subject_id, e);
+            return (0, 0, 0.0)
+        }
+    }
+}

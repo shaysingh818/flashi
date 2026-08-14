@@ -14,7 +14,7 @@ use crate::handlers::session_review::{
 };
 
 use crate::handlers::subject::{
-    create_subject, delete_subject, edit_subject, search_subjects, view_subject, view_subjects,
+    create_subject, delete_subject, edit_subject, search_subjects, view_subject, view_subjects, subject_metrics
 };
 
 use crate::handlers::deck::{
@@ -86,6 +86,7 @@ pub fn run() {
             search_subjects,
             view_subject,
             view_subjects,
+            subject_metrics,
             /* Decks  */
             create_deck,
             delete_deck,
