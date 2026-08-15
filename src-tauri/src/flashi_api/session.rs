@@ -388,4 +388,67 @@ impl Session {
         )
     }
 
+    pub fn metrics(conn: &Connection, id: &str) -> Result<(f64, usize, usize, usize, usize)> {
+
+        let query = "
+            SELECT 
+                SUM(ACCURACY) / COUNT(*) AS AVG_ACCURACY,
+                SUM(TOTAL_REVIEW_COUNT) AS TOTAL_REVIEWED,
+                SUM(REVIEW_TIME) AS TOTAL_REVIEW_TIME,
+                SUM(QUESTIONS_CORRECT) AS TOTAL_CORRECT,
+                SUM(QUESTIONS_INCORRECT) AS TOTAL_INCORRECT
+            FROM SESSION_REVIEW_METRICS
+            WHERE SESSION_REVIEW_ID IN (SELECT ID FROM SESSION_REVIEW WHERE SESSION_ID = ?)
+        ";
+
+        conn.query_row(
+            query,
+            &[&id],
+            |row| {
+                let avg_accuracy: Option<f64> = row.get(0)?; 
+                let total_reviewed: Option<i64>  = row.get(1)?; 
+                let total_review_time: Option<i64> = row.get(2)?; 
+                let total_correct: Option<i64> = row.get(3)?; 
+                let total_incorrect: Option<i64> = row.get(4)?; 
+                Ok((
+                    avg_accuracy.unwrap_or(0.0),
+                    total_reviewed.unwrap_or(0) as usize,  
+                    total_review_time.unwrap_or(0) as usize, 
+                    total_correct.unwrap_or(0) as usize, 
+                    total_incorrect.unwrap_or(0) as usize, 
+                ))
+            }
+        )
+    }
+
+    pub fn question_breakdown(conn: &Connection, id: &str) -> Result<Vec<(String, i64)>> {
+
+        let query = "
+            WITH ANSWER_TYPE_GROUPING AS (
+               	SELECT 
+              		ANS_TYPE.NAME AS ANSWER_TYPE
+               	FROM SESSION_REVIEW_QUESTION AS SRQ
+               	LEFT JOIN QUESTION AS Q
+               	ON Q.ID = SRQ.QUESTION_ID
+               	LEFT JOIN ANSWER_TYPE AS ANS_TYPE
+               	ON Q.ANSWER_TYPE_ID = ANS_TYPE.ID
+               	WHERE SRQ.SESSION_REVIEW_ID IN (SELECT ID FROM SESSION_REVIEW WHERE SESSION_ID = ?)
+           	)
+            SELECT
+                ANSWER_TYPE,
+                COUNT(ANSWER_TYPE) AS ANSWER_TYPE_COUNT
+            FROM ANSWER_TYPE_GROUPING
+            GROUP BY ANSWER_TYPE ORDER BY ANSWER_TYPE_COUNT DESC
+        ";
+
+        let mut stmt = conn.prepare(query)?; 
+        let rows = stmt.query_map(&[&id], |row| {
+            let answer_type: String = row.get(0)?; 
+            let count: i64 = row.get(1)?; 
+            Ok((answer_type, count))
+        })?; 
+
+        rows.collect()
+    }
+
 }

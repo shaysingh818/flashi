@@ -84,7 +84,7 @@ impl Deck {
     }
 
     pub fn retrieve(conn: &Connection) -> Result<Vec<Deck>> {
-        let mut stmt = conn.prepare("SELECT ID, SUBJECT_ID, NAME, TAGS::VARCHAR, DESCRIPTION, CREATED::VARCHAR, UPDATED::VARCHAR FROM DECK")?;
+        let mut stmt = conn.prepare("SELECT ID, SUBJECT_ID, NAME, TAGS::VARCHAR, DESCRIPTION, REVIEWED, CREATED::VARCHAR, UPDATED::VARCHAR FROM DECK")?;
 
         let decks: Result<Vec<Deck>> = stmt
             .query_map([], |row| {

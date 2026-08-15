@@ -45,9 +45,9 @@ onMounted(async () => {
   await deckStore.loadDecksBySubject(subjectId);
 
   [
-    avgAccuracy.value,
     questionsReviewed.value,
-    questionsTotal.value
+    questionsTotal.value,    
+    avgAccuracy.value,
   ] = await subjectStore.subjectMetrics(subjectId); 
   
 });

@@ -164,30 +164,31 @@ impl Subject {
                 WHERE DECK_ID IN (SELECT DISTINCT ID FROM DECK WHERE SUBJECT_ID = ?)
             ),
             QUESTIONS_ACCURACY AS (
-              	 SELECT 
-             	 	SUM(REVIEWED) AS TOTAL_REVIEWED,
-             	 	SUM(CORRECT) AS TOTAL_CORRECT
-              	 FROM QUESTION WHERE DECK_ID IN (SELECT DISTINCT ID FROM DECK WHERE SUBJECT_ID = ?)
-              	 GROUP BY CORRECT, REVIEWED
+                SELECT
+                	COUNT(*) AS TOTAL_QUESTION_COUNT,
+                    SUM(REVIEWED) AS TOTAL_REVIEWED,
+                    SUM(CORRECT) AS TOTAL_CORRECT
+                FROM QUESTION
+                WHERE DECK_ID IN (SELECT DISTINCT ID FROM DECK WHERE SUBJECT_ID = ?)
             )
             SELECT
                 ALL_QUESTIONS.TOTAL_QUESTION_COUNT,
                 QUESTIONS_REVIEWED.TOTAL_REVIEWED,
-                (QUESTIONS_ACCURACY.TOTAL_CORRECT / QUESTIONS_ACCURACY.TOTAL_REVIEWED) AS TOTAL_ACCURACY
-            FROM ALL_QUESTIONS, QUESTIONS_REVIEWED, QUESTIONS_ACCURACY;
+                ROUND((QUESTIONS_ACCURACY.TOTAL_CORRECT::FLOAT / NULLIF(QUESTIONS_ACCURACY.TOTAL_REVIEWED, 0)) * 100, 2) AS TOTAL_ACCURACY
+            FROM ALL_QUESTIONS, QUESTIONS_REVIEWED, QUESTIONS_ACCURACY
         ";
 
         conn.query_row(
             query,
-            &[&id],
+            &[&id, &id, &id],
             |row| {
                 let question_count: Option<i64> = row.get(0)?;
                 let total_reviewed: Option<i64> = row.get(1)?;
-                let total_accuracy: Option<i64> = row.get(2)?; 
+                let total_accuracy: Option<f64> = row.get(2)?; 
                 Ok((
+                    total_reviewed.unwrap_or(0) as usize,                    
                     question_count.unwrap_or(0) as usize,
-                    total_reviewed.unwrap_or(0) as usize,
-                    total_accuracy.unwrap_or(0) as f64
+                    total_accuracy.unwrap_or(0.0) as f64
                 ))
             }
         )

@@ -238,3 +238,47 @@ pub fn session_progress_status(db_path: &str, session_id: &str) -> (usize, usize
         }
     }
 }
+
+#[tauri::command]
+pub fn session_metrics(db_path: &str, session_id: &str) -> (f64, usize, usize, usize, usize) {
+  
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return (0.0, 0, 0, 0, 0);
+        }
+    };
+
+    match Session::metrics(&conn, session_id) {
+        Ok((avg_accuracy, total_reviewed, total_review_time, total_correct, total_incorrect)) => {
+            return (avg_accuracy, total_reviewed, total_review_time, total_correct, total_incorrect);
+        }
+        Err(e) => {
+            println!("Error retrieving session progress status: {:?} Cause: {:?}", session_id, e);
+            return (0.0, 0, 0, 0, 0); 
+        }
+    }
+}
+
+#[tauri::command]
+pub fn session_question_breakdown(db_path: &str, session_id: &str) -> Result<Vec<(String, i64)>> {
+  
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return Vec::new();
+        }
+    };
+
+    match Session::question_breakdown(&conn, session_id) {
+        Ok(rows) => {
+            return rows;
+        }
+        Err(e) => {
+            println!("Error retrieving session progress status: {:?} Cause: {:?}", session_id, e);
+            return Vec::new(); 
+        }
+    }
+}
