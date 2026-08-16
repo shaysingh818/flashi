@@ -81,6 +81,16 @@ export const sessionStore = reactive({
     return await invoke("session_progress_status", { dbPath, sessionId });
   },
 
+  async viewSessionMetrics(sessionId: string): Promise<[number, number, number, number, number]> {    
+    const dbPath = await this.getDbPath();
+    return await invoke("session_metrics", { dbPath, sessionId });
+  },
+
+  async viewSessionQuestionBreakdown(sessionId: string): Promise<[string, number][]> {    
+    const dbPath = await this.getDbPath();
+    return await invoke("session_question_breakdown", { dbPath, sessionId });
+  },
+  
   async searchSessions(searchTerm: string) {
     try {
       const dbPath = await this.getDbPath();
@@ -89,10 +99,9 @@ export const sessionStore = reactive({
     } catch (error) {
       console.error("Error loading sessions from search term: ", error);
     }
-  }
+  },
 
 })
-
 
 export const sessionReviewStore = reactive({
 

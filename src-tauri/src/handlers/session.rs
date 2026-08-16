@@ -240,45 +240,43 @@ pub fn session_progress_status(db_path: &str, session_id: &str) -> (usize, usize
 }
 
 #[tauri::command]
-pub fn session_metrics(db_path: &str, session_id: &str) -> (f64, usize, usize, usize, usize) {
+pub fn session_metrics(db_path: &str, session_id: &str) -> Result<(f64, usize, usize, usize, usize), String> {
   
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
             println!("{:?}", e);
-            return (0.0, 0, 0, 0, 0);
+            return Err(e.to_string());
         }
     };
 
     match Session::metrics(&conn, session_id) {
         Ok((avg_accuracy, total_reviewed, total_review_time, total_correct, total_incorrect)) => {
-            return (avg_accuracy, total_reviewed, total_review_time, total_correct, total_incorrect);
+            Ok((avg_accuracy, total_reviewed, total_review_time, total_correct, total_incorrect))
         }
         Err(e) => {
             println!("Error retrieving session progress status: {:?} Cause: {:?}", session_id, e);
-            return (0.0, 0, 0, 0, 0); 
+            Err(e.to_string())
         }
     }
 }
 
 #[tauri::command]
-pub fn session_question_breakdown(db_path: &str, session_id: &str) -> Result<Vec<(String, i64)>> {
+pub fn session_question_breakdown(db_path: &str, session_id: &str) -> Result<Vec<(String, i64)>, String> {
   
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
             println!("{:?}", e);
-            return Vec::new();
+            return Err(e.to_string()); 
         }
     };
 
     match Session::question_breakdown(&conn, session_id) {
-        Ok(rows) => {
-            return rows;
-        }
+        Ok(rows) => Ok(rows), 
         Err(e) => {
             println!("Error retrieving session progress status: {:?} Cause: {:?}", session_id, e);
-            return Vec::new(); 
+            return Err(e.to_string()) 
         }
     }
 }
