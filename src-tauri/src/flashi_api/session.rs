@@ -5,6 +5,24 @@ use crate::flashi_api::deck::Deck;
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SessionCorrectQuestion {
+    pub correct: usize,
+    pub reviewed: usize,
+    pub raw: String,
+    pub updated: String,
+    pub correct_ratio: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SessionIncorrectQuestion {
+    pub incorrect: usize,
+    pub reviewed: usize,
+    pub raw: String,
+    pub updated: String,
+    pub correct_ratio: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Session {
     pub id: usize,
     pub name: String,
@@ -451,4 +469,64 @@ impl Session {
         rows.collect()
     }
 
+    pub fn correct_incorrect_questions(conn: &Connection, id: &str) -> Result<(Vec<SessionCorrectQuestion>, Vec<SessionIncorrectQuestion>)> {
+
+        let correct_query = "
+            SELECT 
+               	Q.CORRECT,
+               	Q.REVIEWED,
+               	Q.RAW,
+               	Q.UPDATED::VARCHAR,
+               	(Q.CORRECT / Q.REVIEWED) AS CORRECT_RATIO
+            FROM SESSION_REVIEW_QUESTION AS SRQ
+            LEFT JOIN QUESTION AS Q
+            ON Q.ID = SRQ.QUESTION_ID
+            WHERE SESSION_REVIEW_ID IN (SELECT ID FROM SESSION_REVIEW WHERE SESSION_ID = ?)
+            ORDER BY CORRECT_RATIO DESC
+        ";
+
+        let incorrect_query = "
+            SELECT 
+               	Q.INCORRECT,
+               	Q.REVIEWED,
+               	Q.RAW,
+               	Q.UPDATED::VARCHAR,
+               	(Q.INCORRECT / Q.REVIEWED) AS INCORRECT_RATIO
+            FROM SESSION_REVIEW_QUESTION AS SRQ
+            LEFT JOIN QUESTION AS Q
+            ON Q.ID = SRQ.QUESTION_ID
+            WHERE SESSION_REVIEW_ID IN (SELECT ID FROM SESSION_REVIEW WHERE SESSION_ID = ?)
+            ORDER BY INCORRECT_RATIO DESC
+        ";
+
+        let mut stmt = conn.prepare(correct_query)?; 
+        let correct_questions: Result<Vec<SessionCorrectQuestion>> = stmt
+            .query_map([id], |row| {
+                Ok(SessionCorrectQuestion {
+                    correct: row.get(0)?,
+                    reviewed: row.get(1)?,
+                    raw: row.get(2)?,
+                    updated: row.get(3)?,
+                    correct_ratio: row.get(4)?,
+                })
+            })?
+            .collect();
+               
+        let mut stmt = conn.prepare(incorrect_query)?; 
+        let incorrect_questions: Result<Vec<SessionIncorrectQuestion>> = stmt
+            .query_map([id], |row| {
+                Ok(SessionIncorrectQuestion {
+                    incorrect: row.get(0)?,
+                    reviewed: row.get(1)?,
+                    raw: row.get(2)?,
+                    updated: row.get(3)?,
+                    correct_ratio: row.get(4)?,
+                })
+            })?
+            .collect(); 
+
+        Ok((correct_questions?, incorrect_questions?))
+    }
+
+    
 }

@@ -280,3 +280,23 @@ pub fn session_question_breakdown(db_path: &str, session_id: &str) -> Result<Vec
         }
     }
 }
+
+#[tauri::command]
+pub fn session_correct_incorrect_questions(db_path: &str, session_id: &str) -> Result<(Vec<SessionCorrectQuestion>, Vec<SessionIncorrectQuestion>), String> {
+  
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return Err(e.to_string()); 
+        }
+    };
+
+    match Session::correct_incorrect_questions(&conn, session_id) {
+        Ok((correct_questions, incorrect_questions)) => Ok((correct_questions, incorrect_questions)), 
+        Err(e) => {
+            println!("Error retrieving session correct and incorrect questions: {:?} Cause: {:?}", session_id, e);
+            return Err(e.to_string()) 
+        }
+    }
+}

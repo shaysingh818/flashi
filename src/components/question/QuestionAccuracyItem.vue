@@ -1,6 +1,6 @@
 <template>
-  <div class="flex row-center gap-4" style="height: 50px;">
-    <Tag :title="`${correct}/${totalAttempts}`" height="10px" /> 
+  <div class="flex row-center w-100 gap-4" style="height: 50px;">
+    <Tag :title="`${score}/${totalAttempts}`" height="10px" /> 
       <p> {{ questionText }}</p>
   </div>
 </template>
@@ -12,7 +12,7 @@ export default {
   name: "QuestionAccuracyItem",
   components: {Tag},
   props: {    
-    correct: {
+    score: {
       type: String,
       default: () => "10",
     },    

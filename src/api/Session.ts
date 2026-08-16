@@ -5,7 +5,7 @@ import { openEndedStore } from './OpenEndedAnswer';
 import { questionStore } from "./Question";
 import { multipleChoiceStore } from "./MutlipleChoiceAnswer";
 import { orderedSequenceStore } from "./OrderedSequenceAnswer";
-import { Deck, Session, SessionReview, SessionReviewQuestion, SessionReviewMetrics } from './types';
+import { Deck, Session, SessionReview, SessionReviewQuestion, SessionReviewMetrics, SessionCorrectQuestion, SessionIncorrectQuestion } from './types';
 
 
 export function getCurrentTimestamp(): string {
@@ -89,6 +89,11 @@ export const sessionStore = reactive({
   async viewSessionQuestionBreakdown(sessionId: string): Promise<[string, number][]> {    
     const dbPath = await this.getDbPath();
     return await invoke("session_question_breakdown", { dbPath, sessionId });
+  },
+  
+  async viewSessionCorrectIncorrectQuestions(sessionId: string): Promise<[SessionCorrectQuestion[], SessionIncorrectQuestion[]]> {    
+    const dbPath = await this.getDbPath();
+    return await invoke("session_correct_incorrect_questions", { dbPath, sessionId });
   },
   
   async searchSessions(searchTerm: string) {

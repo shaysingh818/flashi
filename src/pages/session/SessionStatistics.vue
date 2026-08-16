@@ -7,14 +7,14 @@
     </div>
 
     <div class="grid cols-2 cols-responsive w-95 gap-4">
-       <DoughnutChart 
-        title="Question accuracy ratio"
-        :values="[totalCorrect, totalIncorrect]" /> 
+        <DoughnutChart 
+            title="Question accuracy ratio"
+            :values="[totalCorrect, totalIncorrect]" /> 
         
       <PieChart 
-        title="Question type breakdown"
-        :labels="questionBreakdownLabels"
-        :values="questionBreakdownCounts" />
+            title="Question type breakdown"
+            :labels="questionBreakdownLabels"
+            :values="questionBreakdownCounts" />
     </div>
 
     <br />
@@ -25,8 +25,17 @@
     <br />
 
     <div class="grid cols-2 cols-responsive w-95 gap-4">
-      <DataView title="Most incorrect questions" />
-      <DataView title="Most correct question" />
+
+        <DataView 
+            title="Most incorrect questions"
+            entityType="incorrect"
+            :questions="incorrectQuestions" />
+        
+      <DataView 
+            title="Most correct question"
+            entityType="correct"
+            :questions="correctQuestions" />
+            
     </div>
 
     <br />
@@ -57,7 +66,24 @@ const totalReviewTime = ref(0);
 const totalCorrect = ref(0); 
 const totalIncorrect = ref(0); 
 const questionBreakdownLabels = ref([]); 
-const questionBreakdownCounts = ref([]); 
+const questionBreakdownCounts = ref([]);
+const incorrectQuestions = ref([]); 
+const correctQuestions = ref([]); 
+
+function formatDuration(totalSeconds) {
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = Math.floor(totalSeconds % 60);
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  } else if (minutes > 0) {
+    return `${minutes}m ${seconds}s`;
+  } else {
+    return `${seconds}s`;
+  }
+}
+
 
 onMounted(async () => {
   
@@ -69,11 +95,21 @@ onMounted(async () => {
     totalIncorrect.value
   ] = await sessionStore.viewSessionMetrics(props.sessionId); 
 
+  totalReviewTime.value = formatDuration(totalReviewTime.value);
   avgAccuracy.value = Math.round(avgAccuracy.value * 100) / 100;
   
   const questionBreakdown = await sessionStore.viewSessionQuestionBreakdown(props.sessionId)
   questionBreakdownLabels.value = questionBreakdown.map(([label]) => label);   
   questionBreakdownCounts.value = questionBreakdown.map(([, count]) => count); 
+
+  [
+    correctQuestions.value,    
+    incorrectQuestions.value
+  ] = await sessionStore.viewSessionCorrectIncorrectQuestions(props.sessionId); 
+
+  console.log(correctQuestions.value); 
+  
+  
 });
 
 </script>

@@ -34,6 +34,80 @@ export class Session {
   }
 }
 
+export interface SessionCorrectQuestion {
+  correct: number;
+  reviewed: number;
+  raw: string;
+  updated: string; 
+  correct_ratio: number;
+}
+
+export class SessionCorrectQuestion {
+  
+  correct: number;
+  reviewed: number;
+  raw: string;
+  updated: string; 
+  correct_ratio: number;
+
+  constructor({
+    correct,
+    reviewed,
+    raw,
+    updated,
+    correct_ratio
+  }: {
+    correct: number;
+    reviewed: number;
+    raw: string;
+    updated: string; 
+    correct_ratio: number;
+  }) {
+    this.correct = correct;
+    this.reviewed = reviewed;
+    this.raw = raw;
+    this.updated = updated;
+    this.correct_ratio = correct_ratio;
+  }
+}
+
+export interface SessionIncorrectQuestion {
+  incorrect: number;
+  reviewed: number;
+  raw: string;
+  updated: string; 
+  incorrect_ratio: number;
+}
+
+export class SessionIncorrectQuestion {
+  
+  incorrect: number;
+  reviewed: number;
+  raw: string;
+  updated: string; 
+  incorrect_ratio: number;
+
+  constructor({
+    incorrect,
+    reviewed,
+    raw,
+    updated,
+    incorrect_ratio
+  }: {
+    incorrect: number;
+    reviewed: number;
+    raw: string;
+    updated: string; 
+    incorrect_ratio: number;
+  }) {
+    this.incorrect = incorrect;
+    this.reviewed = reviewed;
+    this.raw = raw;
+    this.updated = updated;
+    this.incorrect_ratio = incorrect_ratio;
+  }
+}
+
 export interface SessionReview {
   id: number;
   session_id: number;
