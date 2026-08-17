@@ -282,6 +282,26 @@ pub fn session_question_breakdown(db_path: &str, session_id: &str) -> Result<Vec
 }
 
 #[tauri::command]
+pub fn session_daily_accuracy_history(db_path: &str, session_id: &str) -> Result<Vec<(String, f64)>, String> {
+  
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return Err(e.to_string()); 
+        }
+    };
+
+    match Session::daily_accuracy_history(&conn, session_id) {
+        Ok(rows) => Ok(rows), 
+        Err(e) => {
+            println!("Error retrieving session daily accuracy history: {:?} Cause: {:?}", session_id, e);
+            return Err(e.to_string()) 
+        }
+    }
+}
+
+#[tauri::command]
 pub fn session_correct_incorrect_questions(db_path: &str, session_id: &str) -> Result<(Vec<SessionCorrectQuestion>, Vec<SessionIncorrectQuestion>), String> {
   
     let conn = match Connection::open(db_path) {

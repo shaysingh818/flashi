@@ -19,7 +19,10 @@
 
     <br />
     <div class="grid cols-1 cols-responsive w-95 gap-4">
-      <LineChart title="Historical review metrics" />
+      <LineChart 
+            title="Historical review metrics" 
+            :labels="accuracyDates"
+            :datasets="accuracyHistory" />
     </div>
 
     <br />
@@ -68,7 +71,9 @@ const totalIncorrect = ref(0);
 const questionBreakdownLabels = ref([]); 
 const questionBreakdownCounts = ref([]);
 const incorrectQuestions = ref([]); 
-const correctQuestions = ref([]); 
+const correctQuestions = ref([]);
+const accuracyDates = ref([]); 
+const accuracyHistory = ref([]); 
 
 function formatDuration(totalSeconds) {
   const hours = Math.floor(totalSeconds / 3600);
@@ -102,13 +107,21 @@ onMounted(async () => {
   questionBreakdownLabels.value = questionBreakdown.map(([label]) => label);   
   questionBreakdownCounts.value = questionBreakdown.map(([, count]) => count); 
 
+  const questionAccuracyHistory = await sessionStore.viewSessionDailyAccuracyHistory(props.sessionId)
+  accuracyDates.value = questionAccuracyHistory.map(([date]) => date);
+  const accuracyHistoryValues = questionAccuracyHistory.map(([, accuracy]) => accuracy);
+
+  accuracyHistory.value = [
+    { label: "Accuracy", data: accuracyHistoryValues, color: "#F97316"}
+  ];
+
+  console.log(accuracyHistory.value); 
+  
   [
     correctQuestions.value,    
     incorrectQuestions.value
   ] = await sessionStore.viewSessionCorrectIncorrectQuestions(props.sessionId); 
 
-  console.log(correctQuestions.value); 
-  
   
 });
 

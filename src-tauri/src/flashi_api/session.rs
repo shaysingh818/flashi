@@ -1,4 +1,5 @@
 use chrono;
+use chrono::{Duration, Utc};
 use serde::{Deserialize, Serialize};
 use duckdb::{params, Connection, Result};
 use crate::flashi_api::deck::Deck; 
@@ -466,6 +467,32 @@ impl Session {
             Ok((answer_type, count))
         })?; 
 
+        rows.collect()
+    }
+    
+    pub fn daily_accuracy_history(conn: &Connection, id: &str) -> Result<Vec<(String, f64)>> {
+
+        let cutoff = (Utc::now() - Duration::days(30)).date_naive();
+        let cutoff_str = cutoff.to_string();
+
+        let query = "
+            SELECT 
+                CAST(DATE_TRUNC('day', CREATED) AS VARCHAR) AS DAY_DATE,
+                AVG(ACCURACY) AS AVG_ACCURACY
+            FROM SESSION_REVIEW_METRICS
+            WHERE SESSION_REVIEW_ID IN (SELECT ID FROM SESSION_REVIEW WHERE SESSION_ID = ?)
+            AND CREATED >= ?
+            GROUP BY DATE_TRUNC('day', CREATED)
+            ORDER BY DATE_TRUNC('day', CREATED)
+        ";
+
+        let mut stmt = conn.prepare(query)?; 
+        let rows = stmt.query_map(params![id, cutoff_str], |row| {
+            let day_date: String = row.get(0)?;
+            let accuracy: f64 = row.get(1)?;
+            Ok((day_date, accuracy))
+        })?;
+        
         rows.collect()
     }
 

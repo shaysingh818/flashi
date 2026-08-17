@@ -4,7 +4,8 @@ pub mod handlers;
 use crate::handlers::session::{
     add_deck_to_session, create_session, delete_session, edit_session, remove_deck_from_session,
     search_sessions, view_session, view_session_decks, view_sessions, session_progress_status,
-    session_metrics, session_question_breakdown, session_correct_incorrect_questions
+    session_metrics, session_question_breakdown, session_correct_incorrect_questions,
+    session_daily_accuracy_history
 };
 
 use crate::handlers::session_review::{
@@ -70,6 +71,7 @@ pub fn run() {
             session_metrics,
             session_question_breakdown,
             session_correct_incorrect_questions,
+            session_daily_accuracy_history,
             /* Session Review */
             create_session_review,
             edit_session_review,

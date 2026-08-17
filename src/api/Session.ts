@@ -90,6 +90,11 @@ export const sessionStore = reactive({
     const dbPath = await this.getDbPath();
     return await invoke("session_question_breakdown", { dbPath, sessionId });
   },
+
+  async viewSessionDailyAccuracyHistory(sessionId: string): Promise<[string, number][]> {    
+    const dbPath = await this.getDbPath();
+    return await invoke("session_daily_accuracy_history", { dbPath, sessionId });
+  },
   
   async viewSessionCorrectIncorrectQuestions(sessionId: string): Promise<[SessionCorrectQuestion[], SessionIncorrectQuestion[]]> {    
     const dbPath = await this.getDbPath();
