@@ -51,6 +51,10 @@ use crate::handlers::answer::ordered_sequence::{
     view_ordered_sequence_answer, view_ordered_sequence_answers,
 };
 
+use crate::handlers::analytics:: {
+    review_time_metrics, question_review_time_metrics
+};
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -141,6 +145,9 @@ pub fn run() {
             view_ordered_sequence_answer,
             view_ordered_sequence_answers,
             validate_ordered_sequence_answer,
+            /* analytics  */
+            review_time_metrics,
+            question_review_time_metrics,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
