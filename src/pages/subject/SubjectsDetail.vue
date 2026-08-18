@@ -48,7 +48,9 @@ onMounted(async () => {
     questionsReviewed.value,
     questionsTotal.value,    
     avgAccuracy.value,
-  ] = await subjectStore.subjectMetrics(subjectId); 
+  ] = await subjectStore.subjectMetrics(subjectId);
+  
+  avgAccuracy.value = Math.round(avgAccuracy.value * 100) / 100;
   
 });
 

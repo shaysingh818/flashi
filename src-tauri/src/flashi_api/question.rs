@@ -38,6 +38,7 @@ impl Question {
     }
 
     pub fn insert(&mut self, conn: &Connection) -> Result<()> {
+ 
         let result = conn.execute(
             "INSERT INTO QUESTION 
                 (DECK_ID, ANSWER_TYPE_ID, ANSWER_ID, REVIEWED, CORRECT, INCORRECT, RAW, CREATED, UPDATED)
@@ -47,9 +48,9 @@ impl Question {
                 &self.answer_type_id,
                 &self.answer_id,
                 &self.reviewed,
-                &self.raw,
                 &self.correct,
-                &self.incorrect,
+                &self.incorrect,                
+                &self.raw,
                 &self.created,
                 &self.updated,
             ],
