@@ -10,6 +10,16 @@ export const analyticsStore = reactive({
     return dbPath;
   },
 
+  async generalMetrics(): Promise<[number, number, number]> {
+    const dbPath = await this.getDbPath();
+    return await invoke("general_metrics", { dbPath });
+  },
+
+  async historicalMetrics(): Promise<[string, number, number, number][]> {
+    const dbPath = await this.getDbPath();
+    return await invoke("historical_metrics", { dbPath });
+  },
+  
   async reviewTimeMetrics(): Promise<[number, number, number]> {
     const dbPath = await this.getDbPath();
     return await invoke("review_time_metrics", { dbPath });

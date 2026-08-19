@@ -11,6 +11,16 @@
     />
     
     <div class="flex items-left w-90">
+      <h2> General </h2>
+    </div>
+    
+    <div class="grid cols-3 w-90 gap-6 place-center p-6">
+      <MetricCard metric="Subject Count" :numeric="subjectCount" />
+      <MetricCard metric="Deck Count" :numeric="deckCount" />
+      <MetricCard metric="Session Count" :numeric="sessionCount" />
+    </div>
+    
+    <div class="flex items-left w-90">
       <h2> Review Time </h2>
     </div>
     
@@ -29,47 +39,24 @@
       <MetricCard metric="Questions reviewed per day" :numeric="dailyQuestionReviewed" />
       <MetricCard metric="Questions reviewed per week" :numeric="weeklyQuestionReviewed" />
     </div>
-
-    
-    <div class="flex items-left w-90">
-      <h2> Decks </h2>
-    </div>
-    
-    <div class="grid cols-3 w-90 gap-6 place-center p-6">
-      <MetricCard metric="Decks reviewed all time" numeric="20" />
-      <MetricCard metric="Decks reviewed per day" numeric="20" />
-      <MetricCard metric="Decks created per month" numeric="20" />
-    </div>
-    
+ 
     <div class="grid cols-1 cols-responsive w-95 gap-4">
-      <LineChart title="Historical review metrics" />
+      <LineChart 
+            title="Historical review metrics"
+            :labels="historicalDates"
+            :datasets="historicalAccuracy" />
     </div>
 
     <br />
     
     <div class="grid cols-1 cols-responsive w-95 gap-4">
       <LineChart 
-        title="Question correct/incorrect ratio"
-        :datasets="[
-          { label: 'Correct', data: [40, 55, 60, 70, 59, 48], color: '#34D399'},          
-          { label: 'Incorrect', data: [20, 30, 21, 42, 19, 89], color: '#F43F5E'},
-        ]"
-      />
+            title="Question correct/incorrect ratio"
+            :labels="historicalDates"
+            :datasets="historicalCorrectIncorrect" />
     </div>
     
     <br />
-    
-    <div class="grid cols-1 cols-responsive w-95 gap-4">
-      <LineChart 
-        title="Question type breakdown"
-        :datasets="[
-          { label: 'Open Ended', data: [40, 55, 60, 70, 59, 48], color: '#F97316'},          
-          { label: 'Multiple Choice', data: [20, 30, 21, 42, 19, 89], color: '#FB923C'},
-          { label: 'Ordered Sequence', data: [25, 90, 70, 35, 40, 56], color: '#FDBA74'}
-        ]"
-      />
-    </div>
-
     <br /> 
     <br /> 
   </div>
@@ -95,6 +82,14 @@ const questionReviewedAllTime = ref(0);
 const dailyQuestionReviewed = ref(0); 
 const weeklyQuestionReviewed = ref(0);
 
+const subjectCount = ref(0); 
+const deckCount = ref(0); 
+const sessionCount = ref(0);
+
+const historicalDates = ref([]); 
+const historicalCorrectIncorrect = ref([]);
+const historicalAccuracy = ref([]);
+
 function formatDuration(totalSeconds) {
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -112,6 +107,12 @@ function formatDuration(totalSeconds) {
 onMounted(async () => {
   
   [
+    subjectCount.value,
+    deckCount.value,    
+    sessionCount.value,
+  ] = await analyticsStore.generalMetrics(); 
+
+  [
     dailyReviewTime.value,
     weeklyReviewTime.value,    
     monthlyReviewTime.value,
@@ -120,12 +121,32 @@ onMounted(async () => {
   dailyReviewTime.value = formatDuration(dailyReviewTime.value); 
   weeklyReviewTime.value = formatDuration(weeklyReviewTime.value);
   monthlyReviewTime.value = formatDuration(monthlyReviewTime.value);
-
+  
   [
     questionReviewedAllTime.value,
     dailyQuestionReviewed.value,    
     weeklyQuestionReviewed.value,
-  ] = await analyticsStore.questionReviewTimeMetrics(); 
+  ] = await analyticsStore.questionReviewTimeMetrics();
+ 
+  dailyQuestionReviewed.value = Math.round(dailyQuestionReviewed.value * 100) / 100;  
+  weeklyQuestionReviewed.value = Math.round(weeklyQuestionReviewed.value * 100) / 100;
+
+  
+  const historicalMetrics = await analyticsStore.historicalMetrics()
+  historicalDates.value = historicalMetrics.map(([date]) => date);  
+
+  const historicalCorrect = historicalMetrics.map(([, correct]) => correct);  
+  const historicalIncorrect = historicalMetrics.map(([,,incorrect]) => incorrect);  
+  const historicalAccuracyValues = historicalMetrics.map(([,,,accuracy]) => accuracy);
+
+  historicalCorrectIncorrect.value = [    
+    { label: 'Correct', data: historicalCorrect, color: '#34D399'},          
+    { label: 'Incorrect', data: historicalIncorrect, color: '#F43F5E'},
+  ]
+  
+  historicalAccuracy.value = [    
+    { label: 'Accuracy', data: historicalAccuracyValues, color: '#F97316'},          
+  ]
   
 });
 

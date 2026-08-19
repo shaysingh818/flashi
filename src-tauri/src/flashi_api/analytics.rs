@@ -1,7 +1,63 @@
-use chrono;
+use chrono::{Duration, Utc};
 use serde::{Deserialize, Serialize};
 use duckdb::{params, Connection, Result}; 
 
+
+pub fn general(conn: &Connection) -> Result<(usize, usize, usize)> {
+
+    let query = "
+        SELECT 
+            (SELECT COUNT(*) FROM SUBJECT) AS SUBJECT_COUNT,
+            (SELECT COUNT(*) FROM DECK) AS DECK_COUNT,
+            (SELECT COUNT(*) FROM SESSION) AS SESSION_COUNT
+    ";
+    
+    conn.query_row(
+        query,
+        [],
+        |row| {
+            let subject_count: Option<i64> = row.get(0)?; 
+            let deck_count: Option<i64> = row.get(1)?; 
+            let session_count: Option<i64> = row.get(2)?; 
+            Ok((
+                subject_count.unwrap_or(0) as usize, 
+                deck_count.unwrap_or(0) as usize,
+                session_count.unwrap_or(0) as usize
+            ))
+        }
+    )
+    
+}
+
+pub fn historical(conn: &Connection) -> Result<Vec<(String, usize, usize, f64)>> {
+
+    let cutoff = (Utc::now() - Duration::days(30)).date_naive();
+    let cutoff_str = cutoff.to_string();
+    
+    let query = "
+        SELECT 
+            CAST(DATE_TRUNC('day', CREATED) AS VARCHAR) AS DAY_DATE,
+            SUM(QUESTIONS_CORRECT) AS TOTAL_CORRECT, 
+            SUM(QUESTIONS_INCORRECT) AS TOTAL_INCORRECT,
+            AVG(ACCURACY) AS AVG_ACCURACY
+        FROM SESSION_REVIEW_METRICS
+        WHERE CREATED >= ?
+        GROUP BY DATE_TRUNC('day', CREATED)
+        ORDER BY DATE_TRUNC('day', CREATED)
+    ";
+    
+    let mut stmt = conn.prepare(query)?; 
+    let rows = stmt.query_map(params![cutoff_str], |row| {
+        let day_date: String = row.get(0)?;
+        let total_correct: i64 = row.get(1)?;
+        let total_incorrect: i64 = row.get(2)?;
+        let avg_accuracy: f64 = row.get(3)?;
+        Ok((day_date, total_correct as usize, total_incorrect as usize, avg_accuracy))
+    })?;
+    
+    rows.collect()
+    
+}
 
 pub fn review_time(conn: &Connection) -> Result<(f64, f64, f64)> {
 

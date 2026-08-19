@@ -111,11 +111,11 @@ onMounted(async () => {
   accuracyDates.value = questionAccuracyHistory.map(([date]) => date);
   const accuracyHistoryValues = questionAccuracyHistory.map(([, accuracy]) => accuracy);
 
+  console.log(accuracyHistoryValues)
   accuracyHistory.value = [
     { label: "Accuracy", data: accuracyHistoryValues, color: "#F97316"}
   ];
 
-  console.log(accuracyHistory.value); 
   
   [
     correctQuestions.value,    

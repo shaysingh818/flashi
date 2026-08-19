@@ -52,7 +52,7 @@ use crate::handlers::answer::ordered_sequence::{
 };
 
 use crate::handlers::analytics:: {
-    review_time_metrics, question_review_time_metrics
+    general_metrics, review_time_metrics, question_review_time_metrics, historical_metrics
 };
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -146,6 +146,8 @@ pub fn run() {
             view_ordered_sequence_answers,
             validate_ordered_sequence_answer,
             /* analytics  */
+            general_metrics,
+            historical_metrics,
             review_time_metrics,
             question_review_time_metrics,
         ])
