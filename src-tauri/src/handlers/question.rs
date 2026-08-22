@@ -156,3 +156,48 @@ pub fn delete_question(db_path: &str, question_id: &str) -> String {
         }
     }
 }
+
+
+#[tauri::command]
+pub fn create_image_artifact(
+    image_file_name: &str, 
+    user_thumbnail_path: &str,
+    user_local_image_path: &str, 
+    db_path: &str) -> String {
+
+    let image_uuid = Uuid::new_v4();
+    let mut image_file_name_final: String; 
+
+    if image_file_name.len() > 0 {
+
+        let image_ext = Path::new(image_file_name)
+            .extension()
+            .and_then(OsStr::to_str);
+
+        image_file_name_final = format!("{}.{}", image_uuid, image_ext.unwrap()); 
+        let usr_image_path = format!("{}/{}", user_thumbnail_path, image_file_name_final);
+
+        match fs::copy(user_local_image_path, user_thumbnail_path) {
+            Ok(bytes) => println!("Successfully copied thumbnail with {} bytes", bytes),
+            Err(e) => eprintln!("Error copying thumbnail: {}", e),
+        }
+        
+    } else {
+        image_file_name_final = "default.webp".to_string(); 
+    }
+    
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => return format!("Failed to open database: {}", e),
+    };
+ 
+    let mut image_artifact: ImageArtifact = ImageArtifact::new(&image_file_name_final);
+
+    match image_artifact.insert(&conn) {
+        Ok(()) => {
+            let _ = conn.close();
+            return "Success".to_string();
+        }
+        Err(e) => format!("Failed to insert question: {}", e),
+    }
+}
