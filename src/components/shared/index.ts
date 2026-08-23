@@ -2,6 +2,7 @@
 export { default as DropDownFormField } from './forms/DropDownFormField.vue';
 export { default as FormHeader } from './forms/FormHeader.vue';
 export { default as FormInputField } from './forms/FormInputField.vue';
+export { default as FileUploadField } from './forms/FileUploadField.vue'; 
 export { default as FormTextField } from './forms/FormTextField.vue';
 export { default as SearchComponent } from './forms/SearchComponent.vue';
 
@@ -19,3 +20,6 @@ export { default as NavigationBar } from './navigation/NavigationBar.vue';
 export { default as NavigationItem } from './navigation/NavigationItem.vue';
 export { default as TabNavigationBar } from './navigation/TabNavigationBar.vue';
 export { default as TabNavigationItem } from './navigation/TabNavigationItem.vue';
+
+/* misc  */
+export { default as Tag } from './Tag.vue'; 

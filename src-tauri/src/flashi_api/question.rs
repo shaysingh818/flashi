@@ -295,6 +295,28 @@ impl ImageArtifact {
         image_artifacts
     }
 
+    pub fn retrieve_question_image_artifacts(conn: &Connection, question_id: &str) -> Result<Vec<ImageArtifact>> {
+
+        let mut stmt = conn.prepare(
+            "SELECT i.ID, i.IMAGE_PATH, i.CREATED::VARCHAR, i.UPDATED::VARCHAR
+             FROM IMAGE_ARTIFACT i
+             INNER JOIN QUESTION_IMAGE qi ON qi.IMAGE_ID = qi.ID
+             WHERE qi.QUESTION_ID = ?1"
+        )?;
+
+        let images: Result<Vec<ImageArtifact>> = stmt
+            .query_map(params![question_id], |row| {
+                Ok(ImageArtifact {
+                    id: row.get(0)?,
+                    image_path: row.get(1)?,
+                    created: row.get(2)?,
+                    updated: row.get(3)?,   
+                })
+            })?
+            .collect();
+        images
+    }
+
     pub fn update(&mut self, conn: &Connection, id: &str) -> Result<()> {
 
         self.updated = chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
@@ -410,6 +432,33 @@ impl std::error::Error for UploadImageError {
     }
 }
 
+#[derive(Debug)]
+pub enum RemoveImageError {
+    /// Deleting the file at the given path failed.
+    Delete {
+        source: io::Error,
+        path: String,
+    },
+}
+
+impl fmt::Display for RemoveImageError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            RemoveImageError::Delete { source, path } => {
+                write!(f, "failed to delete '{path}': {source}")
+            }
+        }
+    }
+}
+
+impl std::error::Error for RemoveImageError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            RemoveImageError::Delete { source, .. } => Some(source),
+        }
+    }
+}
+
 pub fn upload_image(
     image_file_name: &str,
     user_thumbnail_path: &str,
@@ -438,4 +487,19 @@ pub fn upload_image(
     println!("Successfully copied thumbnail with {bytes} bytes ({dest_path})");
 
     Ok(image_file_name_final)
+}
+
+pub fn remove_image(
+    image_file_name: &str,
+    user_thumbnail_path: &str,
+) -> Result<String, RemoveImageError> {
+    let image_delete_path = format!("{}/{}", user_thumbnail_path, image_file_name);
+
+    fs::remove_file(&image_delete_path).map_err(|source| RemoveImageError::Delete {
+        source,
+        path: image_delete_path.clone(),
+    })?;
+
+    println!("Successfully removed thumbnail {}", image_delete_path);
+    Ok(image_file_name.to_string())
 }

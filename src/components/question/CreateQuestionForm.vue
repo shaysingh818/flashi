@@ -4,6 +4,14 @@
       <FormTextField v-model:text="text" description="Deck Question" />
     </div>
 
+    <div class="flex centered-all w-75 outline">
+        <FileUploadField
+            field-label="Upload Images (Optional)"
+            :multiple="true"
+            @update:modelValue="onImagesSelected"
+        />
+    </div>
+
     <div class="flex centered-all w-75">
       <DropDownFormField
         title="choose option"
@@ -42,15 +50,19 @@ import { ref } from "vue";
 import { onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { message } from '@tauri-apps/plugin-dialog';
-import FormInputField from "../../components/shared/forms/FormInputField.vue";
-import FormTextField from "../../components/shared/forms/FormTextField.vue";
-import PrimaryButton from "../../components/shared/buttons/PrimaryButton.vue";
-import SecondaryButton from "../../components/shared/buttons/SecondaryButton.vue";
-import DropDownFormField from "../shared/forms/DropDownFormField.vue";
 import CreateMultipleChoiceForm from "../answer/multiple_choice/CreateMultipleChoiceForm.vue";
 import CreateOpenEndedForm from "../answer/open_ended/CreateOpenEndedForm.vue";
 import CreateOrderedSequenceForm from "../answer/ordered_sequence/CreateOrderedSequenceForm.vue";
-import Tag from "../shared/Tag.vue";
+
+import {
+  PrimaryButton,
+  SecondaryButton,  
+  FormInputField,
+  FormTextField,
+  DropDownFormField,
+  FileUploadField,
+  Tag
+} from "../../components/shared";
 
 import { 
   questionStore,
@@ -75,6 +87,7 @@ const props = defineProps({
 
 const router = useRouter(); 
 const text = ref(''); 
+const selectedPaths = ref([]);
 const selectedOption = ref('');
 const orderedSequences = ref([]);
 const openEndedText = ref(''); 
@@ -87,6 +100,15 @@ onMounted(async () => {
   const names = answerTypeStore.answerTypes.map(item => item.name);
   answerTypeNames.value = names;
 })
+
+function onImagesSelected(paths) {
+  selectedPaths.value = paths;
+}
+
+function fileName(path) {
+  return path.split(/[\\/]/).pop();
+}
+
 
 function goBack(){
   router.go(-1); 

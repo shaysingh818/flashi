@@ -59,3 +59,35 @@ export class Question {
     this.updated = updated;
   }
 }
+
+export interface ImageArtifact {
+  id: number;
+  image_path: string;
+  created: string; 
+  updated: string;
+}
+
+export class ImageArtifact {
+    
+  id: number;
+  image_path: string;
+  created: string; 
+  updated: string;
+
+  constructor({ 
+    id,
+    image_path,
+    created,
+    updated
+  }: {       
+    id: number;
+    image_path: string;
+    created: string; 
+    updated: string;
+  }) {
+    this.id = id;
+    this.image_path = image_path;
+    this.created = created;
+    this.updated = updated;
+  }
+}

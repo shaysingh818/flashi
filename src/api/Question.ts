@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { dataDir} from '@tauri-apps/api/path';
 import { reactive } from 'vue';
-import { Question } from './types'; 
+import { Question, ImageArtifact } from './types'; 
 
 
 export const questionStore = reactive({
@@ -65,6 +65,49 @@ export const questionStore = reactive({
   async deleteQuestion(questionId: string): Promise<string> {    
     const dbPath = await this.getDbPath();    
     return await invoke("delete_question", { dbPath, questionId });  
+  },
+ 
+})
+
+export const imageArtifactStore = reactive({
+
+  images: [] as ImageArtifact[],
+
+  async getDbPath(): Promise<string> {    
+    const dataDirPath = await dataDir();
+    const dbPath = `${dataDirPath}/flashi/metadata/flashi.db`;
+    return dbPath;
+  },
+
+  async loadImageArtifacts(questionId: string) {
+    try { 
+      const dbPath = await this.getDbPath();
+      const artifacts = await invoke<ImageArtifact[]>('view_question_image_artifacts', { dbPath, questionId });
+      this.images = artifacts;
+    } catch (error) {
+      console.error("Error loading image artifacts: ", error);
+    }
+  },
+
+  async createImageArtifact(imageFileName: string, userLocalImagePath: string): Promise<string> {
+    const dbPath = await this.getDbPath();
+    const dataDirPath = await dataDir(); 
+    const userImagePath = `${dataDirPath}/flashi/images`; 
+    return await invoke("create_question", { imageFileName, userImagePath, userLocalImagePath, dbPath });
+  },
+
+  async editImageArtifact(id: string, aliasFileName: string, userLocalImagePath: string): Promise<string> {        
+    const dbPath = await this.getDbPath();    
+    const dataDirPath = await dataDir(); 
+    const userImagePath = `${dataDirPath}/flashi/images`; 
+    return await invoke("edit_question", { id, aliasFileName, userImagePath, userLocalImagePath, dbPath });  
+  },
+
+  async deleteImageArtifact(id: string, aliasFileName: string, userLocalImagePath: string): Promise<string> {    
+    const dbPath = await this.getDbPath();       
+    const dataDirPath = await dataDir(); 
+    const userImagePath = `${dataDirPath}/flashi/images`; 
+    return await invoke("delete_question", { dbPath, id, aliasFileName, userImagePath, userLocalImagePath });  
   },
  
 })

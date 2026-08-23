@@ -161,38 +161,25 @@ pub fn delete_question(db_path: &str, question_id: &str) -> String {
 #[tauri::command]
 pub fn create_image_artifact(
     image_file_name: &str, 
-    user_thumbnail_path: &str,
+    user_image_path: &str,
     user_local_image_path: &str, 
     db_path: &str) -> String {
+ 
+    let image_file_name_final = match upload_image(
+          image_file_name,
+          user_image_path,
+          user_local_image_path,
+      ) {
+          Ok(name) => name,
+          Err(e) => return format!("Failed to upload image: {}", e),
+      };
 
-    let image_uuid = Uuid::new_v4();
-    let mut image_file_name_final: String; 
-
-    if image_file_name.len() > 0 {
-
-        let image_ext = Path::new(image_file_name)
-            .extension()
-            .and_then(OsStr::to_str);
-
-        image_file_name_final = format!("{}.{}", image_uuid, image_ext.unwrap()); 
-        let usr_image_path = format!("{}/{}", user_thumbnail_path, image_file_name_final);
-
-        match fs::copy(user_local_image_path, user_thumbnail_path) {
-            Ok(bytes) => println!("Successfully copied thumbnail with {} bytes", bytes),
-            Err(e) => eprintln!("Error copying thumbnail: {}", e),
-        }
-        
-    } else {
-        image_file_name_final = "default.webp".to_string(); 
-    }
-    
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => return format!("Failed to open database: {}", e),
     };
  
     let mut image_artifact: ImageArtifact = ImageArtifact::new(&image_file_name_final);
-
     match image_artifact.insert(&conn) {
         Ok(()) => {
             let _ = conn.close();
@@ -200,4 +187,117 @@ pub fn create_image_artifact(
         }
         Err(e) => format!("Failed to insert question: {}", e),
     }
+}
+
+
+#[tauri::command]
+pub fn view_question_image_artifacts(db_path: &str, question_id: &str) -> Vec<ImageArtifact> {
+  
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return Vec::new();
+        }
+    };
+
+    match ImageArtifact::retrieve_question_image_artifacts(&conn, question_id) {
+        Ok(images) => images,
+        Err(e) => {
+            println!("{:?}", e);
+            Vec::new()
+        }
+    }
+}
+
+
+#[tauri::command]
+pub fn edit_image_artifact(
+    id: &str,
+    image_file_name: &str, 
+    user_image_path: &str,
+    user_local_image_path: &str, 
+    db_path: &str) -> String {
+ 
+    let image_file_name_final = match upload_image(
+          image_file_name,
+          user_image_path,
+          user_local_image_path,
+      ) {
+          Ok(name) => name,
+          Err(e) => return format!("Failed to upload image: {}", e),
+      };
+
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => return format!("Failed to open database: {}", e),
+    };
+
+    match ImageArtifact::view(&conn, id) {
+        Ok(mut image_artifact) => {
+            image_artifact.image_path = image_file_name_final; 
+            match image_artifact.update(&conn, id) {
+                Ok(()) => {
+                    let _ = conn.close();
+                    match remove_image(
+                          image_file_name,
+                          user_image_path,
+                      ) {
+                          Ok(name) => println!("removed image file name: {:?} ", name),
+                          Err(e) => return format!("Failed to remove image: {}", e),
+                      };
+                    
+                    return "Success".to_string();
+                }
+                Err(e) => format!("Failed to update deck: {}", e),
+            }
+            
+        }
+        Err(e) => {            
+            let msg = format!("Error updating image artifact: {:?}", e);
+            return msg.to_string();
+        }
+    }
+ 
+}
+
+
+#[tauri::command]
+pub fn delete_image_artifact(
+    id: &str,
+    image_file_name: &str,    
+    user_image_path: &str,
+    db_path: &str) -> String {
+
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => return format!("Failed to open database: {}", e),
+    };
+    
+    match ImageArtifact::view(&conn, id) {
+        Ok(mut image_artifact) => {
+
+            match image_artifact.delete(&conn, id) {
+                Ok(_) => {
+
+                    match remove_image(
+                          image_file_name,
+                          user_image_path,
+                      ) {
+                          Ok(name) => println!("Removed image file name: {:?}", name),
+                          Err(e) => return format!("Failed to remove image: {}", e),
+                      };
+                    
+                    return format!("Success");
+                },
+                Err(err) => {
+                    return format!("Error deleting question {}: {:?}", id, err); 
+                }
+            }    
+        }
+        Err(e) => {
+            return format!("Error retrieving question with id: {:?} Cause: {:?}", id, e);
+        }
+    }
+ 
 }
