@@ -4,14 +4,14 @@
       <FormTextField v-model:text="text" description="Deck Question" />
     </div>
 
-    <div class="flex centered-all w-75 outline">
+    <div class="flex centered-all w-75 oultine">
         <FileUploadField
-            field-label="Upload Images (Optional)"
+            fieldLabel="Upload Images (Optional)"
             :multiple="true"
             @update:modelValue="onImagesSelected"
         />
     </div>
-
+    
     <div class="flex centered-all w-75">
       <DropDownFormField
         title="choose option"
@@ -119,6 +119,14 @@ function retrieveAnswerTypeId(key) {
     if (item.name === key) {
       return item.answer_type_id
     }
+  }
+}
+
+
+async function submitQuestionImages(selectedImagePaths) {
+
+  for (const item of selectedImagePaths) {
+    
   }
 }
 
