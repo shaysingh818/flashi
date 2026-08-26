@@ -66,6 +66,7 @@ import {
 
 import { 
   questionStore,
+  imageArtifactStore,
   answerTypeStore,
   openEndedStore,
   orderedSequenceStore,
@@ -93,7 +94,7 @@ const orderedSequences = ref([]);
 const openEndedText = ref(''); 
 const openEndedKeywords = ref([]); 
 const multipleChoiceAnswers = ref([]); 
-const answerTypeNames = ref([]); 
+const answerTypeNames = ref([]);
 
 onMounted(async () => {
   await answerTypeStore.loadAnswerTypes();
@@ -101,7 +102,7 @@ onMounted(async () => {
   answerTypeNames.value = names;
 })
 
-function onImagesSelected(paths) {
+async function onImagesSelected(paths) {
   selectedPaths.value = paths;
 }
 
@@ -122,12 +123,22 @@ function retrieveAnswerTypeId(key) {
   }
 }
 
-
 async function submitQuestionImages(selectedImagePaths) {
-
+  let imageArtifactIds = []; 
   for (const item of selectedImagePaths) {
-    
+    const fileName = item.split('/').pop(); 
+    const localPath = item.slice(0, -fileName.length - 1);
+    const [id, result] = await imageArtifactStore.createImageArtifact(
+      fileName,
+      localPath
+    ); 
+    if (id !== -1) {
+      imageArtifactIds.push(id); 
+    } else {
+      console.error("Error uploading image: ", item); 
+    }
   }
+  return imageArtifactIds
 }
 
 async function submitMultipleChoice(multipleChoiceAnswers) { 
@@ -167,7 +178,6 @@ async function submitOrderedSequence(sequence, explanation) {
     sequence,
     explanation
   );  
-  console.log(sequence); 
   if (sequence.length === 0) {
     return -1;
   }
@@ -177,25 +187,27 @@ async function submitOrderedSequence(sequence, explanation) {
 async function submitQuestion() {
   
   const deckId = props.deckId; 
+  let questionInsertId = -1;
+  let questionInsertResult = ""; 
   
   if (selectedOption.value === 'Multiple Choice') {    
     const answerTypeId = retrieveAnswerTypeId('Multiple Choice');
     const answerId = await submitMultipleChoice(multipleChoiceAnswers.value);     
     if (answerId !== -1) { 
-      const insertResult = await questionStore.createQuestion(
+      [questionInsertId, questionInsertResult] = await questionStore.createQuestion(
         deckId,
         answerTypeId.toString(),
         answerId.toString(),
         text.value
       );
-      if (insertResult === "Success") { 
+      if (questionInsertResult === "Success") { 
         await message(
           'Created multiple choice question for deck',
           { title: 'Recalli', kind: 'info' }
         );
       } else { 
         await message(
-          `Could not create multiple choice question: ${insertResult}`,
+          `Could not create multiple choice question: ${questionInsertResult}`,
           { title: 'Recalli', kind: 'info' }
         );
       }
@@ -213,20 +225,20 @@ async function submitQuestion() {
       openEndedKeywords.value
     );
     if (answerId !== -1) { 
-      const insertResult = await questionStore.createQuestion(
+      [questionInsertId, questionInsertResult] = await questionStore.createQuestion(
         deckId,
         answerTypeId.toString(),
         answerId.toString(),
         text.value
       );    
-      if (insertResult === "Success") { 
+      if (questionInsertResult === "Success") { 
         await message(
           'Created open ended question for deck',
           { title: 'Recalli', kind: 'info' }
         );
       } else { 
         await message(          
-          `Could not create open ended question: ${insertResult}`,
+          `Could not create open ended question: ${questionInsertResult}`,
           { title: 'Recalli', kind: 'info' }
         );
       }
@@ -244,13 +256,13 @@ async function submitQuestion() {
       ''
     );
     if (answerId !== -1) { 
-      const insertResult = await questionStore.createQuestion(
+      [questionInsertId, questionInsertResult] = await questionStore.createQuestion(
         deckId,
         answerTypeId.toString(),
         answerId.toString(),
         text.value
       );
-      if (insertResult === "Success") { 
+      if (questionInsertResult === "Success") { 
         await message(
           'Created ordered sequence question for deck',
           { title: 'Recalli', kind: 'info' }
@@ -267,13 +279,29 @@ async function submitQuestion() {
         { title: 'Recalli', kind: 'info' }
       );
     }
-    
+ 
   } else { 
     await message(
       'Could not create question, select question type and fill out required fields',
       { title: 'Recalli', kind: 'info' }
     );
   }
+
+  console.log("SELECTED PATHS: ", selectedPaths.value);
+  if (selectedPaths.value.length > 0) {
+    const imageIds = await submitQuestionImages(selectedPaths.value);
+    console.log(imageIds); 
+    for (const item of imageIds) {
+      const result = await questionStore.addImageArtifactToQuestion(questionInsertId, item);
+      if (result !== "Success") {
+        await message(
+          'Could not associated one or more images with question',
+          { title: 'Recalli', kind: 'info' }
+        );
+      }
+    }
+  }
+  
 }
 
 </script>

@@ -25,7 +25,8 @@ use crate::handlers::deck::{
 
 use crate::handlers::question::{
     create_question, delete_question, edit_question, search_questions, view_question,
-    view_questions, create_image_artifact, edit_image_artifact, delete_image_artifact, view_question_image_artifacts
+    view_questions, create_image_artifact, edit_image_artifact, delete_image_artifact, view_question_image_artifacts,
+    add_question_image_artifact, remove_question_image_artifact
 };
 
 use crate::handlers::answer::answer_type::{
@@ -116,6 +117,8 @@ pub fn run() {
             edit_image_artifact,
             delete_image_artifact,
             view_question_image_artifacts,
+            add_question_image_artifact,
+            remove_question_image_artifact,
             /* Answer Type */
             create_answer_type,
             delete_answer_type,

@@ -43,29 +43,35 @@ impl Question {
         }
     }
 
-    pub fn insert(&mut self, conn: &Connection) -> Result<()> {
- 
-        let result = conn.execute(
+    pub fn insert(&mut self, conn: &Connection) -> Result<i64> {
+         
+        let result = conn.prepare( 
             "INSERT INTO QUESTION 
                 (DECK_ID, ANSWER_TYPE_ID, ANSWER_ID, REVIEWED, CORRECT, INCORRECT, RAW, CREATED, UPDATED)
-            VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
-            params![
-                &self.deck_id,
-                &self.answer_type_id,
-                &self.answer_id,
-                &self.reviewed,
-                &self.correct,
-                &self.incorrect,                
-                &self.raw,
-                &self.created,
-                &self.updated,
-            ],
-        );
+            VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
+            RETURNING ID",
+          )
+          .and_then(|mut stmt| {
+              stmt.query_row(
+                  params![ 
+                      &self.deck_id,
+                      &self.answer_type_id,
+                      &self.answer_id,
+                      &self.reviewed,
+                      &self.correct,
+                      &self.incorrect,                
+                      &self.raw,
+                      &self.created,
+                      &self.updated,
+                  ],
+                  |row| row.get::<_, i64>(0),
+              )
+          });
 
         match result {
-            Ok(_) => {
-                println!("Successfully inserted question");
-                Ok(())
+            Ok(id) => {
+                println!("Successfully inserted question with id: {:?}", id);
+                Ok(id)
             },
             Err(err) => {
                 println!("[question::insert] duckdb error {:?}", err);
@@ -229,6 +235,29 @@ impl Question {
         }
     }
 
+    pub fn remove_image_artifact_from_question(&mut self, conn: &Connection, image_id: &str) -> Result<String> {
+        
+        let result = conn.execute(
+            "DELETE FROM QUESTION_IMAGE
+                WHERE QUESTION_ID = ?1 AND IMAGE_ID = ?2",
+            params![
+                &self.id,
+                image_id,
+            ],
+        );
+
+        match result {
+            Ok(_) => {
+                println!("Successfully removed deck from session");
+                Ok(("Success").to_string())
+            },
+            Err(err) => {
+                println!("[session::remove_deck_from_session] duckdb error {:?}", err);
+                Err(err)
+            }
+        }
+    }
+
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -253,23 +282,25 @@ impl ImageArtifact {
         }
     }
 
-    pub fn insert(&mut self, conn: &Connection) -> Result<()> {
+    pub fn insert(&mut self, conn: &Connection) -> Result<i64> {
         
-        let result = conn.execute(
-            "INSERT INTO IMAGE_ARTIFACT 
-                (IMAGE_PATH, CREATED, UPDATED)
-            VALUES (?1, ?2, ?3)",
-            params![
-                &self.image_path,
-                &self.created,
-                &self.updated,
-            ],
-        );
-
+        let result = conn.prepare(
+              "INSERT INTO IMAGE_ARTIFACT
+                  (IMAGE_PATH, CREATED, UPDATED)
+              VALUES (?1, ?2, ?3)
+              RETURNING ID",
+          )
+          .and_then(|mut stmt| {
+              stmt.query_row(
+                  params![&self.image_path, &self.created, &self.updated],
+                  |row| row.get::<_, i64>(0),
+              )
+          });
+        
         match result {
-            Ok(_) => {
-                println!("Successfully inserted image artifact");
-                Ok(())
+            Ok(id) => {
+                println!("Successfully inserted image artifact with id: {:?}", id);
+                Ok(id)
             },
             Err(err) => {
                 println!("[image_artifact::insert] duckdb error {:?}", err);
@@ -460,10 +491,11 @@ impl std::error::Error for RemoveImageError {
 }
 
 pub fn upload_image(
-    image_file_name: &str,
-    user_thumbnail_path: &str,
+    image_file_name: &str,    
     user_local_image_path: &str,
+    app_image_path: &str,
 ) -> Result<String, UploadImageError> {
+    
     if image_file_name.is_empty() {
         return Ok("default.webp".to_string());
     }
@@ -474,12 +506,13 @@ pub fn upload_image(
         .ok_or_else(|| UploadImageError::MissingExtension(image_file_name.to_string()))?;
 
     let image_file_name_final = format!("{}.{}", Uuid::new_v4(), image_ext);
-    let dest_path = format!("{user_thumbnail_path}/{image_file_name_final}");
+    let src_path = format!("{user_local_image_path}/{image_file_name}"); 
+    let dest_path = format!("{app_image_path}/{image_file_name_final}");
 
-    let bytes = fs::copy(user_local_image_path, &dest_path).map_err(|source| {
+    let bytes = fs::copy(&src_path, &dest_path).map_err(|source| {
         UploadImageError::Copy {
             source,
-            from: user_local_image_path.to_string(),
+            from: src_path.to_string(),
             to: dest_path.clone(),
         }
     })?;
@@ -491,9 +524,9 @@ pub fn upload_image(
 
 pub fn remove_image(
     image_file_name: &str,
-    user_thumbnail_path: &str,
+    app_image_path: &str,
 ) -> Result<String, RemoveImageError> {
-    let image_delete_path = format!("{}/{}", user_thumbnail_path, image_file_name);
+    let image_delete_path = format!("{}/{}", app_image_path, image_file_name);
 
     fs::remove_file(&image_delete_path).map_err(|source| RemoveImageError::Delete {
         source,

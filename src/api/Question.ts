@@ -66,6 +66,16 @@ export const questionStore = reactive({
     const dbPath = await this.getDbPath();    
     return await invoke("delete_question", { dbPath, questionId });  
   },
+  
+  async addImageArtifactToQuestion(questionId: string, imageId: string): Promise<string> {
+    const dbPath = await this.getDbPath();
+    return await invoke("add_question_image_artifact", { dbPath, questionId, imageId });
+  },
+  
+  async removeImageArtifactFromQuestion(questionId: string, imageId: string): Promise<string> {
+    const dbPath = await this.getDbPath();
+    return await invoke("remove_question_image_artifact", { dbPath, questionId, imageId });
+  },
  
 })
 
@@ -89,25 +99,25 @@ export const imageArtifactStore = reactive({
     }
   },
 
-  async createImageArtifact(imageFileName: string, userLocalImagePath: string): Promise<string> {
+  async createImageArtifact(imageFileName: string, userLocalImagePath: string): Promise<[number, string]> {
     const dbPath = await this.getDbPath();
     const dataDirPath = await dataDir(); 
-    const userImagePath = `${dataDirPath}/flashi/images`; 
-    return await invoke("create_question", { imageFileName, userImagePath, userLocalImagePath, dbPath });
+    const appImagePath = `${dataDirPath}/flashi/images`; 
+    return await invoke("create_image_artifact", { imageFileName, userLocalImagePath, appImagePath, dbPath });
   },
 
-  async editImageArtifact(id: string, aliasFileName: string, userLocalImagePath: string): Promise<string> {        
+  async editImageArtifact(id: string, imageFileName: string, userLocalImagePath: string): Promise<string> {        
     const dbPath = await this.getDbPath();    
     const dataDirPath = await dataDir(); 
-    const userImagePath = `${dataDirPath}/flashi/images`; 
-    return await invoke("edit_question", { id, aliasFileName, userImagePath, userLocalImagePath, dbPath });  
+    const appImagePath = `${dataDirPath}/flashi/images`; 
+    return await invoke("edit_image_artifact", { id, imageFileName, appImagePath, userLocalImagePath, dbPath });  
   },
 
-  async deleteImageArtifact(id: string, aliasFileName: string, userLocalImagePath: string): Promise<string> {    
+  async deleteImageArtifact(id: string, userLocalImagePath: string): Promise<string> {    
     const dbPath = await this.getDbPath();       
     const dataDirPath = await dataDir(); 
-    const userImagePath = `${dataDirPath}/flashi/images`; 
-    return await invoke("delete_question", { dbPath, id, aliasFileName, userImagePath, userLocalImagePath });  
+    const appImagePath = `${dataDirPath}/flashi/images`; 
+    return await invoke("delete_image_artifact", { dbPath, id, appImagePath, userLocalImagePath });  
   },
  
 })

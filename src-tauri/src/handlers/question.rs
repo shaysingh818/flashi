@@ -9,25 +9,25 @@ use crate::flashi_api::question::*;
 
 
 #[tauri::command]
-pub fn create_question(deck_id: &str, answer_type_id: &str, answer_id: &str, raw: &str, db_path: &str) -> String {
+pub fn create_question(deck_id: &str, answer_type_id: &str, answer_id: &str, raw: &str, db_path: &str) -> (i64, String) {
 
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
-        Err(e) => return format!("Failed to open database: {}", e),
+        Err(e) => return (-1, format!("Failed to open database: {}", e)),
     };
 
     let deck_id_usize: usize = deck_id.parse::<usize>().unwrap();
     let answer_type_id_usize: usize = answer_type_id.parse::<usize>().unwrap();
     let answer_id_usize: usize = answer_id.parse::<usize>().unwrap();
-    
+
     let mut question: Question = Question::new(deck_id_usize, answer_type_id_usize, answer_id_usize, raw);
 
     match question.insert(&conn) {
-        Ok(()) => {
+        Ok(id) => {
             let _ = conn.close();
-            return "Success".to_string();
+            return (id, "Success".to_string());
         }
-        Err(e) => format!("Failed to insert question: {}", e),
+        Err(e) => (-1, format!("Failed to insert question: {}", e)),
     }
 }
 
@@ -108,6 +108,52 @@ pub fn view_question(db_path: &str, question_id: &str) -> Result<Question, Strin
     }
 }
 
+
+#[tauri::command]
+pub fn add_question_image_artifact(db_path: &str, question_id: &str, image_id: &str) -> String {
+    
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return format!("Database connection error: {:?}", e);
+        }
+    };
+
+    match Question::view(&conn, question_id) {
+        Ok(mut question) => {
+            let result = question.add_image_artifact_to_question(&conn, image_id).unwrap();
+            return result;
+        }
+        Err(e) => {
+            return format!("Error adding image artifact to question with id: {:?} Cause: {:?}", image_id, e);
+        }
+    }
+    
+}
+
+#[tauri::command]
+pub fn remove_question_image_artifact(db_path: &str, question_id: &str, image_id: &str) -> String {
+  
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return format!("Database connection error: {:?}", e);
+        }
+    };
+
+    match Question::view(&conn, question_id) {
+        Ok(mut question) => {
+            let result = question.remove_image_artifact_from_question(&conn, image_id).unwrap();
+            return result;
+        }
+        Err(e) => {
+            return format!("Error adding deck to session with id: {:?} Cause: {:?}", image_id, e);
+        }
+    }
+}
+
 #[tauri::command]
 pub fn search_questions(db_path: &str, search_term: &str) -> Vec<Question> {
 
@@ -160,32 +206,32 @@ pub fn delete_question(db_path: &str, question_id: &str) -> String {
 
 #[tauri::command]
 pub fn create_image_artifact(
-    image_file_name: &str, 
-    user_image_path: &str,
+    image_file_name: &str,
     user_local_image_path: &str, 
-    db_path: &str) -> String {
+    app_image_path: &str,
+    db_path: &str) -> (i64, String) {
  
     let image_file_name_final = match upload_image(
-          image_file_name,
-          user_image_path,
-          user_local_image_path,
+        image_file_name,
+        user_local_image_path,
+        app_image_path,
       ) {
           Ok(name) => name,
-          Err(e) => return format!("Failed to upload image: {}", e),
+          Err(e) => return (-1, format!("Failed to upload image: {}", e)),
       };
 
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
-        Err(e) => return format!("Failed to open database: {}", e),
+        Err(e) => return (-1, format!("Failed to open database: {}", e)),
     };
  
     let mut image_artifact: ImageArtifact = ImageArtifact::new(&image_file_name_final);
     match image_artifact.insert(&conn) {
-        Ok(()) => {
+        Ok(id) => {
             let _ = conn.close();
-            return "Success".to_string();
+            return (id, "Success".to_string());
         }
-        Err(e) => format!("Failed to insert question: {}", e),
+        Err(e) => (-1, format!("Failed to insert question: {}", e)),
     }
 }
 
@@ -213,16 +259,16 @@ pub fn view_question_image_artifacts(db_path: &str, question_id: &str) -> Vec<Im
 
 #[tauri::command]
 pub fn edit_image_artifact(
-    id: &str,
-    image_file_name: &str, 
-    user_image_path: &str,
+    id: &str,    
+    image_file_name: &str,
     user_local_image_path: &str, 
+    user_image_path: &str,
     db_path: &str) -> String {
  
     let image_file_name_final = match upload_image(
-          image_file_name,
-          user_image_path,
-          user_local_image_path,
+        image_file_name,
+        user_local_image_path,
+        user_image_path,
       ) {
           Ok(name) => name,
           Err(e) => return format!("Failed to upload image: {}", e),
@@ -265,8 +311,8 @@ pub fn edit_image_artifact(
 #[tauri::command]
 pub fn delete_image_artifact(
     id: &str,
-    image_file_name: &str,    
-    user_image_path: &str,
+    image_file_name: &str,
+    app_image_path: &str,
     db_path: &str) -> String {
 
     let conn = match Connection::open(db_path) {
@@ -280,10 +326,7 @@ pub fn delete_image_artifact(
             match image_artifact.delete(&conn, id) {
                 Ok(_) => {
 
-                    match remove_image(
-                          image_file_name,
-                          user_image_path,
-                      ) {
+                    match remove_image(image_file_name, app_image_path) {
                           Ok(name) => println!("Removed image file name: {:?}", name),
                           Err(e) => return format!("Failed to remove image: {}", e),
                       };

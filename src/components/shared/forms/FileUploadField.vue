@@ -55,7 +55,6 @@ function fileName(path) {
 
 function previewSrc(path) {
   const src = convertFileSrc(path); 
-  console.log('preview src:', src);
   return src;
 }
 
