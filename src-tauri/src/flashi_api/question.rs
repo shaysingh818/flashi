@@ -139,12 +139,33 @@ impl Question {
     }
 
     pub fn delete(&mut self, conn: &Connection, id: &str) -> Result<()> {
-        let result = conn.execute("DELETE FROM QUESTION WHERE ID=?", [id]);
-        match result {
+
+        // Images currently attached to this question
+        let this_question_images: Vec<i64> = {
+            let mut stmt = conn.prepare(
+                "SELECT IMAGE_ID FROM QUESTION_IMAGE WHERE QUESTION_ID = ?",
+            )?;
+            let rows = stmt.query_map([id], |row| row.get(0))?;
+            rows.collect::<std::result::Result<Vec<i64>, _>>()?
+        };
+     
+        // Drop the association and its image artifact one image at a time,
+        // rather than deleting all associations first and all artifacts second.
+        for image_id in &this_question_images {
+            if let Err(err) = conn.execute(
+                "DELETE FROM QUESTION_IMAGE WHERE QUESTION_ID = ? AND IMAGE_ID = ?",
+                duckdb::params![id, image_id],
+            ) {
+                println!("[question::delete] Error removing question_image link for image {}: {:?}", image_id, err);
+                return Err(err);
+            } 
+        }
+    
+        match conn.execute("DELETE FROM QUESTION WHERE ID = ?", [id]) {
             Ok(_) => {
                 println!("Successfully deleted question");
                 Ok(())
-            },
+            }
             Err(err) => {
                 println!("[question::delete] Error deleting question {:?}", err);
                 Err(err)

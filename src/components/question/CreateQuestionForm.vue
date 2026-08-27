@@ -287,12 +287,10 @@ async function submitQuestion() {
     );
   }
 
-  console.log("SELECTED PATHS: ", selectedPaths.value);
   if (selectedPaths.value.length > 0) {
     const imageIds = await submitQuestionImages(selectedPaths.value);
-    console.log(imageIds); 
     for (const item of imageIds) {
-      const result = await questionStore.addImageArtifactToQuestion(questionInsertId, item);
+      const result = await questionStore.addImageArtifactToQuestion(questionInsertId.toString(), item.toString());
       if (result !== "Success") {
         await message(
           'Could not associated one or more images with question',
