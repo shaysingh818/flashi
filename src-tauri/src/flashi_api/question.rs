@@ -350,10 +350,9 @@ impl ImageArtifact {
     pub fn retrieve_question_image_artifacts(conn: &Connection, question_id: &str) -> Result<Vec<ImageArtifact>> {
 
         let mut stmt = conn.prepare(
-            "SELECT i.ID, i.IMAGE_PATH, i.CREATED::VARCHAR, i.UPDATED::VARCHAR
-             FROM IMAGE_ARTIFACT i
-             INNER JOIN QUESTION_IMAGE qi ON qi.IMAGE_ID = qi.ID
-             WHERE qi.QUESTION_ID = ?1"
+            "SELECT ID, IMAGE_PATH, CREATED::VARCHAR, UPDATED::VARCHAR
+            FROM IMAGE_ARTIFACT WHERE ID IN (
+            SELECT IMAGE_ID FROM QUESTION_IMAGE WHERE QUESTION_ID = ?)"
         )?;
 
         let images: Result<Vec<ImageArtifact>> = stmt
