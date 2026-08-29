@@ -15,17 +15,37 @@
       />
     </div>
 
-    <div class="flex col-center w-100">
+    <div class="grid grid-cols-3 gap-4 w-75 outline">
+
+        <div class="flex outline">
+
+        </div>
+
+
+        <div class="flex outline">
+
+        </div>
+       
+       
+        <div class="flex outline">
+
+        </div>
+        
+    </div>
+    
+     <!-- <div class="flex col-center w-100">
         <div class="flex row-center w-75">
             <ul v-if="imageArtifacts.length" class="selected-files">
                 <li v-for="item in imageArtifacts" :key="item" class="file-row">
-                    <img :src="imageUrls[item]" alt="" width="40" height="40" class="file-thumb">
-                    <span class="file-name">{{ fileName(item) }}</span>
+                    <img :src="item.image_path" alt="" width="40" height="40" class="file-thumb">
+                    <span class="file-name">Test</span>
                     <button type="button" class="file-remove" @click="removePath(item)">✕</button>
                 </li>
             </ul>
         </div>
-    </div>
+    </div>  -->
+
+    <br/>
     
 
     <div class="flex centered-all w-100">
@@ -173,7 +193,7 @@ async function loadThumbnail(item) {
     const fileBuffer = await readFile(`flashi/images/${item}`, {
       baseDir: BaseDirectory.Data,
     });
-    imageUrls[item] = URL.createObjectURL(new Blob([fileBuffer]));
+    return URL.createObjectURL(new Blob([fileBuffer]));
   } catch (err) {
     console.log(`Failed to load thumbnail for ${item}`, err);
   }
@@ -189,10 +209,16 @@ async function loadData(id) {
   const answerTypeText = await answerTypeStore.viewAnswerType(`${question.value.answer_type_id}`);
   answerType.value = answerTypeText.name;
   deck.value = await deckStore.viewDeck(`${question.value.deck_id}`); 
+
   await imageArtifactStore.loadImageArtifacts(`${id}`); 
   imageArtifacts.value = imageArtifactStore.images;
-  console.log("IMAGE ARTIFACTS: ", imageArtifacts.value); 
-  
+  for (const item of imageArtifacts.value) {
+    const newUrl = await loadThumbnail(item.image_path);
+    item.image_path = newUrl;
+  }
+
+  console.log("IMAGES: ", imageArtifacts.value); 
+ 
   if (answerType.value === 'Ordered Sequence') {
     const answer = await orderedSequenceStore.viewOrderedSequenceAnswer(
       `${question.value.answer_id}`
@@ -293,24 +319,71 @@ watch(() => route.params.id, (newId) => {
   if (newId) loadData(newId);
 });
 
-watch(
-  imageArtifacts,
-  (newList, oldList = []) => {
-    for (const item of newList) {
-      if (!imageUrls[item]) loadThumbnail(item);
-    }
-    for (const item of oldList) {
-      if (!newList.includes(item) && imageUrls[item]) {
-        URL.revokeObjectURL(imageUrls[item]);
-        delete imageUrls[item];
-      }
-    }
-  },
-  { immediate: true }
-);
+// watch(
+  
+//   imageArtifacts,
+//   (newList, oldList = []) => {
+//     for (const item of newList) {
+//       if (!imageUrls[item]) loadThumbnail(item);
+//     }
+//     for (const item of oldList) {
+//       if (!newList.includes(item) && imageUrls[item]) {
+//         URL.revokeObjectURL(imageUrls[item]);
+//         delete imageUrls[item];
+//       }
+//     }
+//   },
+//   { immediate: true }
+// );
 
 onBeforeUnmount(() => {
   Object.values(imageUrls).forEach((url) => URL.revokeObjectURL(url));
 });
 
 </script>
+
+
+<style scoped>
+
+.selected-files {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.file-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  width: 100%;
+}
+
+.file-name {
+  flex-grow: 1;
+  min-width: 0; /* lets text-overflow actually kick in inside a flex item */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #f97316;
+  font-size: 12px;
+}
+
+.file-thumb {
+  flex-shrink: 0;
+  border-radius: 4px;
+  object-fit: cover;
+  height: 50px;
+  width: 50px;
+}
+
+.file-remove {
+  flex-shrink: 0;
+  background-color: rgb(28 25 23);
+  color: #f97316;
+  border: none;
+  border-radius: 3px;
+}
+
+</style>
