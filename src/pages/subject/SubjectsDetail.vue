@@ -3,9 +3,9 @@
     <BackBar v-if="subject" :text="subject.name" />
 
     <div class="grid cols-3 w-90 gap-6 place-center p-6">
-      <MetricCard metric="Daily hours reviewed" numeric="20" />
-      <MetricCard metric="Questions reviewed" numeric="20" />
-      <MetricCard metric="Accuracy rate" numeric="20" />
+      <MetricCard metric="Average Accuracy" :numeric="avgAccuracy" />
+      <MetricCard metric="Questions reviewed" :numeric="questionsReviewed" />
+      <MetricCard metric="Total Questions" :numeric="questionsTotal" />
     </div>
 
     <SearchComponent text="Search Decks" @search="search" />
@@ -36,10 +36,22 @@ const router = useRouter();
 const searchTerm = ref("");
 const subjectId = route.params.id;
 const subject = ref(null);
+const avgAccuracy = ref(0.0);
+const questionsReviewed = ref(0); 
+const questionsTotal = ref(0); 
 
 onMounted(async () => {
   subject.value = await subjectStore.viewSubject(subjectId);
   await deckStore.loadDecksBySubject(subjectId);
+
+  [
+    questionsReviewed.value,
+    questionsTotal.value,    
+    avgAccuracy.value,
+  ] = await subjectStore.subjectMetrics(subjectId);
+  
+  avgAccuracy.value = Math.round(avgAccuracy.value * 100) / 100;
+  
 });
 
 function createDeck() {

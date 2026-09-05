@@ -10,6 +10,7 @@ pub struct Deck {
     pub name: String,
     pub tags: Vec<String>,
     pub description: String,
+    pub reviewed: usize,
     pub created: String,
     pub updated: String
 }
@@ -26,6 +27,7 @@ impl Deck {
           name: name.to_string(),
           tags: tags.iter().map(|k| k.to_string()).collect(),
           description: description.to_string(),
+          reviewed: 0,
           created: now.clone(),
           updated: now,
         }       
@@ -52,8 +54,8 @@ impl Deck {
 
         let sql = format!(
             "INSERT INTO DECK 
-                (SUBJECT_ID, NAME, TAGS, DESCRIPTION, CREATED, UPDATED)
-            VALUES (?1, ?2, {}, ?3, ?4, ?5)",
+                (SUBJECT_ID, NAME, TAGS, DESCRIPTION, REVIEWED, CREATED, UPDATED)
+            VALUES (?1, ?2, {}, ?3, ?4, ?5, ?6)",
             tags_literal
         );
 
@@ -63,6 +65,7 @@ impl Deck {
                 &self.subject_id,
                 &self.name,
                 &self.description,
+                &self.reviewed,
                 &self.created,
                 &self.updated 
             ],
@@ -81,7 +84,7 @@ impl Deck {
     }
 
     pub fn retrieve(conn: &Connection) -> Result<Vec<Deck>> {
-        let mut stmt = conn.prepare("SELECT ID, SUBJECT_ID, NAME, TAGS::VARCHAR, DESCRIPTION, CREATED::VARCHAR, UPDATED::VARCHAR FROM DECK")?;
+        let mut stmt = conn.prepare("SELECT ID, SUBJECT_ID, NAME, TAGS::VARCHAR, DESCRIPTION, REVIEWED, CREATED::VARCHAR, UPDATED::VARCHAR FROM DECK")?;
 
         let decks: Result<Vec<Deck>> = stmt
             .query_map([], |row| {
@@ -92,8 +95,9 @@ impl Deck {
                     name: row.get(2)?,
                     tags: Self::parse_tags(tags_raw),
                     description: row.get(4)?,
-                    created: row.get(5)?,
-                    updated: row.get(6)?,
+                    reviewed: row.get(5)?,
+                    created: row.get(6)?,
+                    updated: row.get(7)?,
                 })
             })?
             .collect();
@@ -101,7 +105,7 @@ impl Deck {
     }
 
     pub fn retrieve_by_subject(conn: &Connection, subject_id: &str) -> Result<Vec<Deck>> {
-        let mut stmt = conn.prepare("SELECT ID, SUBJECT_ID, NAME, TAGS::VARCHAR, DESCRIPTION, CREATED::VARCHAR, UPDATED::VARCHAR FROM DECK WHERE SUBJECT_ID = ?")?;
+        let mut stmt = conn.prepare("SELECT ID, SUBJECT_ID, NAME, TAGS::VARCHAR, DESCRIPTION, REVIEWED, CREATED::VARCHAR, UPDATED::VARCHAR FROM DECK WHERE SUBJECT_ID = ?")?;
 
         let decks: Result<Vec<Deck>> = stmt
             .query_map([&subject_id], |row| {
@@ -112,8 +116,9 @@ impl Deck {
                     name: row.get(2)?,
                     tags: Self::parse_tags(tags_raw),
                     description: row.get(4)?,
-                    created: row.get(5)?,
-                    updated: row.get(6)?,
+                    reviewed: row.get(5)?,
+                    created: row.get(6)?,
+                    updated: row.get(7)?,
                 })
             })?
             .collect();
@@ -139,8 +144,9 @@ impl Deck {
                     NAME=?2,
                     TAGS={},
                     DESCRIPTION=?3,
-                    UPDATED=?4
-                WHERE ID=?5",
+                    REVIEWED=?4,
+                    UPDATED=?5
+                WHERE ID=?6",
             tags_literal
         );
 
@@ -150,6 +156,7 @@ impl Deck {
                 &self.subject_id,
                 &self.name,
                 &self.description,
+                &self.reviewed,
                 &self.updated,
                 id,
             ],
@@ -183,7 +190,7 @@ impl Deck {
     }
 
     pub fn view(conn: &Connection, id: &str) -> Result<Deck> {
-        let query = "SELECT ID, SUBJECT_ID, NAME, TAGS::VARCHAR, DESCRIPTION, CREATED::VARCHAR, UPDATED::VARCHAR FROM DECK WHERE ID = ?";
+        let query = "SELECT ID, SUBJECT_ID, NAME, TAGS::VARCHAR, DESCRIPTION, REVIEWED, CREATED::VARCHAR, UPDATED::VARCHAR FROM DECK WHERE ID = ?";
         conn.query_row(query, &[&id], |row| {
             let tags_raw: String = row.get(3)?;
             Ok(Deck {
@@ -192,8 +199,9 @@ impl Deck {
                 name: row.get(2)?,
                 tags: Self::parse_tags(tags_raw),
                 description: row.get(4)?,
-                created: row.get(5)?,
-                updated: row.get(6)?,
+                reviewed: row.get(5)?,
+                created: row.get(6)?,
+                updated: row.get(7)?,
             })
         })
     }
@@ -202,7 +210,7 @@ impl Deck {
     pub fn search(conn: &Connection, search_term: &str) -> Result<Vec<Deck>> {
 
         let query = format!(
-          "SELECT ID, SUBJECT_ID, NAME, TAGS::VARCHAR, DESCRIPTION, CREATED::VARCHAR, UPDATED::VARCHAR FROM DECK WHERE NAME LIKE '%{}%'",
+          "SELECT ID, SUBJECT_ID, NAME, TAGS::VARCHAR, DESCRIPTION, REVIEWED, CREATED::VARCHAR, UPDATED::VARCHAR FROM DECK WHERE NAME LIKE '%{}%'",
           search_term
         );
         
@@ -216,8 +224,9 @@ impl Deck {
                     name: row.get(2)?,
                     tags: Self::parse_tags(tags_raw),
                     description: row.get(4)?,
-                    created: row.get(5)?,
-                    updated: row.get(6)?,
+                    reviewed: row.get(5)?, 
+                    created: row.get(6)?,
+                    updated: row.get(7)?,
                 })
             })?
             .collect();

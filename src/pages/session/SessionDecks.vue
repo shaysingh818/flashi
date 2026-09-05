@@ -6,12 +6,11 @@
 
     <DeckListView 
       :decks="decks" 
-      :sessionId="sessionId"
+      :sessionId="props.sessionId"
       actionType="remove"
       @update:items="handleUpdate()"
     />
 
-    
     <HoverButton icon="fa-solid fa-plus" @click="addDeckToSession" />
   </div>
 </template>
@@ -26,12 +25,18 @@ import DeckListView from '../../components/deck/DeckListView.vue';
 
 const router = useRouter();
 const route = useRoute(); 
-const sessionId = route.params.id;
 const decks = ref([]);
+
+const props = defineProps({
+  sessionId: {
+    type: String,
+    required: true,
+  },
+});
 
 
 async function loadData() {
-  decks.value = await sessionStore.viewSessionDecks(sessionId);
+  decks.value = await sessionStore.viewSessionDecks(props.sessionId);
 }
 
 async function handleUpdate() {
@@ -39,7 +44,7 @@ async function handleUpdate() {
 }
 
 async function addDeckToSession() {
-  router.push({ path: `/sessions/deck/add/${sessionId}` });
+  router.push({ path: `/sessions/deck/add/${props.sessionId}` });
 }
 
 async function search() {

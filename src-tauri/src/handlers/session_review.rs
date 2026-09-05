@@ -1,0 +1,327 @@
+use std::ffi::OsStr;
+use std::fs;
+use std::path::Path;
+use uuid::Uuid;
+
+use duckdb::{Connection, Result};
+
+use crate::flashi_api::session_review::*;
+
+#[tauri::command]
+pub fn create_session_review(session_id: &str, db_path: &str) -> Result<SessionReview, String> {
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => return Err(format!("Failed to open database: {}", e)),
+    };
+
+    let session_id_usize: usize = session_id.parse::<usize>().unwrap();
+
+    let mut session_review: SessionReview = SessionReview::new(session_id_usize);
+
+    match session_review.insert(&conn) {
+        Ok(mut session_review_instance) => {
+            session_review_instance.generate_questions(&conn).unwrap();
+            Ok(session_review_instance)
+        }
+        Err(e) => Err(format!("Failed to insert session review: {}", e)),
+    }
+}
+
+#[tauri::command]
+pub fn edit_session_review(
+    session_review_id: &str,
+    complete: bool,
+    cycle: usize,
+    current_question: usize,
+    start_time: &str,
+    end_time: &str,
+    db_path: &str,
+) -> String {
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return e.to_string();
+        }
+    };
+
+    match SessionReview::view(&conn, session_review_id) {
+        Ok(mut session_review) => {
+            session_review.complete = complete;
+            session_review.cycle = cycle;
+            session_review.current_question = current_question;
+            session_review.start_time = start_time.to_string();
+            session_review.end_time = end_time.to_string();
+
+            match session_review.update(&conn, session_review_id) {
+                Ok(()) => {
+                    let _ = conn.close();
+                    return "Success".to_string();
+                }
+                Err(e) => format!("Failed to update session review: {}", e),
+            }
+        }
+        Err(e) => {
+            let msg = format!("Error updating session review: {:?}", e);
+            return msg.to_string();
+        }
+    }
+}
+
+#[tauri::command]
+pub fn view_session_reviews(db_path: &str, session_id: &str) -> Vec<SessionReview> {
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return Vec::new();
+        }
+    };
+
+    match SessionReview::retrieve(&conn, session_id) {
+        Ok(session_reviews) => session_reviews,
+        Err(e) => {
+            println!("{:?}", e);
+            Vec::new()
+        }
+    }
+}
+
+#[tauri::command]
+pub fn view_session_review(
+    db_path: &str,
+    session_review_id: &str,
+) -> Result<SessionReview, String> {
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            let err_msg = format!("Database connection error: {:?}", e);
+            return Err(err_msg.to_string());
+        }
+    };
+
+    match SessionReview::view(&conn, session_review_id) {
+        Ok(session_review) => {
+            return Ok(session_review);
+        }
+        Err(e) => {
+            let err_msg = format!(
+                "Error retrieving session review with id: {:?} Cause: {:?}",
+                session_review_id, e
+            );
+            return Err(err_msg.to_string());
+        }
+    }
+}
+
+#[tauri::command]
+pub fn check_session_review_active(db_path: &str, session_id: &str) -> Result<i64, String> {
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            let err_msg = format!("Database connection error: {:?}", e);
+            return Err(err_msg.to_string());
+        }
+    };
+
+    match SessionReview::session_review_active(&conn, session_id) {
+        Ok(result) => {
+            return Ok(result);
+        }
+        Err(e) => {
+            let err_msg = format!(
+                "Error checking session review active: {:?} Cause: {:?}",
+                session_id, e
+            );
+            return Err(err_msg.to_string());
+        }
+    }
+}
+
+#[tauri::command]
+pub fn check_session_review_complete(
+    db_path: &str,
+    session_review_id: &str,
+) -> Result<bool, String> {
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            let err_msg = format!("Database connection error: {:?}", e);
+            return Err(err_msg.to_string());
+        }
+    };
+
+    match SessionReview::session_review_complete(&conn, session_review_id) {
+        Ok(result) => {
+            return Ok(result);
+        }
+        Err(e) => {
+            let err_msg = format!(
+                "Error checking session review complete: {:?} Cause: {:?}",
+                session_review_id, e
+            );
+            return Err(err_msg.to_string());
+        }
+    }
+}
+
+#[tauri::command]
+pub fn view_session_review_questions(
+    db_path: &str,
+    session_review_id: &str,
+) -> Vec<SessionReviewQuestion> {
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return Vec::new();
+        }
+    };
+
+    match SessionReviewQuestion::retrieve_by_session_review_id(&conn, session_review_id) {
+        Ok(session_questions) => session_questions,
+        Err(e) => {
+            println!("{:?}", e);
+            Vec::new()
+        }
+    }
+}
+
+#[tauri::command]
+pub fn view_session_review_question(
+    db_path: &str,
+    id: &str,
+) -> Result<SessionReviewQuestion, String> {
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            let err_msg = format!("Database connection error: {:?}", e);
+            return Err(err_msg.to_string());
+        }
+    };
+
+    match SessionReviewQuestion::view(&conn, id) {
+        Ok(session_question) => {
+            return Ok(session_question);
+        }
+        Err(e) => {
+            let err_msg = format!(
+                "Error retrieving session question with id: {:?} Cause: {:?}",
+                id, e
+            );
+            return Err(err_msg.to_string());
+        }
+    }
+}
+
+#[tauri::command]
+pub fn view_active_session_review_questions(
+    db_path: &str,
+    session_id: &str,
+) -> Vec<SessionReviewQuestion> {
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return Vec::new();
+        }
+    };
+
+    match SessionReviewQuestion::retrieve_active_questions(&conn, session_id) {
+        Ok(session_questions) => session_questions,
+        Err(e) => {
+            println!("{:?}", e);
+            Vec::new()
+        }
+    }
+}
+
+#[tauri::command]
+pub fn edit_session_review_question(
+    db_path: &str,
+    id: &str,
+    priority_index: usize,
+    review_count: usize,
+    incorrect_count: usize,
+    active: bool,
+) -> String {
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            let err_msg = format!("Database connection error: {:?}", e);
+            return err_msg.to_string();
+        }
+    };
+
+    match SessionReviewQuestion::view(&conn, id) {
+        Ok(mut session_question) => {
+            session_question.priority_index = priority_index;
+            session_question.review_count = review_count;
+            session_question.incorrect_count = incorrect_count;
+            session_question.active = active;
+
+            match session_question.update(&conn, id) {
+                Ok(()) => {
+                    let _ = conn.close();
+                    return "Success".to_string();
+                }
+                Err(e) => format!("Failed to update session review question: {}", e),
+            }
+        }
+        Err(e) => {
+            let err_msg = format!(
+                "Error retrieving session question with id: {:?} Cause: {:?}",
+                id, e
+            );
+            return err_msg.to_string();
+        }
+    }
+}
+
+
+#[tauri::command]
+pub fn retrieve_session_metrics_history(db_path: &str, session_id: &str) -> Vec<SessionReviewMetrics> {
+       
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return Vec::new();
+        }
+    };
+    
+    match SessionReviewMetrics::session_metrics_history(&conn, session_id) {
+        Ok(session_metrics) => session_metrics,
+        Err(e) => {
+            println!("{:?}", e);
+            Vec::new()
+        }
+    }
+
+}
+
+#[tauri::command]
+pub fn generate_session_review_metrics(session_review_id: &str, db_path: &str) -> String {
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => return format!("Failed to open database: {}", e),
+    };
+
+    let session_review_id_usize: usize = session_review_id.parse::<usize>().unwrap();
+
+    let mut session_review_metrics: SessionReviewMetrics =
+        SessionReviewMetrics::new(session_review_id_usize, &conn).unwrap();
+
+    match session_review_metrics.insert(&conn) {
+        Ok(()) => {
+            let _ = conn.close();
+            return "Success".to_string();
+        }
+        Err(e) => format!("Failed to insert session review: {}", e),
+    }
+}

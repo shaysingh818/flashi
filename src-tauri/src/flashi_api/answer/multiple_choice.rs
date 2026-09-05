@@ -1,4 +1,5 @@
 use chrono;
+use std::collections::HashSet;
 use serde::{Deserialize, Serialize};
 use duckdb::{params, Connection, Result}; 
 
@@ -219,11 +220,10 @@ impl MultipleChoice {
             .filter_map(|r| r.ok())
             .collect();
 
-        println!("Answer id: {:?}", self.answer_id); 
-        println!("Correct answers: {:?}", correct_answers);
-        println!("Selected answers: {:?}", selected_answers); 
+        let correct_set: HashSet<String> = correct_answers.into_iter().collect();
+        let selected_set: HashSet<String> = selected_answers.into_iter().collect();
 
-        if selected_answers == correct_answers {
+        if selected_set == correct_set {
             Ok((true, String::from("Correct!")))
         } else {
             Ok((false, String::from("Missing one or more selected answers"))) 

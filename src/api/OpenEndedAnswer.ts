@@ -1,50 +1,9 @@
 import { invoke } from "@tauri-apps/api/core";
 import { dataDir} from '@tauri-apps/api/path';
 import { reactive } from 'vue';
-
-
-export interface OpenEndedAnswer {
-  answer_id: number;
-  answer: string;
-  explanation: string;
-  keywords: string[];
-  created: string; 
-  updated: string;
-}
-
-export class OpenEndedAnswer {
-  
-  answer_id: number;
-  answer: string;  
-  explanation: string;
-  keywords: string[];
-  created: string; 
-  updated: string;
-
-  constructor({
-    answer_id,
-    answer,  
-    explanation,
-    keywords,
-    created, 
-    updated
-    
-  }: {    
-    answer_id: number;
-    answer: string;  
-    explanation: string;
-    keywords: string[];
-    created: string; 
-    updated: string; 
-  }) {
-    this.answer_id = answer_id;
-    this.answer = answer;
-    this.explanation = explanation;
-    this.keywords = keywords;
-    this.created = created;
-    this.updated = updated;
-  }
-}
+import { OpenEndedAnswer, SessionReview, SessionReviewQuestion } from './types';
+import { sessionReviewStore } from './Session'; 
+import { getCurrentTimestamp } from "./Session";
 
 export const openEndedStore = reactive({
 
@@ -91,5 +50,39 @@ export const openEndedStore = reactive({
     return await invoke("validate_open_ended_answer", { dbPath, id, answer });  
   },
 
+  async completeOpenEndedAnswerMetadata(    
+    answerId: string,
+    sessionQuestion: SessionReviewQuestion,
+    openEndedAnswerValue: string) {
+ 
+    const [result, msg] = await  this.validateOpenEndedAnswer(
+      answerId,
+      openEndedAnswerValue
+    );
+
+    if (result === true) {
+      
+      await sessionReviewStore.editSessionReviewQuestion(
+        `${sessionQuestion.id}`,
+        sessionQuestion.priority_index,
+        parseInt(sessionQuestion.review_count) + 1, 
+        sessionQuestion.incorrect_count,
+        false
+      );
+        
+    } else {
+      
+      await sessionReviewStore.editSessionReviewQuestion(
+        `${sessionQuestion.id}`,
+        sessionQuestion.priority_index,
+        parseInt(sessionQuestion.review_count) + 1,
+        sessionQuestion.incorrect_count + 1,
+        true
+      );
+      
+    }
+
+    return [result, msg];
+  },
  
 })

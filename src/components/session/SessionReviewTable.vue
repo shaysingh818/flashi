@@ -4,45 +4,45 @@
       <tbody>
         <tr>
           <th>Date Started</th>
-          <th>Date Completed</th>
+          <th>Review Time</th>
           <th>Questions Reviewed</th>
           <th>Score</th>
         </tr>
-        <tr @click="questionDetail">
-          <td class="date-column">04/22/2026</td>
-          <td class="date-column">04/22/2026</td>
-          <td class="date-column">63</td>
-          <td class="tag-column"><Tag title="78%" height="10px" /></td>
-        </tr>
-        <tr>
-          <td class="date-column">04/22/2026</td>
-          <td class="date-column">04/22/2026</td>
-          <td class="date-column">63</td>
-          <td class="tag-column"><Tag title="78%" height="10px" /></td>
-        </tr>   
-        <tr>
-          <td class="date-column">04/22/2026</td>
-          <td class="date-column">04/22/2026</td>
-          <td class="date-column">63</td>
-          <td class="tag-column"><Tag title="78%" height="10px" /></td>
-        </tr>          
+
+        <SessionReviewTableItem
+            v-for="(item, index) in sessionReviewStore.session_review_metrics"
+            :key="index"
+            :id="item.id"
+            :index="index"
+            :reviewTime="item.review_time"
+            :dateStarted="item.created"
+            :totalReviewCount="item.total_review_count"
+            :accuracy="item.accuracy"
+        /> 
+        
       </tbody>
     </table>
   </div>
 </template>
 
-<script>
+<script setup>
+import { onMounted } from 'vue'; 
+import { sessionReviewStore } from '../../api';
 import Tag from '../shared/Tag.vue';
+import SessionReviewTableItem from './SessionReviewTableItem.vue';
 
-export default {
-  name: "SessionReviewTable",
-  components: {Tag},
-  methods: {
-    questionDetail() {
-      this.$router.push({ path: "/question/view" });
-    }
+
+const props = defineProps({
+  sessionId: {
+    type: String,
+    required: true,
   }
-};
+})
+
+onMounted(async () => {
+  await sessionReviewStore.loadSessionReviewMetricsHistory(`${props.sessionId}`);
+})
+
 </script>
 
 <style scoped>

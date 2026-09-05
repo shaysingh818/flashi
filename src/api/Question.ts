@@ -1,59 +1,8 @@
 import { invoke } from "@tauri-apps/api/core";
 import { dataDir} from '@tauri-apps/api/path';
 import { reactive } from 'vue';
+import { Question, ImageArtifact } from './types'; 
 
-
-export interface Question {
-  id: number;
-  deck_id: number;
-  answer_type_id: number;
-  answer_id: number;
-  reviewed: number;
-  raw: string;
-  created: string; 
-  updated: string;
-}
-
-export class Question {
-    
-  id: number;
-  deck_id: number;
-  answer_type_id: number;
-  answer_id: number;
-  reviewed: number;
-  raw: string;
-  created: string; 
-  updated: string;
-
-  constructor({ 
-    id,
-    deck_id,
-    answer_type_id,
-    answer_id,
-    reviewed,
-    raw,
-    created,
-    updated
-  }: {       
-    id: number;
-    deck_id: number;
-    answer_type_id: number;
-    answer_id: number;
-    reviewed: number;
-    raw: string;
-    created: string; 
-    updated: string;
-  }) {
-    this.id = id;
-    this.deck_id = deck_id;
-    this.answer_type_id = answer_type_id;
-    this.answer_id = answer_id;
-    this.reviewed = reviewed;
-    this.raw = raw;
-    this.created = created;
-    this.updated = updated;
-  }
-}
 
 export const questionStore = reactive({
 
@@ -108,14 +57,67 @@ export const questionStore = reactive({
     return await invoke("create_question", { deckId, answerTypeId, answerId, raw, dbPath });
   },
 
-  async editQuestion(id: string, raw: string): Promise<string> {        
+  async editQuestion(id: string, raw: string, reviewed: number, correct: number, incorrect: number): Promise<string> {        
     const dbPath = await this.getDbPath();
-    return await invoke("edit_question", { id, raw, dbPath });  
+    return await invoke("edit_question", { id, raw, reviewed, correct, incorrect, dbPath });  
   },
 
   async deleteQuestion(questionId: string): Promise<string> {    
     const dbPath = await this.getDbPath();    
     return await invoke("delete_question", { dbPath, questionId });  
+  },
+  
+  async addImageArtifactToQuestion(questionId: string, imageId: string): Promise<string> {
+    const dbPath = await this.getDbPath();
+    return await invoke("add_question_image_artifact", { dbPath, questionId, imageId });
+  },
+  
+  async removeImageArtifactFromQuestion(questionId: string, imageId: string): Promise<string> {
+    const dbPath = await this.getDbPath();
+    return await invoke("remove_question_image_artifact", { dbPath, questionId, imageId });
+  },
+ 
+})
+
+export const imageArtifactStore = reactive({
+
+  images: [] as ImageArtifact[],
+
+  async getDbPath(): Promise<string> {    
+    const dataDirPath = await dataDir();
+    const dbPath = `${dataDirPath}/flashi/metadata/flashi.db`;
+    return dbPath;
+  },
+
+  async loadImageArtifacts(questionId: string) {
+    try { 
+      const dbPath = await this.getDbPath();
+      const artifacts = await invoke<ImageArtifact[]>('view_question_image_artifacts', { dbPath, questionId });
+      this.images = artifacts;
+    } catch (error) {
+      console.error("Error loading image artifacts: ", error);
+    }
+  },
+
+  async createImageArtifact(imageFileName: string, userLocalImagePath: string): Promise<[number, string]> {
+    const dbPath = await this.getDbPath();
+    const dataDirPath = await dataDir(); 
+    const appImagePath = `${dataDirPath}/flashi/images`; 
+    return await invoke("create_image_artifact", { imageFileName, userLocalImagePath, appImagePath, dbPath });
+  },
+
+  async editImageArtifact(id: string, imageFileName: string, userLocalImagePath: string): Promise<string> {        
+    const dbPath = await this.getDbPath();    
+    const dataDirPath = await dataDir(); 
+    const appImagePath = `${dataDirPath}/flashi/images`; 
+    return await invoke("edit_image_artifact", { id, imageFileName, appImagePath, userLocalImagePath, dbPath });  
+  },
+
+  async deleteImageArtifact(id: string, userLocalImagePath: string): Promise<string> {    
+    const dbPath = await this.getDbPath();       
+    const dataDirPath = await dataDir(); 
+    const appImagePath = `${dataDirPath}/flashi/images`; 
+    return await invoke("delete_image_artifact", { dbPath, id, appImagePath, userLocalImagePath });  
   },
  
 })

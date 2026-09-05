@@ -1,5 +1,6 @@
 <template>
   <div class="flex col-center">
+    <BackBar text="Create Question" />
     <br />
     <FormHeader
       header="Create a question"
@@ -17,6 +18,7 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter, useRoute } from "vue-router";
+import { BackBar } from "../../components/shared";
 import FormHeader from "../../components/shared/forms/FormHeader.vue";
 import CreateQuestionForm from "../../components/question/CreateQuestionForm.vue";
 

@@ -1,44 +1,8 @@
 import { invoke } from "@tauri-apps/api/core";
 import { dataDir} from '@tauri-apps/api/path';
 import { reactive } from 'vue';
-
-
-export interface OrderedSequenceAnswer {
-  answer_id: number;
-  sequence: string[];
-  explanation: string;
-  created: string; 
-  updated: string;
-}
-
-export class OrderedSequenceAnswer {
-  
-  answer_id: number;
-  sequence: string[];
-  explanation: string;
-  created: string; 
-  updated: string;
-
-  constructor({
-    answer_id,
-    sequence,
-    explanation,
-    created, 
-    updated
-  }: {    
-    answer_id: number;
-    sequence: string[];
-    explanation: string;
-    created: string; 
-    updated: string;
-  }) {
-    this.answer_id = answer_id;
-    this.sequence = sequence;
-    this.explanation = explanation;
-    this.created = created;
-    this.updated = updated;
-  }
-}
+import { sessionReviewStore, getCurrentTimestamp } from './Session'; 
+import { OrderedSequenceAnswer, SessionReview, SessionReviewQuestion } from './types';
 
 export const orderedSequenceStore = reactive({
 

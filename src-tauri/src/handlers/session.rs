@@ -215,3 +215,108 @@ pub fn remove_deck_from_session(db_path: &str, session_id: &str, deck_id: &str) 
         }
     }
 }
+
+
+#[tauri::command]
+pub fn session_progress_status(db_path: &str, session_id: &str) -> (usize, usize) {
+  
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return (0, 0);
+        }
+    };
+
+    match Session::session_progress_status(&conn, session_id) {
+        Ok((completed, total)) => {
+            return (completed, total);
+        }
+        Err(e) => {
+            println!("Error retrieving session progress status: {:?} Cause: {:?}", session_id, e);
+            return (0, 0); 
+        }
+    }
+}
+
+#[tauri::command]
+pub fn session_metrics(db_path: &str, session_id: &str) -> Result<(f64, usize, usize, usize, usize), String> {
+  
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return Err(e.to_string());
+        }
+    };
+
+    match Session::metrics(&conn, session_id) {
+        Ok((avg_accuracy, total_reviewed, total_review_time, total_correct, total_incorrect)) => {
+            Ok((avg_accuracy, total_reviewed, total_review_time, total_correct, total_incorrect))
+        }
+        Err(e) => {
+            println!("Error retrieving session progress status: {:?} Cause: {:?}", session_id, e);
+            Err(e.to_string())
+        }
+    }
+}
+
+#[tauri::command]
+pub fn session_question_breakdown(db_path: &str, session_id: &str) -> Result<Vec<(String, i64)>, String> {
+  
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return Err(e.to_string()); 
+        }
+    };
+
+    match Session::question_breakdown(&conn, session_id) {
+        Ok(rows) => Ok(rows), 
+        Err(e) => {
+            println!("Error retrieving session progress status: {:?} Cause: {:?}", session_id, e);
+            return Err(e.to_string()) 
+        }
+    }
+}
+
+#[tauri::command]
+pub fn session_daily_accuracy_history(db_path: &str, session_id: &str) -> Result<Vec<(String, f64)>, String> {
+  
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return Err(e.to_string()); 
+        }
+    };
+
+    match Session::daily_accuracy_history(&conn, session_id) {
+        Ok(rows) => Ok(rows), 
+        Err(e) => {
+            println!("Error retrieving session daily accuracy history: {:?} Cause: {:?}", session_id, e);
+            return Err(e.to_string()) 
+        }
+    }
+}
+
+#[tauri::command]
+pub fn session_correct_incorrect_questions(db_path: &str, session_id: &str) -> Result<(Vec<SessionCorrectQuestion>, Vec<SessionIncorrectQuestion>), String> {
+  
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return Err(e.to_string()); 
+        }
+    };
+
+    match Session::correct_incorrect_questions(&conn, session_id) {
+        Ok((correct_questions, incorrect_questions)) => Ok((correct_questions, incorrect_questions)), 
+        Err(e) => {
+            println!("Error retrieving session correct and incorrect questions: {:?} Cause: {:?}", session_id, e);
+            return Err(e.to_string()) 
+        }
+    }
+}

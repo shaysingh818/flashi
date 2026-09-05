@@ -14,6 +14,7 @@
         :key="index"
         :index="index+1"
         :content="item"
+        @remove="removeSequence"
       />
     </div>
   </div>
@@ -36,5 +37,10 @@ function addSequence() {
 
 function emitSequence() {
   emit('update:sequence', sequences.value); 
+}
+
+function removeSequence(index) {
+  sequences.value.splice(index, 1);
+  emitSequence();  
 }
 </script>

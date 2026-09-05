@@ -1,31 +1,20 @@
 <template>
 
-  <label for="item" v-if="props.visible === false">
-    <input 
-      type="checkbox" 
-      :id="text" 
-      :name="text" 
-      value="yes" 
-      :checked="isSelected"
-    />
-    {{ text }}
-  </label>
-
-  <div v-if="props.visible === true" class="flex row-center gap-2 w-100">
-
+  <div class="flex row-center gap-2 w-100">
+      
       <div class="fw-10">
         <label for="item" v-if="props.visible === true">
             <input 
               type="checkbox" 
               :id="text" 
               :name="text" 
-              :checked="isSelected"
+              :checked="props.isSelected"
               @change="emit('update:selected', $event.target.checked)"
             />
         </label>
       </div>
 
-      <div class="flex row-center fw-75 gap-2" style="height: 35px;">
+      <div v-if="props.visible === true" class="flex row-center fw-75 gap-2" style="height: 35px;">
         <FormInputField 
           :text="text" 
           :placeholder="text" 
@@ -37,8 +26,22 @@
           @click="deleteMultipleChoiceItem" 
         />
       </div>
-
   </div>
+
+  
+<div v-if="props.visible === false" class="flex row-center w-85"> 
+   <label for="item">
+     <input 
+       type="checkbox" 
+       :id="text" 
+       :name="text" 
+       :checked="props.isSelected"
+       value="yes" 
+       @change="emit('update:selected', $event.target.checked)"
+     />
+     {{ text }}
+   </label>
+ </div>  
 
 
 </template>

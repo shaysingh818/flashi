@@ -29,7 +29,9 @@
       v-for="(item, index) in props.items"
       :key="index"
       :index="index+1"
+      :visible="props.visible"
       text=""
+      @update:text="newItem = $event; newIndex = index; emitSubmittedItem()"
     />
   </div>
 </template>
@@ -51,6 +53,7 @@ const props = defineProps({
 });
 
 
+const selectedItems = ref([]);
 const newItem = ref('');
 const newIndex= ref('');
 const newSequence = ref('');
@@ -63,6 +66,23 @@ const emit = defineEmits([
   "update:add"
 ]);
 
+
+function emitSubmittedItem() {
+
+  const obj = {
+    item: newItem.value,
+    index: newIndex.value,
+  }
+
+  const itemIndex = selectedItems.value.findIndex(item => item.index === obj.index);
+  if(itemIndex >= 0) {
+    selectedItems.value[itemIndex].item = obj.item;
+  } else {
+    selectedItems.value.push(obj);
+  }
+
+  emit('update:items', selectedItems.value);
+}
 
 function emitUpdateItem() {
   emit('update:text', newItem.value);

@@ -86,8 +86,10 @@ function addTag() {
   newTag.value = "";
 }
 
-async function submitForm() {
-  const editDeck = await deckStore.editDeck(`${props.deckId}`, name.value, description.value, tags.value);
+async function submitForm() {  
+  const currDeck = await deckStore.viewDeck(props.deckId);
+  const editDeckResult = await deckStore.editDeck(`${props.deckId}`, name.value, description.value, tags.value, currDeck.reviewed);
+  console.log(editDeckResult); 
 }
 </script>
 

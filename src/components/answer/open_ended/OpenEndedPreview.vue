@@ -13,7 +13,7 @@
     <FormTextField   
      v-if="visible === false"
      description="Enter your answer"
-    :text="props.placeholderText"
+     @update:text="newText = $event; emitQuestionText()"
     />
     
   </div>

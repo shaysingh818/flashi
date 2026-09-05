@@ -23,8 +23,9 @@
 
 <script setup>
 import { ref } from "vue";
-import { sessionStore } from "../../api";
 import { useRoute, useRouter } from "vue-router";
+import { message } from '@tauri-apps/plugin-dialog';
+import { sessionStore } from "../../api";
 import FormInputField from "../../components/shared/forms/FormInputField.vue";
 import FormTextField from "../../components/shared/forms/FormTextField.vue";
 import PrimaryButton from "../../components/shared/buttons/PrimaryButton.vue";
@@ -45,9 +46,17 @@ async function submitSession() {
       name.value,
       description.value
     );
-    console.log(insertResult);
-  } else {
-    console.log("name or description not filled"); 
+    if (insertResult === "Success") { 
+      await message(
+        'Created session, you can now add decks and start reviewing questions under this session',
+        { title: 'Recalli', kind: 'info' }
+      );
+    }
+  } else {    
+    await message(
+      'Could not create session, name and description field required',
+      { title: 'Recalli', kind: 'info' }
+    );
   }
 
 }

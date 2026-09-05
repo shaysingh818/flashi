@@ -2,50 +2,98 @@
   <div class="flex col-center w-100">
     <br />
     <div
-      class="flex col-center rounded-2 gap-1 p-2"
+      class="flex col-center rounded-2 gap-1 p-4"
       style="background-color: rgb(28 25 23); width: 90%"
     >
       <div class="flex row-center gap-2">
-        <PlayButton icon="fa-solid fa-play" />
-        <p>Resume current session</p>
+        <PlayButton icon="fa-solid fa-play" @click="startSessionReview" />
+        <p>{{ sessionProgressMessage }}</p>
       </div>
 
       <div class="flex row-center gap-4 w-100" style="height: 10px;">
-        <ProgressBar progress="50" />  
-        <p>50/100</p>
+        <ProgressBar :progress="completionPercentage" />
+        <p>{{ completed }}/{{ total }}</p>
       </div>
-      
+
     </div>
     <br />
-    <SearchComponent text="Search review sessions" @search="search" />
-    <br />
-    <SessionReviewTable />
-    <HoverButton icon="fa-solid fa-play" @click="createSession" />
+    <SessionReviewTable :sessionId="props.sessionId" />
+    <HoverButton icon="fa-solid fa-play" @click="startSessionReview" />
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted } from "vue"; 
+import { useRouter } from "vue-router";
+import { message } from '@tauri-apps/plugin-dialog'; 
+import { sessionReviewStore, sessionStore } from "../../api";
 import SessionReviewTable from "../../components/session/SessionReviewTable.vue";
 import HoverButton from "../../components/shared/buttons/HoverButton.vue";
 import PlayButton from "../../components/shared/buttons/PlayButton.vue";
 import SearchComponent from "../../components/shared/forms/SearchComponent.vue";
 import ProgressBar from "../../components/shared/progress/ProgressBar.vue";
 
-export default {
-  name: "SessionReview",
-  components: {
-    SessionReviewTable,
-    HoverButton,
-    PlayButton,
-    SearchComponent,
-    ProgressBar,
+
+const props = defineProps({
+  sessionId: {
+    type: String,
+    required: true,
   },
-  methods: {
-    questionDetail() {
-      this.$router.push({ path: "/question/view" });
-    },
-  },
-};
+});
+
+const router = useRouter();
+const completed = ref(0); 
+const total = ref(0); 
+const completionPercentage = ref(0.00); 
+const sessionProgressMessage = ref(''); 
+
+async function questionDetail() {
+  router.push({ path: "/question/view" });
+}
+
+async function startSessionReview() {
+  
+  const existingSession = await sessionReviewStore.checkSessionReviewActive(`${props.sessionId}`);
+  sessionReviewStore.current_question = 0;
+  const sessionDecks = await sessionStore.viewSessionDecks(`${props.sessionId}`);
+ 
+  if (sessionDecks.length > 0) { 
+    if (existingSession === -1) {
+      const session = await sessionReviewStore.createSessionReview(`${props.sessionId}`);
+      await sessionReviewStore.loadActiveSessionReviewQuestions(`${props.sessionId}`);
+      const firstQuestion = sessionReviewStore.session_review_questions[0];
+      router.push({ path: `/sessions/review/${props.sessionId}/question/${firstQuestion.id}` });
+    } else {
+      await sessionReviewStore.loadActiveSessionReviewQuestions(`${props.sessionId}`);
+      console.log(sessionReviewStore.session_review_questions);
+      const firstQuestion = sessionReviewStore.session_review_questions[0];
+      router.push({ path: `/sessions/review/${props.sessionId}/question/${firstQuestion.id}` });
+    }
+ 
+  } else {
+    await message(
+      'There are no decks added to this session. Add decks to the session in order to start a review session',
+      { title: 'Recalli', kind: 'info' }
+    );
+  }
+  
+}
+
+onMounted(async () => {
+
+  const existingSession = await sessionReviewStore.checkSessionReviewActive(`${props.sessionId}`);
+  if (existingSession === -1) {
+    sessionProgressMessage.value = "Start a new session review"; 
+  } else {
+    sessionProgressMessage.value = "Resume current session"; 
+  }
+  
+  const [sComplete, sTotal] = await sessionStore.viewSessionProgressStatus(`${props.sessionId}`); 
+  completed.value = sComplete; 
+  total.value = sTotal;
+  completionPercentage.value = completed.value / total.value * 100; 
+}); 
+
 </script>
 
 <style scoped>

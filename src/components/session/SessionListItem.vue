@@ -40,7 +40,7 @@
       <Teleport to="body">
         <ConfirmDialog
           v-if="showDialog"
-          text="Are you sure you want to delete this session?"
+          text="Deleting a session will delete all the metrics and session review questions associated with it. Are you sure you want to delete this session?"
           @close="showDialog = false"
           @confirm="confirmDelete"
         />

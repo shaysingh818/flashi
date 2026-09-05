@@ -39,6 +39,7 @@
 <script setup>
 import { deckStore } from "../../api/Deck";
 import { ref } from "vue";
+import { message } from '@tauri-apps/plugin-dialog';
 import { useRouter } from "vue-router";
 import FormInputField from "../../components/shared/forms/FormInputField.vue";
 import FormTextField from "../../components/shared/forms/FormTextField.vue";
@@ -69,9 +70,18 @@ function addTag() {
 }
 
 async function submitForm() {
-  console.log("Submit deck form call...");
   const insertDeck = await deckStore.createDeck(props.subjectId, name.value, tags.value, description.value);
-  console.log(insertDeck);
+  if (insertDeck === "Success") {    
+    await message(
+      'Created deck, you can now add questions under this deck',
+      { title: 'Recalli', kind: 'info' }
+    );
+  } else {    
+    await message(
+      'Could not create deck, please add all required fields',
+      { title: 'Recalli', kind: 'info' }
+    );
+  }
 }
 </script>
 

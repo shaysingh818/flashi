@@ -1,43 +1,8 @@
 import { invoke } from "@tauri-apps/api/core";
 import { dataDir} from '@tauri-apps/api/path';
 import { reactive } from 'vue';
+import { Subject } from './types'; 
 
-
-export interface Subject {
-  id: number;
-  name: string;
-  description: string;
-  created: string; 
-  updated: string;
-}
-
-export class Subject {
-  id: number;
-  name: string;
-  description: string;
-  created: string;
-  updated: string;
-
-  constructor({
-    id,
-    name,
-    description,
-    created,
-    updated
-  }: {
-    id: number;
-    name: string;
-    description: string;
-    created: string;
-    updated: string;
-  }) {
-    this.id = id;
-    this.name = name;
-    this.description = description;
-    this.created = created;
-    this.updated = updated;
-  }
-}
 
 export const subjectStore = reactive({
 
@@ -87,6 +52,11 @@ export const subjectStore = reactive({
     } catch (error) {
       console.error("Error loading subjects from search term: ", error); 
     }
+  },
+
+  async subjectMetrics(subjectId: string): Promise<[number, number, number]> {    
+    const dbPath = await this.getDbPath();    
+    return await invoke("subject_metrics", { dbPath, subjectId });  
   }
   
 })

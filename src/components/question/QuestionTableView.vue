@@ -26,6 +26,7 @@
 
 <script setup>
 import { onMounted } from 'vue';
+import { message } from '@tauri-apps/plugin-dialog';
 import { questionStore } from '../../api/Question';
 import Tag from '../shared/Tag.vue';
 import QuestionTableItem from './QuestionTableItem.vue';
@@ -39,12 +40,24 @@ const props = defineProps({
 
 
 async function handleDelete(id) {
-  await questionStore.deleteQuestion(`${id}`);
-  await questionStore.loadQuestions(`${props.deckId}`);
+  const deleteResult = await questionStore.deleteQuestion(`${id}`);
+  if (deleteResult === "Success") {    
+    await message(
+      'Successfully deleted question from deck',
+      { title: 'Recalli', kind: 'info' }
+    );
+    await questionStore.loadQuestions(`${props.deckId}`);
+  } else {    
+    await message(
+      'Could not delete question from deck. This question is currently being used in a session. You must remove the session that has this question before deleting it.',
+      { title: 'Recalli', kind: 'info' }
+    );
+  }
 }
 
 onMounted(async () => {
-  await questionStore.loadQuestions(`${props.deckId}`);
+  const result = await questionStore.loadQuestions(`${props.deckId}`);
+  console.log("THIS IS THE RESULT: ", questionStore.questions); 
   questionStore.currQuestion = 0;
 })
 

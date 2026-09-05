@@ -35,7 +35,8 @@ function search() {
 }
 
 onMounted(async () => {
-  deck.value = await deckStore.viewDeck(`${deckId}`); 
+  deck.value = await deckStore.viewDeck(`${deckId}`);
+  console.log(deck.value);  
 })
 </script>
 

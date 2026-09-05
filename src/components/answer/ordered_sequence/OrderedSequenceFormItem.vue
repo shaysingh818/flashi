@@ -5,40 +5,27 @@
       <p class="indice-content">{{ content }}</p>
     </div>
     <div class="flex row-center fw-25">
-      <font-awesome-icon icon="fa-solid fa-x" @click="addKeyword" />
+      <font-awesome-icon icon="fa-solid fa-x" @click.prevent="emit('remove', props.index - 1)" />
     </div>
   </div>
 
 </template>
 
-<script>
+<script setup>
+import { ref } from "vue";
 
-export default {
-  name: "OrderedSequenceFormItem",
-  components: {},
-  props: {
-    index: {
-      type: String,
-      required: true,
-    },
-    content: {
-      type: String,
-      required: true,
-    },
+const props = defineProps({
+  index: {
+    type: String,
+    required: true,
   },
-  data() {
-    return {
-      keywords: [],
-      newKeyword: "",
-    };
+  content: {
+    type: String,
+    required: true,
   },
-  methods: {
-    addKeyword() {
-      this.keywords.push(this.newKeyword);
-      this.newKeyword = "";
-    },
-  },
-};
+});
+
+const emit = defineEmits(['remove']); 
 </script>
 
 <style scoped>
@@ -59,6 +46,5 @@ svg {
   width: 15px; 
   height: 15px; 
 }
-
 
 </style>

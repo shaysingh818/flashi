@@ -1,7 +1,6 @@
 use chrono;
+use duckdb::{params, Connection, OptionalExt, Result};
 use serde::{Deserialize, Serialize};
-use duckdb::{params, Connection, Result}; 
-
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SessionReview {
@@ -12,14 +11,15 @@ pub struct SessionReview {
     pub current_question: usize,
     pub start_time: String,
     pub end_time: String,
-    pub created: String, 
+    pub created: String,
     pub updated: String,
 }
 
 impl SessionReview {
-
     pub fn new(session_id: usize) -> SessionReview {
-        let now = chrono::offset::Local::now().to_string();
+        let now = chrono::offset::Local::now()
+            .format("%Y-%m-%d %H:%M:%S")
+            .to_string();
         SessionReview {
             id: 0,
             session_id: session_id,
@@ -33,11 +33,12 @@ impl SessionReview {
         }
     }
 
-    pub fn insert(&mut self, conn: &Connection) -> Result<()> {
-        let result = conn.execute(
+    pub fn insert(&mut self, conn: &Connection) -> Result<SessionReview> {
+        conn.query_row(
             "INSERT INTO SESSION_REVIEW
                 (SESSION_ID, COMPLETE, CYCLE, CURRENT_QUESTION, START_TIME, END_TIME, CREATED, UPDATED)
-            VALUES (?1, ?2, ?3, ?4, ?5)",
+            VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
+            RETURNING ID, SESSION_ID, COMPLETE, CYCLE, CURRENT_QUESTION, START_TIME::VARCHAR, END_TIME::VARCHAR, CREATED::VARCHAR, UPDATED::VARCHAR",
             params![
                 &self.session_id,
                 &self.complete,
@@ -45,34 +46,79 @@ impl SessionReview {
                 &self.current_question,
                 &self.start_time,
                 &self.end_time,
-                &self.created, 
+                &self.created,
                 &self.updated
             ],
-        );
-
-        match result {
-            Ok(_) => {
-                println!("Successfully inserted session review");
-                Ok(())
-            },
-            Err(err) => {
-                println!("[session_review::insert] duckdb error {:?}", err);
-                Err(err)
-            }
-        }
-    }
-
-    pub fn retrieve(conn: &Connection) -> Result<Vec<SessionReview>> {
-        let mut stmt = conn.prepare("SELECT * FROM SESSION_REVIEW")?;
-
-        let sessions: Result<Vec<SessionReview>> = stmt
-            .query_map([], |row| {
+            |row| {
                 Ok(SessionReview {
                     id: row.get(0)?,
-                    session_id: row.get(1)?, 
+                    session_id: row.get(1)?,
                     complete: row.get(2)?,
                     cycle: row.get(3)?,
-                    current_question: row.get(4)?, 
+                    current_question: row.get(4)?,
+                    start_time: row.get(5)?,
+                    end_time: row.get(6)?,
+                    created: row.get(7)?,
+                    updated: row.get(8)?,
+                })
+            },
+        )
+    }
+
+    pub fn session_review_active(conn: &Connection, session_id: &str) -> Result<i64> {
+        let query = "
+        SELECT
+            ID
+        FROM SESSION_REVIEW WHERE COMPLETE = FALSE AND SESSION_ID = ?";
+
+        let mut stmt = conn.prepare(query)?;
+        let session_id: Option<i64> = stmt
+            .query_row(params![session_id], |row| row.get(0))
+            .optional()?;
+
+        Ok(session_id.unwrap_or(-1))
+    }
+
+    pub fn session_review_complete(conn: &Connection, session_review_id: &str) -> Result<bool> {
+        let query = "
+            WITH ACTIVE_QUESTIONS AS (
+                SELECT
+                    *
+                FROM SESSION_REVIEW_QUESTION
+                WHERE SESSION_REVIEW_ID = ? AND ACTIVE = TRUE
+            )
+            SELECT COUNT(*) AS ACTIVE_QUESTIONS_COUNT FROM ACTIVE_QUESTIONS";
+
+        let mut stmt = conn.prepare(query)?;
+        let active_question_count: i64 =
+            stmt.query_row(params![session_review_id], |row| row.get(0))?;
+
+        Ok(active_question_count == 0)
+    }
+
+    pub fn retrieve(conn: &Connection, session_id: &str) -> Result<Vec<SessionReview>> {
+        let query = "
+            SELECT
+                ID,
+                SESSION_ID,
+                COMPLETE,
+                CYCLE,
+                CURRENT_QUESTION,
+                START_TIME::VARCHAR,
+                END_TIME::VARCHAR,
+                CREATED::VARCHAR,
+                UPDATED::VARCHAR
+            FROM SESSION_REVIEW WHERE SESSION_ID = ?";
+        let mut stmt = conn.prepare(query)?;
+
+        let sessions: Result<Vec<SessionReview>> = stmt
+            .query_map([session_id], |row| {
+                Ok(SessionReview {
+                    id: row.get(0)?,
+                    session_id: row.get(1)?,
+                    complete: row.get(2)?,
+                    cycle: row.get(3)?,
+                    current_question: row.get(4)?,
                     start_time: row.get(5)?,
                     end_time: row.get(6)?,
                     created: row.get(7)?,
@@ -84,26 +130,29 @@ impl SessionReview {
     }
 
     pub fn update(&mut self, conn: &Connection, id: &str) -> Result<()> {
-        self.updated = chrono::offset::Local::now().to_string();
+        self.updated = chrono::offset::Local::now()
+            .format("%Y-%m-%d %H:%M:%S")
+            .to_string();
+        self.end_time = chrono::offset::Local::now()
+            .format("%Y-%m-%d %H:%M:%S")
+            .to_string();
 
         let result = conn.execute(
             "UPDATE SESSION_REVIEW
-                SET SESSION_ID=?1,
-                    COMPLETE=?2,
-                    CYCLE=?3
-                    CURRENT_QUESTION=?4
-                    START_TIME=?5
-                    END_TIME=?6
-                    UPDATED=?7
-                WHERE ID=?8",
+                SET COMPLETE=?1,
+                    CYCLE=?2,
+                    CURRENT_QUESTION=?3,
+                    START_TIME=?4,
+                    END_TIME=?5,
+                    UPDATED=?6
+                WHERE ID=?7",
             params![
-                &self.session_id,
                 &self.complete,
                 &self.cycle,
                 &self.current_question,
-                &self.start_time,
+                &self.start_time.to_string(),
                 &self.end_time,
-                &self.updated, 
+                &self.updated,
                 id,
             ],
         );
@@ -112,7 +161,7 @@ impl SessionReview {
             Ok(_) => {
                 println!("Successfully updated session review");
                 Ok(())
-            },
+            }
             Err(err) => {
                 println!("[session_review::update] duckdb error {:?}", err);
                 Err(err)
@@ -126,9 +175,26 @@ impl SessionReview {
             Ok(_) => {
                 println!("Successfully deleted session review");
                 Ok(())
-            },
+            }
             Err(err) => {
                 println!("[session_review::delete] Error deleting session {:?}", err);
+                Err(err)
+            }
+        }
+    }
+    
+    pub fn delete_from_session(&mut self, conn: &Connection, session_id: &str) -> Result<()> {
+        let result = conn.execute("DELETE FROM SESSION_REVIEW WHERE SESSION_ID=?", [session_id]);
+        match result {
+            Ok(_) => {
+                println!("Successfully removed session review's from existing session");
+                Ok(())
+            }
+            Err(err) => {
+                println!(
+                    "[session_review::delete_from_session] Error deleting session review metrics {:?}",
+                    err
+                );
                 Err(err)
             }
         }
@@ -136,26 +202,72 @@ impl SessionReview {
 
     pub fn view(conn: &Connection, id: &str) -> Result<SessionReview> {
         conn.query_row(
-            "SELECT * FROM SESSION_REVIEW WHERE ID = ?",
+            "SELECT
+                ID,
+                SESSION_ID,
+                COMPLETE,
+                CYCLE,
+                CURRENT_QUESTION,
+                START_TIME::VARCHAR,
+                END_TIME::VARCHAR,
+                CREATED::VARCHAR,
+                UPDATED::VARCHAR FROM SESSION_REVIEW WHERE ID = ?",
             &[&id],
             |row| {
                 Ok(SessionReview {
                     id: row.get(0)?,
-                    session_id: row.get(1)?, 
+                    session_id: row.get(1)?,
                     complete: row.get(2)?,
                     cycle: row.get(3)?,
-                    current_question: row.get(4)?, 
+                    current_question: row.get(4)?,
                     start_time: row.get(5)?,
                     end_time: row.get(6)?,
                     created: row.get(7)?,
                     updated: row.get(8)?,
                 })
-            }
+            },
         )
     }
 
-}
+    pub fn generate_questions(&mut self, conn: &Connection) -> Result<()> {
+        let query = "
+            WITH DECK_IDS AS (
+	            SELECT
+                    DECK_ID
+                FROM SESSION_DECK WHERE SESSION_ID = ?
+            ),
+            QUESTIONS AS (
+	            SELECT
+                    Q.ID,
+                    Q.DECK_ID,
+                    Q.CORRECT,
+                    Q.INCORRECT,
+                    Q.REVIEWED
+            FROM QUESTION Q
+            WHERE Q.DECK_ID IN (SELECT DECK_ID FROM DECK_IDS)
+            )
+            SELECT
+                Q.ID
+            FROM QUESTIONS AS Q
+            LEFT JOIN DECK_IDS AS DIDS
+            ON Q.DECK_ID = DIDS.DECK_ID
+            ORDER BY Q.CORRECT DESC";
 
+        let mut stmt = conn.prepare(query)?;
+
+        let question_ids: Vec<usize> = stmt
+            .query_map(&[&self.session_id], |row| row.get(0))?
+            .filter_map(|r| r.ok())
+            .collect();
+
+        for (idx, question_id) in question_ids.into_iter().enumerate() {
+            let mut session_question = SessionReviewQuestion::new(self.id, question_id, idx);
+            session_question.insert(conn);
+        }
+
+        Ok(())
+    }
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SessionReviewQuestion {
@@ -166,14 +278,19 @@ pub struct SessionReviewQuestion {
     pub incorrect_count: usize,
     pub review_count: usize,
     pub active: bool,
-    pub created: String, 
+    pub created: String,
     pub updated: String,
 }
 
 impl SessionReviewQuestion {
-
-    pub fn new(session_review_id: usize, question_id: usize, priority_index: usize) -> SessionReviewQuestion {
-        let now = chrono::offset::Local::now().to_string();
+    pub fn new(
+        session_review_id: usize,
+        question_id: usize,
+        priority_index: usize,
+    ) -> SessionReviewQuestion {
+        let now = chrono::offset::Local::now()
+            .format("%Y-%m-%d %H:%M:%S")
+            .to_string();
         SessionReviewQuestion {
             id: 0,
             session_review_id: session_review_id,
@@ -189,15 +306,15 @@ impl SessionReviewQuestion {
 
     pub fn insert(&mut self, conn: &Connection) -> Result<()> {
         let result = conn.execute(
-            "INSERT INTO SESSION_REVIEW
+            "INSERT INTO SESSION_REVIEW_QUESTION
                 (
-                    SESSION_REVIEW_ID, 
-                    QUESTION_ID, 
-                    PRIORITY_INDEX, 
-                    INCORRECT_COUNT, 
-                    REVIEW_COUNT, 
-                    ACTIVE, 
-                    CREATED, 
+                    SESSION_REVIEW_ID,
+                    QUESTION_ID,
+                    PRIORITY_INDEX,
+                    INCORRECT_COUNT,
+                    REVIEW_COUNT,
+                    ACTIVE,
+                    CREATED,
                     UPDATED
                 )
             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
@@ -208,7 +325,7 @@ impl SessionReviewQuestion {
                 &self.incorrect_count,
                 &self.review_count,
                 &self.active,
-                &self.created, 
+                &self.created,
                 &self.updated
             ],
         );
@@ -217,7 +334,7 @@ impl SessionReviewQuestion {
             Ok(_) => {
                 println!("Successfully inserted session review question");
                 Ok(())
-            },
+            }
             Err(err) => {
                 println!("[session_review_question::insert] duckdb error {:?}", err);
                 Err(err)
@@ -232,10 +349,10 @@ impl SessionReviewQuestion {
             .query_map([], |row| {
                 Ok(SessionReviewQuestion {
                     id: row.get(0)?,
-                    session_review_id: row.get(1)?, 
+                    session_review_id: row.get(1)?,
                     question_id: row.get(2)?,
                     priority_index: row.get(3)?,
-                    incorrect_count: row.get(4)?, 
+                    incorrect_count: row.get(4)?,
                     review_count: row.get(5)?,
                     active: row.get(6)?,
                     created: row.get(7)?,
@@ -246,18 +363,115 @@ impl SessionReviewQuestion {
         sessions
     }
 
+    pub fn retrieve_by_session_review_id(
+        conn: &Connection,
+        session_review_id: &str,
+    ) -> Result<Vec<SessionReviewQuestion>> {
+        let query = "
+        SELECT
+	          ID,
+            SESSION_REVIEW_ID,
+            QUESTION_ID,
+            PRIORITY_INDEX,
+            INCORRECT_COUNT,
+            REVIEW_COUNT,
+            ACTIVE,
+            UPDATED::VARCHAR,
+            CREATED::VARCHAR
+        FROM SESSION_REVIEW_QUESTION WHERE SESSION_REVIEW_ID = ? AND ACTIVE = TRUE ORDER BY PRIORITY_INDEX ASC";
+
+        let mut stmt = conn.prepare(query)?;
+
+        let sessions: Result<Vec<SessionReviewQuestion>> = stmt
+            .query_map([&session_review_id], |row| {
+                Ok(SessionReviewQuestion {
+                    id: row.get(0)?,
+                    session_review_id: row.get(1)?,
+                    question_id: row.get(2)?,
+                    priority_index: row.get(3)?,
+                    incorrect_count: row.get(4)?,
+                    review_count: row.get(5)?,
+                    active: row.get(6)?,
+                    created: row.get(7)?,
+                    updated: row.get(8)?,
+                })
+            })?
+            .collect();
+        sessions
+    }
+
+    pub fn retrieve_active_questions(
+        conn: &Connection,
+        session_id: &str,
+    ) -> Result<Vec<SessionReviewQuestion>> {
+        let query = "
+            WITH DECK_IDS AS (
+	            SELECT
+                    DECK_ID
+                FROM SESSION_DECK WHERE SESSION_ID = ?
+            ),
+            QUESTIONS AS (
+	            SELECT
+                    Q.ID,
+                    Q.DECK_ID,
+                    Q.CORRECT,
+                    Q.INCORRECT,
+                    Q.REVIEWED
+            FROM QUESTION Q
+            WHERE Q.DECK_ID IN (SELECT DECK_ID FROM DECK_IDS)
+            )
+            SELECT
+              SRQ.ID,
+              SRQ.SESSION_REVIEW_ID,
+              SRQ.QUESTION_ID,
+              SRQ.PRIORITY_INDEX,
+              SRQ.INCORRECT_COUNT,
+              SRQ.REVIEW_COUNT,
+              SRQ.ACTIVE,
+              SRQ.UPDATED::VARCHAR,
+              SRQ.CREATED::VARCHAR
+            FROM QUESTIONS AS Q
+            LEFT JOIN DECK_IDS AS DIDS
+            ON Q.DECK_ID = DIDS.DECK_ID
+            LEFT JOIN SESSION_REVIEW_QUESTION AS SRQ
+            ON Q.ID = SRQ.QUESTION_ID
+            WHERE SRQ.ACTIVE = TRUE
+            ORDER BY SRQ.INCORRECT_COUNT, SRQ.REVIEW_COUNT ASC";
+
+        let mut stmt = conn.prepare(query)?;
+        let sessions: Result<Vec<SessionReviewQuestion>> = stmt
+            .query_map([session_id], |row| {
+                Ok(SessionReviewQuestion {
+                    id: row.get(0)?,
+                    session_review_id: row.get(1)?,
+                    question_id: row.get(2)?,
+                    priority_index: row.get(3)?,
+                    incorrect_count: row.get(4)?,
+                    review_count: row.get(5)?,
+                    active: row.get(6)?,
+                    created: row.get(7)?,
+                    updated: row.get(8)?,
+                })
+            })?
+            .collect();
+
+        sessions
+    }
+
     pub fn update(&mut self, conn: &Connection, id: &str) -> Result<()> {
-        self.updated = chrono::offset::Local::now().to_string();
+        self.updated = chrono::offset::Local::now()
+            .format("%Y-%m-%d %H:%M:%S")
+            .to_string();
 
         let result = conn.execute(
             "UPDATE SESSION_REVIEW_QUESTION
                 SET SESSION_REVIEW_ID=?1,
                     QUESTION_ID=?2,
-                    PRIORITY_INDEX=?3
-                    INCORRECT_COUNT=?4
-                    REVIEW_COUNT=?5
-                    ACTIVE=?6
-                    UPDATED=?7
+                    PRIORITY_INDEX=?3,
+                    INCORRECT_COUNT=?4,
+                    REVIEW_COUNT=?5,
+                    ACTIVE=?6,
+                    UPDATED=?7,
                 WHERE ID=?8",
             params![
                 &self.session_review_id,
@@ -266,7 +480,7 @@ impl SessionReviewQuestion {
                 &self.incorrect_count,
                 &self.review_count,
                 &self.active,
-                &self.updated, 
+                &self.updated,
                 id,
             ],
         );
@@ -275,7 +489,7 @@ impl SessionReviewQuestion {
             Ok(_) => {
                 println!("Successfully updated session review question");
                 Ok(())
-            },
+            }
             Err(err) => {
                 println!("[session_review_question::update] duckdb error {:?}", err);
                 Err(err)
@@ -289,36 +503,46 @@ impl SessionReviewQuestion {
             Ok(_) => {
                 println!("Successfully deleted session review question");
                 Ok(())
-            },
+            }
             Err(err) => {
-                println!("[session_review_question::delete] Error deleting session review question {:?}", err);
+                println!(
+                    "[session_review_question::delete] Error deleting session review question {:?}",
+                    err
+                );
                 Err(err)
             }
         }
     }
 
     pub fn view(conn: &Connection, id: &str) -> Result<SessionReviewQuestion> {
-        conn.query_row(
-            "SELECT * FROM SESSION_REVIEW_QUESTION WHERE ID = ?",
-            &[&id],
-            |row| {
-                Ok(SessionReviewQuestion {
-                    id: row.get(0)?,
-                    session_review_id: row.get(1)?, 
-                    question_id: row.get(2)?,
-                    priority_index: row.get(3)?,
-                    incorrect_count: row.get(4)?, 
-                    review_count: row.get(5)?,
-                    active: row.get(6)?,
-                    created: row.get(7)?,
-                    updated: row.get(8)?,
-                })
-            }
-        )
+        let query = "
+        SELECT
+	        ID,
+            SESSION_REVIEW_ID,
+            QUESTION_ID,
+            PRIORITY_INDEX,
+            INCORRECT_COUNT,
+            REVIEW_COUNT,
+            ACTIVE,
+            UPDATED::VARCHAR,
+            CREATED::VARCHAR
+        FROM SESSION_REVIEW_QUESTION WHERE ID = ?";
+
+        conn.query_row(query, &[&id], |row| {
+            Ok(SessionReviewQuestion {
+                id: row.get(0)?,
+                session_review_id: row.get(1)?,
+                question_id: row.get(2)?,
+                priority_index: row.get(3)?,
+                incorrect_count: row.get(4)?,
+                review_count: row.get(5)?,
+                active: row.get(6)?,
+                created: row.get(7)?,
+                updated: row.get(8)?,
+            })
+        })
     }
-
 }
-
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SessionReviewMetrics {
@@ -329,48 +553,75 @@ pub struct SessionReviewMetrics {
     pub accuracy: f64,
     pub total_review_count: usize,
     pub number_of_cycles: usize,
-    pub review_time: f64, 
-    pub created: String, 
+    pub review_time: f64,
+    pub created: String,
 }
 
 impl SessionReviewMetrics {
+    pub fn new(session_review_id: usize, conn: &Connection) -> Result<SessionReviewMetrics> {
+        let now = chrono::offset::Local::now()
+            .format("%Y-%m-%d %H:%M:%S")
+            .to_string();
 
-    pub fn new(
-        session_review_id: usize, 
-        questions_correct: usize, 
-        questions_incorrect: usize, 
-        accuracy: f64,
-        total_review_count: usize,
-        number_of_cycles: usize,
-        review_time: f64) -> SessionReviewMetrics {
+        let query = "
+        WITH SRQ_METRICS AS (
+           	SELECT
+           	    SUM(CASE WHEN SRQ.INCORRECT_COUNT > 0 THEN 1 ELSE 0 END) AS TOTAL_INCORRECT_COUNT,
+           	    SUM(CASE WHEN SRQ.INCORRECT_COUNT = 0 THEN 1 ELSE 0 END) AS TOTAL_CORRECT_COUNT,
+           	    SUM(SRQ.REVIEW_COUNT) AS TOTAL_QUESTIONS_REVIEWED
+           	FROM SESSION_REVIEW_QUESTION AS SRQ
+           	WHERE SRQ.SESSION_REVIEW_ID = ?
+        ),
+        SR_CYCLE AS (
+           	SELECT
+           	ID,
+           	CYCLE,
+           	START_TIME,
+           	END_TIME
+           	FROM SESSION_REVIEW WHERE ID = ?
+        )
+        SELECT
+           	SR_CYCLE.ID,
+           	TOTAL_CORRECT_COUNT,
+           	TOTAL_INCORRECT_COUNT,
+            ROUND(
+                CAST(TOTAL_CORRECT_COUNT AS DOUBLE) / NULLIF(TOTAL_CORRECT_COUNT + TOTAL_INCORRECT_COUNT, 0) * 100,
+                2
+            ) AS ACCURACY,
+           	TOTAL_QUESTIONS_REVIEWED,
+           	SR_CYCLE.CYCLE,
+           	CAST(EPOCH(END_TIME) - EPOCH(START_TIME) AS DOUBLE) AS REVIEW_TIME
+            FROM SRQ_METRICS
+            CROSS JOIN SR_CYCLE
+        ";
 
-        let now = chrono::offset::Local::now().to_string();
-
-        SessionReviewMetrics {
-            id: 0,
-            session_review_id: session_review_id,
-            questions_correct: questions_correct,
-            questions_incorrect: questions_incorrect,
-            accuracy: accuracy,
-            total_review_count: total_review_count,
-            number_of_cycles: number_of_cycles,
-            review_time: review_time,
-            created: now,
-        }
+        conn.query_row(query, &[&session_review_id, &session_review_id], |row| {
+            Ok(SessionReviewMetrics {
+                id: 0,
+                session_review_id: row.get(0)?,
+                questions_correct: row.get(1)?,
+                questions_incorrect: row.get(2)?,
+                accuracy: row.get(3)?,
+                total_review_count: row.get(4)?,
+                number_of_cycles: row.get(5)?,
+                review_time: row.get(6)?,
+                created: now,
+            })
+        })
     }
 
     pub fn insert(&mut self, conn: &Connection) -> Result<()> {
         let result = conn.execute(
             "INSERT INTO SESSION_REVIEW_METRICS
                 (
-                    SESSION_REVIEW_ID, 
-                    QUESTIONS_CORRECT, 
-                    QUESTIONS_INCORRECT, 
-                    ACCURACY, 
-                    TOTAL_REVIEW_COUNT, 
-                    NUMBER_OF_CYCLES, 
+                    SESSION_REVIEW_ID,
+                    QUESTIONS_CORRECT,
+                    QUESTIONS_INCORRECT,
+                    ACCURACY,
+                    TOTAL_REVIEW_COUNT,
+                    NUMBER_OF_CYCLES,
                     REVIEW_TIME,
-                    CREATED, 
+                    CREATED
                 )
             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
             params![
@@ -381,7 +632,7 @@ impl SessionReviewMetrics {
                 &self.total_review_count,
                 &self.number_of_cycles,
                 &self.review_time,
-                &self.created, 
+                &self.created,
             ],
         );
 
@@ -389,7 +640,7 @@ impl SessionReviewMetrics {
             Ok(_) => {
                 println!("Successfully inserted session review metrics");
                 Ok(())
-            },
+            }
             Err(err) => {
                 println!("[session_review_metrics::insert] duckdb error {:?}", err);
                 Err(err)
@@ -404,13 +655,51 @@ impl SessionReviewMetrics {
             .query_map([], |row| {
                 Ok(SessionReviewMetrics {
                     id: row.get(0)?,
-                    session_review_id: row.get(1)?, 
+                    session_review_id: row.get(1)?,
                     questions_correct: row.get(2)?,
                     questions_incorrect: row.get(3)?,
-                    accuracy: row.get(4)?, 
+                    accuracy: row.get(4)?,
                     total_review_count: row.get(5)?,
                     number_of_cycles: row.get(6)?,
-                    review_time: row.get(7)?, 
+                    review_time: row.get(7)?,
+                    created: row.get(8)?,
+                })
+            })?
+            .collect();
+        sessions
+    }
+    
+    pub fn session_metrics_history(conn: &Connection, session_id: &str) -> Result<Vec<SessionReviewMetrics>> {
+
+        let query = "
+            SELECT 
+                ID,
+                SESSION_REVIEW_ID,
+                QUESTIONS_CORRECT,
+                QUESTIONS_INCORRECT,
+                ACCURACY,
+                TOTAL_REVIEW_COUNT,
+                NUMBER_OF_CYCLES,
+                REVIEW_TIME,
+                CREATED::VARCHAR
+            FROM SESSION_REVIEW_METRICS
+            WHERE SESSION_REVIEW_ID IN (
+                SELECT ID FROM SESSION_REVIEW WHERE COMPLETE = TRUE AND SESSION_ID = ?
+            ) ORDER BY CREATED DESC
+        "; 
+        
+        let mut stmt = conn.prepare(query)?;
+        let sessions: Result<Vec<SessionReviewMetrics>> = stmt
+            .query_map([session_id], |row| {
+                Ok(SessionReviewMetrics {
+                    id: row.get(0)?,
+                    session_review_id: row.get(1)?,
+                    questions_correct: row.get(2)?,
+                    questions_incorrect: row.get(3)?,
+                    accuracy: row.get(4)?,
+                    total_review_count: row.get(5)?,
+                    number_of_cycles: row.get(6)?,
+                    review_time: row.get(7)?,
                     created: row.get(8)?,
                 })
             })?
@@ -424,14 +713,17 @@ impl SessionReviewMetrics {
             Ok(_) => {
                 println!("Successfully deleted session review question");
                 Ok(())
-            },
+            }
             Err(err) => {
-                println!("[session_review_metrics::delete] Error deleting session review metrics {:?}", err);
+                println!(
+                    "[session_review_metrics::delete] Error deleting session review metrics {:?}",
+                    err
+                );
                 Err(err)
             }
         }
     }
-
+    
     pub fn view(conn: &Connection, id: &str) -> Result<SessionReviewMetrics> {
         conn.query_row(
             "SELECT * FROM SESSION_REVIEW_METRICS WHERE ID = ?",
@@ -439,18 +731,16 @@ impl SessionReviewMetrics {
             |row| {
                 Ok(SessionReviewMetrics {
                     id: row.get(0)?,
-                    session_review_id: row.get(1)?, 
+                    session_review_id: row.get(1)?,
                     questions_correct: row.get(2)?,
                     questions_incorrect: row.get(3)?,
-                    accuracy: row.get(4)?, 
+                    accuracy: row.get(4)?,
                     total_review_count: row.get(5)?,
                     number_of_cycles: row.get(6)?,
-                    review_time: row.get(7)?, 
+                    review_time: row.get(7)?,
                     created: row.get(8)?,
                 })
-
-            }
+            },
         )
     }
-
 }

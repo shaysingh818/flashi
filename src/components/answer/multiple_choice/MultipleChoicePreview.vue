@@ -30,16 +30,19 @@
     <MultipleChoicePreviewItem
       v-if="props.visible === false"
       v-for="(item, index) in items"
-      :key="index"
+      :key="index" 
+      :visible="props.visible"
+      :index="index"
       :text="item.answer"
-      :isSelected="false"
+      :isSelected="selectedItems.some(s => s.id === item.id)"
+      @update:selected="selectedItem = $event; selectAnswer(index)"
     />
   </div> 
 
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import FormInputField from '../../shared/forms/FormInputField.vue';
 import MultipleChoicePreviewItem from './MultipleChoicePreviewItem.vue';
 import { multipleChoiceStore, multipleChoiceAnswerStore } from "../../../api";
@@ -56,13 +59,41 @@ const props = defineProps({
 });
 
 const newItem = ref('');
-const selectedItem = ref(null);
+const selectedItem = ref(null); 
+const selectedItems  = ref([]);
 const deleteIndex = ref(null);
+
+watch(() => props.items, () => {
+  selectedItem.value = null;
+  selectedItems.value = [];
+}, { immediate: true });
+
+
 const emit = defineEmits([
+  "select:item",
+  "select:clear",
   "update:item", 
   "update:add", 
   "update:delete"
 ]); 
+
+
+function selectAnswer(index) {
+
+  const localProps = [...props.items];
+  const selected = localProps[index];
+  const itemIndex = selectedItems.value.findIndex(item => item.id === selected.id);
+
+  if(itemIndex >= 0) {
+    selectedItems.value.splice(itemIndex, 1);
+  } else {
+    selectedItems.value.push(selected);
+  }
+
+  console.log(selectedItems.value); 
+  emit("select:item", selectedItems.value);  
+}
+
 
 function updateAnswer(index) {
   const localProps = [...props.items];
