@@ -2,10 +2,22 @@
   <div class="flex col-center w-100">
 
   <br /> 
-   <SearchComponent 
-      text="Search Subjects" 
-      @search="search"
-    />
+
+  <div class="w-85">
+      <GnSearchFormField 
+        v-model="searchTerm"
+        borderColor="#d1d5db" 
+        buttonBackgroundColor="#F97316" 
+        color="white" 
+        label="Search Subjects" 
+        placeholder="Search Subjects"
+        backgroundColor="rgb(28 25 23)"
+        @gn-search="search"
+      />
+  </div>
+
+  <br></br>
+
 
     <div class="flex centered-all">
       <h2 style="color: white;">Subjects </h2> 
@@ -23,7 +35,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import SearchComponent from '../../components/shared/forms/SearchComponent.vue';
+import { GnSearchFormField } from '@graphyne/web-components';
 import HoverButton from '../../components/shared/buttons/HoverButton.vue';
 import SubjectListView from '../../components/subject/SubjectListView.vue';
 import { subjectStore } from '../../api/Subject';

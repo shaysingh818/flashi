@@ -8,10 +8,10 @@ body {
   background-color: rgb(41 37 36); /* Replace with your desired color */
 }
 
-main {
+/*main {
   display: flex;
   margin-left: 55px;
-}
+}*/
 
 /* debug outline */ 
 .outline {
