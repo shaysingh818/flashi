@@ -6,7 +6,8 @@
   <div class="w-85">
       <GnSearchFormField 
         v-model="searchTerm"
-        borderColor="#d1d5db" 
+        inputBorderColor="rgb(28 25 23)" 
+        buttonBorderColor="#F97316"
         buttonBackgroundColor="#F97316" 
         color="white" 
         label="Search Subjects" 
