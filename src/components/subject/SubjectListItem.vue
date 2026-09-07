@@ -1,5 +1,5 @@
 <template>
-  <div
+  <!-- <div
     class="flex row w-100 list-item"
     style="height: 50px"
     @click="subjectDetail"
@@ -49,12 +49,37 @@
         />
       </Teleport>
     </div>
-  </div>
+  </div> -->
+
+  <GnListTile 
+    :description="description" 
+    :title="title"
+    borderColor="var(--app-color-background)"
+    textColor="var(--app-color-text)"
+    descriptionColor="var(--app-color-text-muted)"
+    @gn-click="subjectDetail">
+        
+    <template #leading>
+        <font-awesome-icon icon="fa-regular fa-calendar" />
+    </template> 
+    
+    <template #trailing>
+       <GnIconButton label="More options" variant="ghost" size="sm">
+           <font-awesome-icon
+             @click.stop="showDropdown"
+             icon="fa-solid fa-ellipsis-vertical"
+           />
+       </GnIconButton>
+    </template>
+  </GnListTile>
+
+  
 </template>
 
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import { GnListTile  } from "@graphyne/web-components";
 import ConfirmDialog from "../shared/ConfirmDialog.vue";
 import DropDownItem from "../shared/navigation/DropDownItem.vue";
 import { subjectStore } from "../../api/Subject";

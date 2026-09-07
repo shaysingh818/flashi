@@ -1,22 +1,22 @@
 <template>
-  <div class="flex col-center w-100">
-    <br />
-    <SearchComponent text="Search Sessions" @search="search" />
+  <div class="flex flex-col">
 
-    <div class="w-85">
+    <div class="p-4"> 
         <GnSearchFormField 
           v-model="searchTerm"
-          borderColor="#d1d5db" 
-          buttonBackgroundColor="#F97316" 
-          color="white" 
+          inputBorderColor="rgb(28 25 23)" 
+          buttonBorderColor="var(--app-color-accent)"
+          buttonBackgroundColor="var(--app-color-accent)" 
+          buttonIconColor="var(--app-color-text)"
+          focusColor="var(--app-color-accent)" 
+          textColor="var(--app-color-accent)"
           label="Search Sessions" 
-          placeholder="Search Subjects"
-          backgroundColor="rgb(28 25 23)"
+          placeholder="Search Sessions"
+          backgroundColor="var(--app-color-surface)"
           @gn-search="search"
         />
     </div>
 
-    <br> </br>
     
     <div class="flex items-center justify-center">
       <h2>Sessions</h2>

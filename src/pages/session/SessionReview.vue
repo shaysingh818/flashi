@@ -1,11 +1,11 @@
 <template>
-  <div class="flex col-center w-100">
+  <div class="flex flex-col items-center">
     <br />
     <div
-      class="flex col-center rounded-2 gap-1 p-4"
+      class="flex flex-col rounded-2 gap-1 p-4 items-center justify-center"
       style="background-color: rgb(28 25 23); width: 90%"
     >
-      <div class="flex row-center gap-2">
+      <div class="flex flex-row gap-2">
         <PlayButton icon="fa-solid fa-play" @click="startSessionReview" />
         <p>{{ sessionProgressMessage }}</p>
       </div>

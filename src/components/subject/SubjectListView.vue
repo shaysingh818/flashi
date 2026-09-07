@@ -1,5 +1,5 @@
 <template>
-  <div class="subject-list-view" v-for="(item, index) in subjectStore.subjects" :key="index">
+  <div class="flex flex-col p-4" v-for="(item, index) in subjectStore.subjects" :key="index">
     <p v-if="subjectStore.subjects.length === 0">No subjects found.</p>
     <SubjectListItem
       :id="`${item.id}`"
