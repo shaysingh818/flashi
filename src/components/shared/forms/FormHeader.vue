@@ -1,10 +1,12 @@
 <template>
-  <div class="header">
-    <div class="text">
-      <h1>{{ header }}</h1>
-      <p>{{ description }}</p>
+    <div class="flex p-2"> 
+        <div class="flex flex-col" style="background-color: var(--app-color-surface); border-radius: 10px;">
+        <div class="p-6">
+            <h1>{{ header }}</h1>
+            <p>{{ description }}</p>
+        </div>
+        </div>
     </div>
-  </div>
 </template>
 
 <script setup>
@@ -21,24 +23,15 @@ const props = defineProps({
 </script>
 
 <style scoped>
-.header {
-  width: 95%;
-  border-radius: 10px;
-  background-color: rgb(28 25 23);
-}
-
-.text {
-  padding: 10px;
-  margin: 15px; 
-}
 
 h1 {
   font-size: 25px;
   margin-bottom: 0;
+  color: var(--app-color-text);
 }
 
 p {
-  color: #b5b3b3;
+  color: var(--app-color-text-muted); 
   font-size: 15px;
   margin-top: 1;
 }

@@ -1,17 +1,19 @@
 <template>
-  <div class="deck-list-view" v-for="(item, index) in props.decks" :key="index">
-    <DeckListItem
-      :id="`${item.id}`"
-      :subjectId="`${item.subject_id}`"
-      :title="item.name"
-      :description="item.description"      
-      :tags="item.tags"
-      :dateUpdated="item.updated"
-      :actionType="props.actionType"
-      @deck:add_to_session="addDeckToSession($event)"
-      @deck:remove_from_session="removeDeckFromSession($event)"
-    />
-  </div>
+    <div class="p-6">
+        <div class="flex flex-col" v-for="(item, index) in props.decks" :key="index">
+        <DeckListItem
+            :id="`${item.id}`"
+            :subjectId="`${item.subject_id}`"
+            :title="item.name"
+            :description="item.description"      
+            :tags="item.tags"
+            :dateUpdated="item.updated"
+            :actionType="props.actionType"
+            @deck:add_to_session="addDeckToSession($event)"
+            @deck:remove_from_session="removeDeckFromSession($event)"
+        />
+        </div>
+    </div>
 </template>
 
 <script setup>
@@ -59,14 +61,3 @@ async function removeDeckFromSession(deckId) {
 
 </script>
 
-<style>
-.deck-list-view {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  width: 85%;
-  padding: 10px;
-  justify-content: center;
-  align-items: center;
-}
-</style>

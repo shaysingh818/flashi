@@ -1,7 +1,6 @@
 <template>
   <div class="flex flex-col">
 
-    
     <GnBackBar 
         v-if="subject"
         :title="subject.name"
@@ -22,14 +21,16 @@
     
     <div class="p-4"> 
         <GnSearchFormField 
-          v-model="searchTerm"
-          inputBorderColor="rgb(28 25 23)" 
-          buttonBorderColor="#F97316"
-          buttonBackgroundColor="#F97316" 
-          color="#F97316" 
+          v-model="searchTerm"          
           label="Search Decks" 
-          placeholder="Search Subjects"
-          backgroundColor="rgb(28 25 23)"
+          placeholder="Search Decks"
+          inputBorderColor="rgb(28 25 23)" 
+          buttonBorderColor="var(--app-color-accent)"
+          buttonBackgroundColor="#F97316"          
+          buttonIconColor="var(--app-color-text)"          
+          focusColor="var(--app-color-accent)" 
+          textColor="var(--app-color-accent)"
+          backgroundColor="var(--app-color-surface)"
           @gn-search="search"
         />
     </div>

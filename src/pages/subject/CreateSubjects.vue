@@ -1,5 +1,17 @@
 <template>
- <div class="flex col-center">
+ <div class="flex flex-col">
+
+     <GnBackBar 
+         title="Create Subject"
+         subtitle="Last updated 04/02/2026"
+         textColor="var(--app-color-text)"
+         color="var(--app-color-accent)"
+         backgroundColor="var(--app-color-surface)"
+         borderColor="var(--app-color-surface)"
+         @gn-back="goBack">
+         <font-awesome-icon icon="fa-solid fa-arrow-left" />  
+     </GnBackBar>
+     
    <br></br>
 
     <FormHeader
@@ -24,6 +36,7 @@
 <script>
 import CreateSubjectForm from "../../components/subject/CreateSubjectForm.vue";
 import FormHeader from "../../components/shared/forms/FormHeader.vue";
+import { GnBackBar } from "@graphyne/web-components";
 
 export default {
   name: "CreateSubjects",
