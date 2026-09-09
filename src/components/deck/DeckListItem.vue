@@ -80,7 +80,7 @@
     </template> 
 
     <template #tags>
-        <GnTag v-for="(item, index) in tags" :key="index" :title="item" />
+        <GnTag v-for="(item, index) in tags" :key="index" :label="item" />
     </template>
     
     <template #trailing>

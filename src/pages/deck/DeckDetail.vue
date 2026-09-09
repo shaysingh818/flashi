@@ -1,9 +1,20 @@
 <template>
-  <div class="flex col-center w-100">
-    <BackBar v-if="deck" :text="deck.name" />
-    <br></br>
+  <div class="flex flex-col">
+
+    <GnBackBar 
+        v-if="deck"
+        :title="deck.name"
+        subtitle="Last updated 04/02/2026"
+        textColor="var(--app-color-text)"
+        color="var(--app-color-accent)"
+        backgroundColor="var(--app-color-surface)"
+        borderColor="var(--app-color-surface)"
+        @gn-back="goBack">
+        <font-awesome-icon icon="fa-solid fa-arrow-left" />  
+    </GnBackBar>
     
-    <div class="w-85"> 
+    
+    <div class="p-4"> 
         <GnSearchFormField 
           v-model="searchTerm"
           inputBorderColor="rgb(28 25 23)" 

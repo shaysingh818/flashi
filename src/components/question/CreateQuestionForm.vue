@@ -1,8 +1,20 @@
 <template>
-  <div class="flex col-center gap-4 w-100">
-    <div class="flex w-75" style="height: 150px;">
-      <FormTextField v-model:text="text" description="Deck Question" />
-    </div>
+  <div class="flex flex-col gap-4 p-6">
+
+    <GnFormTextField
+        v-model="text"
+        backgroundColor="var(--app-color-surface)" 
+        borderColor="transparent" 
+        :disabled="false" 
+        placeholder="Question text" 
+        :rows="4"        
+        label="Enter question text"
+        textColor="var(--app-color-accent)" />
+
+    
+      <GnFormDropDownField >
+          
+      </GnFormDropDownField>
 
     <div class="flex centered-all w-75 oultine">
         <FileUploadField
