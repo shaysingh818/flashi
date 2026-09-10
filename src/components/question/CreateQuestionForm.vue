@@ -12,47 +12,49 @@
         textColor="var(--app-color-accent)" />
 
     
-      <GnFormDropDownField >
-          
+    <GnFormDropDownField 
+        v-model="selectedOption"
+        :options="answerTypeNames"
+        label="Chose answer type" 
+        backgroundColor="var(--app-color-surface)" 
+        borderColor="var(--app-color-surface)"
+        textColor="var(--app-color-accent)"> 
       </GnFormDropDownField>
 
-    <div class="flex centered-all w-75 oultine">
+    <!-- <div class="flex centered-all w-75 oultine">
         <FileUploadField
             fieldLabel="Upload Images (Optional)"
             :multiple="true"
             @update:modelValue="onImagesSelected"
         />
-    </div>
+    </div> -->
     
-    <div class="flex centered-all w-75">
-      <DropDownFormField
-        title="choose option"
-        @update:title="selectedOption = $event;"
-        :options="answerTypeNames"
-      />
-    </div>
 
     <CreateMultipleChoiceForm 
-      v-if="selectedOption == 'Multiple Choice'" 
+      v-if="selectedOption == 'multiple-choice'" 
       @update:items="multipleChoiceAnswers = $event"
     />
 
     <CreateOpenEndedForm 
-      v-if="selectedOption == 'Open Ended'" 
+      v-if="selectedOption == 'open-ended'" 
       @update:text="openEndedText = $event" 
       @update:keywords="openEndedKeywords = $event"
     />
 
     <CreateOrderedSequenceForm 
-      v-if="selectedOption == 'Ordered Sequence'"
+      v-if="selectedOption == 'ordered-sequence'"
       @update:sequence="orderedSequences = $event" 
     />
 
     
     <br />
-    <div class="flex row-center gap-4" style="height: 35px">
-      <SecondaryButton @click="goBack" text="Discard" />
-      <PrimaryButton @click="submitQuestion" text="Submit" />
+    <div class="flex flex-row gap-4 justify-center" style="height: 35px">      
+      <GnButton :disabled="false" variant="secondary" @gn-click="goBack">
+          Discard
+      </GnButton>
+      <GnButton :disabled="false" variant="primary" @gn-click="submitQuestion">
+          Submit
+      </GnButton>
     </div>
   </div>
 </template>
@@ -110,7 +112,11 @@ const answerTypeNames = ref([]);
 
 onMounted(async () => {
   await answerTypeStore.loadAnswerTypes();
-  const names = answerTypeStore.answerTypes.map(item => item.name);
+  const names = answerTypeStore.answerTypes.map(item => ({
+    label: item.name,
+    value: item.name.toLowerCase().replace(/\s+/g, "-"),
+  }));
+  console.log("NAMES: ", names); 
   answerTypeNames.value = names;
 })
 
