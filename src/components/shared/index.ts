@@ -16,10 +16,6 @@ export { default as SecondaryButton } from './buttons/SecondaryButton.vue';
 export { default as BackBar } from './navigation/BackBar.vue';
 export { default as DropDownItem } from './navigation/DropDownItem.vue';
 export { default as DropDownMenu } from './navigation/DropDownMenu.vue';
-export { default as NavigationBar } from './navigation/NavigationBar.vue';
-export { default as NavigationItem } from './navigation/NavigationItem.vue';
-export { default as TabNavigationBar } from './navigation/TabNavigationBar.vue';
-export { default as TabNavigationItem } from './navigation/TabNavigationItem.vue';
 
 /* misc  */
 export { default as Tag } from './Tag.vue'; 
