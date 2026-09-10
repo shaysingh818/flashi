@@ -1,5 +1,5 @@
 <template>
-  <div class="flex row w-100 list-item">
+  <!-- <div class="flex row w-100 list-item">
     <div class="flex row-center w-100" @click="deckDetail">
       <div class="flex leading centered-all">
         <font-awesome-icon
@@ -66,7 +66,33 @@
         </Teleport>
       </div>
     </div>
-  </div>
+  </div> -->
+  <GnListTile 
+    :description="description" 
+    :title="title"
+    borderColor="var(--app-color-background)"
+    textColor="var(--app-color-text)"
+    descriptionColor="var(--app-color-text-muted)"
+    @gn-click="deckDetail">
+        
+    <template #leading>
+        <font-awesome-icon icon="fa-solid fa-list-check" />
+    </template> 
+
+    <template #tags>
+        <GnTag v-for="(item, index) in tags" :key="index" :label="item" />
+    </template>
+    
+    <template #trailing>
+       <GnIconButton label="More options" variant="ghost" size="sm">
+           <font-awesome-icon
+             @click.stop="showDropdown"
+             icon="fa-solid fa-ellipsis-vertical"
+           />
+       </GnIconButton>
+    </template>
+  </GnListTile>
+  
 </template>
 
 <script setup>
@@ -75,8 +101,8 @@ import { useRouter } from "vue-router";
 import { svgPathData } from "@fortawesome/free-solid-svg-icons/faRotateRight";
 import { deckStore } from "../../api/Deck";
 import ConfirmDialog from "../shared/ConfirmDialog.vue";
-import Tag from "../shared/Tag.vue";
 import DropDownItem from "../shared/navigation/DropDownItem.vue";
+import { GnTag, GnListTile } from "@graphyne/web-components";
 
 
 const props = defineProps({  

@@ -1,14 +1,39 @@
 <template>
-  <div class="flex col-center gap-2 w-100">
-    <BackBar v-if="subject" :text="subject.name" />
+  <div class="flex flex-col">
 
-    <div class="grid cols-3 w-90 gap-6 place-center p-6">
-      <MetricCard metric="Average Accuracy" :numeric="avgAccuracy" />
-      <MetricCard metric="Questions reviewed" :numeric="questionsReviewed" />
-      <MetricCard metric="Total Questions" :numeric="questionsTotal" />
+    <GnBackBar 
+        v-if="subject"
+        :title="subject.name"
+        subtitle="Last updated 04/02/2026"
+        textColor="var(--app-color-text)"
+        color="var(--app-color-accent)"
+        backgroundColor="var(--app-color-surface)"
+        borderColor="var(--app-color-surface)"
+        @gn-back="goBack">
+        <font-awesome-icon icon="fa-solid fa-arrow-left" />  
+    </GnBackBar>
+
+    <div class="grid grid-cols-3 gap-4 p-4">
+      <GnMetricCard metric="Average Accuracy" :numeric="avgAccuracy" />
+      <GnMetricCard metric="Questions reviewed" :numeric="questionsReviewed" />
+      <GnMetricCard metric="Total Questions" :numeric="questionsTotal" />
     </div>
-
-    <SearchComponent text="Search Decks" @search="search" />
+    
+    <div class="p-4"> 
+        <GnSearchFormField 
+          v-model="searchTerm"          
+          label="Search Decks" 
+          placeholder="Search Decks"
+          inputBorderColor="rgb(28 25 23)" 
+          buttonBorderColor="var(--app-color-accent)"
+          buttonBackgroundColor="#F97316"          
+          buttonIconColor="var(--app-color-text)"          
+          focusColor="var(--app-color-accent)" 
+          textColor="var(--app-color-accent)"
+          backgroundColor="var(--app-color-surface)"
+          @gn-search="search"
+        />
+    </div>
     <DeckListView 
       v-if="subject" 
       :decks="deckStore.decks" 
@@ -25,7 +50,7 @@ import { onMounted } from "vue";
 import { subjectStore } from "../../api/Subject";
 import { deckStore } from "../../api/Deck";
 import BackBar from "../../components/shared/navigation/BackBar.vue";
-import SearchComponent from "../../components/shared/forms/SearchComponent.vue";
+import { GnSearchFormField, GnMetricCard, GnBackBar } from '@graphyne/web-components';
 import HoverButton from "../../components/shared/buttons/HoverButton.vue";
 import DeckListView from "../../components/deck/DeckListView.vue";
 import MetricCard from "../../components/shared/analytics/MetricCard.vue";
@@ -53,6 +78,10 @@ onMounted(async () => {
   avgAccuracy.value = Math.round(avgAccuracy.value * 100) / 100;
   
 });
+
+function goBack() {
+  router.go(-1);
+}
 
 function createDeck() {
   router.push({ path: `/deck/create/${subjectId}` });

@@ -1,16 +1,21 @@
 <template>
-  <div class="flex col-center gap-4 w-85 p-2">
+  <div class="flex flex-col gap-4 p-2">
 
-    <div v-if="props.visible === true" class="flex row-center gap-2 w-95" style="height: 35px">
-      <FormInputField
-        placeholder="Add item for ordered sequence answer"
-        @update:text="newSequence = $event"
-      />
-      <font-awesome-icon 
-        icon="fa-solid fa-plus" 
-        style="color: #f97316" 
-        @click="addSequence" 
-      />
+    <div v-if="props.visible === true" class="flex flex-row gap-2">
+
+      <GnFormInputField
+          class="flex-1"
+          v-model="newSequence"
+          backgroundColor="var(--app-color-surface)" 
+          borderColor="transparent" 
+          :disabled="false" 
+          placeholder="Add item for ordered sequence answer" 
+          textColor="var(--app-color-accent)" />
+          
+        <GnIconButton label="Add tag" variant="primary" @gn-click="addSequence">
+            <font-awesome-icon icon="fa-solid fa-plus" />
+        </GnIconButton>
+ 
     </div>
 
     <OrderedSequencePreviewItem

@@ -1,6 +1,17 @@
 <template>
-  <div class="flex col-center">
-    <BackBar text="Create Question" />
+  <div class="flex flex-col">
+    
+    <GnBackBar 
+        title="Create Question"
+        subtitle="Last updated 04/02/2026"
+        textColor="var(--app-color-text)"
+        color="var(--app-color-accent)"
+        backgroundColor="var(--app-color-surface)"
+        borderColor="var(--app-color-surface)"
+        @gn-back="goBack">
+        <font-awesome-icon icon="fa-solid fa-arrow-left" />  
+    </GnBackBar>
+    
     <br />
     <FormHeader
       header="Create a question"

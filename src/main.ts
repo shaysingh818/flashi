@@ -8,9 +8,13 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import router from './router';
 import './index.css'; 
 
+import GraphyneWebComponents from '@graphyne/web-components';
+import '@graphyne/web-components/style.css';
+
 library.add(fas, far, fab)
 
 createApp(App)
   .use(router)
+  .use(GraphyneWebComponents)
   .component('font-awesome-icon', FontAwesomeIcon)  
   .mount("#app");

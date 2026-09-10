@@ -1,37 +1,30 @@
 <template>
-  <div class="flex col-center w-100">
-    <BackBar 
-      v-if="deck" 
-      :text="deck.name"
-      :actions="[
-         { icon: 'fa-solid fa-pen-to-square', handler: showDropdown },
-      ]"
-    />
+  <div class="flex flex-col">
 
-    <div class="flex centered-all w-100">
+    <GnBackBar 
+        v-if="deck"
+        :title="deck.name"
+        subtitle="Last updated 04/02/2026"
+        textColor="var(--app-color-text)"
+        color="var(--app-color-accent)"
+        backgroundColor="var(--app-color-surface)"
+        borderColor="var(--app-color-surface)"
+        @gn-back="goBack">
+        <font-awesome-icon icon="fa-solid fa-arrow-left" /> 
+        <template #actions>
+          <GnIconButton label="Edit" variant="ghost" size="md">
+               <font-awesome-icon icon="fa-solid fa-pen-to-square" />  
+          </GnIconButton>
+        </template>
+    </GnBackBar>
+      
+    <div class="flex items-center justify-center">
       <QuestionTextPreview
         v-if="question"
         :text="question.raw"
       />
     </div>
 
-    <div class="grid grid-cols-3 gap-4 w-75 outline">
-
-        <div class="flex outline">
-
-        </div>
-
-
-        <div class="flex outline">
-
-        </div>
-       
-       
-        <div class="flex outline">
-
-        </div>
-        
-    </div>
     
      <!-- <div class="flex col-center w-100">
         <div class="flex row-center w-75">
@@ -48,7 +41,7 @@
     <br/>
     
 
-    <div class="flex centered-all w-100">
+    <div class="flex items-center justify-center">
       
       <OrderedSequencePreview 
         v-if="answerType === 'Ordered Sequence'" 

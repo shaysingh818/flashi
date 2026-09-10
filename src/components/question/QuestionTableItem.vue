@@ -1,6 +1,6 @@
 <template>
   <tr @click="questionDetail">
-    <td class="tag-column"><Tag :title="answerTypeText" height="10px" /></td>
+    <td class="tag-column"><GnTag :label="answerTypeText" height="10px" /></td>
     <td class="date-column">{{ props.dateUpdated }}</td>
     <td class="content-column">{{ props.content }}</td>
     <td class="delete-column"> 

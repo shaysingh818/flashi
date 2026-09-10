@@ -1,38 +1,58 @@
 <template>
-  <div class="flex col-center gap-4 w-75 p-4 h-auto">
-    <div class="flex w-100" style="height: 40px">
-      <FormInputField v-model:text="name" placeholder="Deck name" />
-    </div>
+  <div class="flex flex-col p-6 gap-4">
+    <GnFormInputField 
+        v-model="name"
+        backgroundColor="var(--app-color-surface)" 
+        borderColor="transparent" 
+        :disabled="false" 
+        placeholder="Deck Name" 
+        textColor="var(--app-color-accent)" 
+        label="Enter deck name"
+        type="text" />
 
-    <div class="flex w-100" style="height: 100px;">
-      <FormTextField v-model:text="description" description="Deck description" />
-    </div>
+    <GnFormTextField
+        v-model="description"
+        backgroundColor="var(--app-color-surface)" 
+        borderColor="transparent" 
+        :disabled="false" 
+        placeholder="Write something…" 
+        :rows="4"        
+        label="Enter deck description"
+        textColor="var(--app-color-accent)" />
 
-    <div class="flex col-center gap-2 w-100">
-      <div class="flex row-center gap-2 w-100" style="height: 40px">
-        <FormInputField
-          placeholder="Add a tag to the deck"
-          :text="newTag"
-          @update:text="newTag = $event"
-        />
-        <font-awesome-icon icon="fa-solid fa-plus" @click="addTag" />
-      </div>
-    </div>
+    <div class="flex flex-row items-end gap-2">
+        <GnFormInputField
+            class="flex-1"
+            v-model="newTag"
+            backgroundColor="var(--app-color-surface)" 
+            borderColor="transparent" 
+            :disabled="false" 
+            placeholder="Add Tag…" 
+            label="Add tag to deck"
+            textColor="var(--app-color-accent)" />
+        <GnIconButton label="Add tag" variant="primary" @gn-click="addTag">
+            <font-awesome-icon icon="fa-solid fa-plus" />
+        </GnIconButton>
+    </div> 
 
-    <div class="flex wrap items-start gap-2 row g-1" style="min-height: 15px;">
-      <Tag
+    <div class="flex flex-row flex-wrap justify-center gap-2 p-4" style="min-height: 15px;">
+      <GnTag
         v-for="(item, index) in tags"
         :key="index"
-        :title="item"
+        :label="item"
         height="10px"
       />
     </div>
 
-    <br> </br>
-    <div class="flex row-center gap-4" style="height: 35px">
-      <SecondaryButton @click="goBack" text="Discard" />
-      <PrimaryButton @click="submitForm" text="Submit" />
+    <div class="flex flex-row gap-4 items-center justify-center">
+        <GnButton :disabled="false" variant="secondary" @gn-click="goBack">
+            Discard
+        </GnButton>
+        <GnButton :disabled="false" variant="primary" @gn-click="submitForm">
+            Submit
+        </GnButton>
     </div>
+    
   </div>
 </template>
 
@@ -41,11 +61,13 @@ import { deckStore } from "../../api/Deck";
 import { ref } from "vue";
 import { message } from '@tauri-apps/plugin-dialog';
 import { useRouter } from "vue-router";
-import FormInputField from "../../components/shared/forms/FormInputField.vue";
-import FormTextField from "../../components/shared/forms/FormTextField.vue";
-import PrimaryButton from "../../components/shared/buttons/PrimaryButton.vue";
-import SecondaryButton from "../../components/shared/buttons/SecondaryButton.vue";
-import Tag from "../shared/Tag.vue";
+import {
+  GnFormInputField,
+  GnFormTextField,
+  GnButton,
+  GnBackBar,
+  GnTag
+} from '@graphyne/web-components';
 
 const props = defineProps({
   subjectId: {
@@ -84,9 +106,3 @@ async function submitForm() {
   }
 }
 </script>
-
-<style scoped>
-svg {
-  color: #f97316;
-}
-</style>

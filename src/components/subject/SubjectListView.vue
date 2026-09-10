@@ -1,13 +1,15 @@
 <template>
-  <div class="subject-list-view" v-for="(item, index) in subjectStore.subjects" :key="index">
-    <p v-if="subjectStore.subjects.length === 0">No subjects found.</p>
-    <SubjectListItem
-      :id="`${item.id}`"
-      :title="item.name"
-      :description="item.description"
-      :dateUpdated="item.updated"
-    />
-  </div>
+<div class="p-6"> 
+    <div class="flex flex-col" v-for="(item, index) in subjectStore.subjects" :key="index">
+      <p v-if="subjectStore.subjects.length === 0">No subjects found.</p>
+      <SubjectListItem
+        :id="`${item.id}`"
+        :title="item.name"
+        :description="item.description"
+        :dateUpdated="item.updated"
+      />
+    </div>
+</div>
 </template>
 
 <script setup>

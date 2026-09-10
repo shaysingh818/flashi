@@ -1,7 +1,20 @@
 <template>
-  <div class="flex col-center w-100">
-    <br />
-    <SearchComponent text="Search decks" :onClick="search" />
+  <div class="flex flex-col">
+    <div class="p-4"> 
+        <GnSearchFormField 
+          v-model="searchTerm"
+          inputBorderColor="rgb(28 25 23)" 
+          buttonBorderColor="var(--app-color-accent)"
+          buttonBackgroundColor="var(--app-color-accent)" 
+          buttonIconColor="var(--app-color-text)"
+          focusColor="var(--app-color-accent)" 
+          textColor="var(--app-color-accent)"
+          label="Search Decks" 
+          placeholder="Search Decks In Session"
+          backgroundColor="var(--app-color-surface)"
+          @gn-search="search"
+        />
+    </div>
     <br/>
 
     <DeckListView 

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex centered-all w-100">
+  <div class="flex items-center justify-center">
     <table>
       <tbody>
         <tr>

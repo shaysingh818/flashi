@@ -1,8 +1,16 @@
 <template>
   <div class="bottom-actions-bar">
-    <SecondaryButton @click="props.previousHandler" text="Previous" />
-    <PrimaryButton @click="props.updateHandler" text="Update" />
-    <SecondaryButton @click="props.nextHandler" text="Next" />
+    <GnButton :disabled="false" variant="secondary" @gn-click="props.previousHandler">
+        Previous
+    </GnButton>
+   
+    <GnButton :disabled="false" variant="primary" @gn-click="props.updateHandler">
+        Update
+    </GnButton>
+    
+    <GnButton :disabled="false" variant="secondary" @gn-click="props.nextHandler">
+        Next
+    </GnButton>
   </div>
 </template>
 
@@ -37,11 +45,11 @@ const props = defineProps({
   height: 35px;
   position: fixed;
   background-color: rgb(28 25 23);
-  padding: 10px; 
   bottom: 0;
   justify-content: center;
   align-items: center;
   margin-left: -55px; 
+  padding: 25px;
 }
 
 </style>

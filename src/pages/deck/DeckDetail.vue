@@ -1,8 +1,32 @@
 <template>
-  <div class="flex col-center w-100">
-    <BackBar v-if="deck" :text="deck.name" />
-    <br></br>
-    <SearchComponent text="Search Decks" @search="search" />
+  <div class="flex flex-col">
+
+    <GnBackBar 
+        v-if="deck"
+        :title="deck.name"
+        subtitle="Last updated 04/02/2026"
+        textColor="var(--app-color-text)"
+        color="var(--app-color-accent)"
+        backgroundColor="var(--app-color-surface)"
+        borderColor="var(--app-color-surface)"
+        @gn-back="goBack">
+        <font-awesome-icon icon="fa-solid fa-arrow-left" />  
+    </GnBackBar>
+    
+    
+    <div class="p-4"> 
+        <GnSearchFormField 
+          v-model="searchTerm"
+          inputBorderColor="rgb(28 25 23)" 
+          buttonBorderColor="#F97316"
+          buttonBackgroundColor="#F97316" 
+          color="#F97316" 
+          label="Search Questions" 
+          placeholder="Search Questions"
+          backgroundColor="rgb(28 25 23)"
+          @gn-search="search"
+        />
+    </div>
     <br> </br>
     <QuestionTableView :deckId="deckId"/>
     <HoverButton icon="fa-solid fa-plus" @click="createQuestion" />
@@ -15,7 +39,7 @@ import { onMounted } from "vue";
 import { deckStore } from "../../api/Deck";
 import { useRouter, useRoute } from "vue-router";
 import BackBar from "../../components/shared/navigation/BackBar.vue";
-import SearchComponent from "../../components/shared/forms/SearchComponent.vue";
+import { GnSearchFormField } from '@graphyne/web-components';
 import MetricCard from "../../components/shared/MetricCard.vue";
 import HoverButton from "../../components/shared/buttons/HoverButton.vue";
 import QuestionTableView from "../../components/question/QuestionTableView.vue";

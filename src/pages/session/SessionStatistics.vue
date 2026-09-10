@@ -1,12 +1,12 @@
 <template>
-  <div class="flex col-center w-100">
-    <div class="grid cols-3 w-95 gap-6 place-center p-6">
-      <MetricCard metric="Average Accuracy" :numeric="avgAccuracy" />
-      <MetricCard metric="Total Questions Reviewed" :numeric="totalQuestionsReviewed" />
-      <MetricCard metric="Total Review Time" :numeric="totalReviewTime" />
+  <div class="flex flex-col">
+    <div class="grid grid-cols-3 gap-6 place-center p-4">
+      <GnMetricCard metric="Average Accuracy" :numeric="avgAccuracy" />
+      <GnMetricCard metric="Total Questions Reviewed" :numeric="totalQuestionsReviewed" />
+      <GnMetricCard metric="Total Review Time" :numeric="totalReviewTime" />
     </div>
 
-    <div class="grid cols-2 cols-responsive w-95 gap-4">
+    <div class="grid grid-cols-2 gap-4 p-4">
         <DoughnutChart 
             title="Question accuracy ratio"
             :values="[totalCorrect, totalIncorrect]" /> 
@@ -17,17 +17,14 @@
             :values="questionBreakdownCounts" />
     </div>
 
-    <br />
-    <div class="grid cols-1 cols-responsive w-95 gap-4">
+    <div class="grid grid-cols-1 cols-responsive gap-4 p-4">
       <LineChart 
             title="Historical review metrics" 
             :labels="accuracyDates"
             :datasets="accuracyHistory" />
     </div>
 
-    <br />
-
-    <div class="grid cols-2 cols-responsive w-95 gap-4">
+    <div class="grid grid-cols-2 cols-responsive gap-4 p-4">
 
         <DataView 
             title="Most incorrect questions"
@@ -48,8 +45,13 @@
 
 <script setup>
 import { ref, onMounted } from "vue"; 
-import { sessionStore } from "../../api/Session"; 
-import MetricCard from "../../components/shared/analytics/MetricCard.vue";
+import { sessionStore } from "../../api/Session";
+
+import {
+  GnMetricCard,
+  GnDoughnutChart,
+  GnPieChart
+} from "@graphyne/web-components";
 import DoughnutChart from "../../components/shared/analytics/DoughnutChart.vue";
 import PieChart from "../../components/shared/analytics/PieChart.vue";
 import BarChart from "../../components/shared/analytics/BarChart.vue";
