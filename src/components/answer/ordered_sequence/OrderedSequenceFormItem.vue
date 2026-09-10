@@ -1,13 +1,13 @@
 <template>
-  <div class="flex row-center gap-2 w-75">
-    <div class="flex row align-left fw-75 gap-2">
-      <p class="number-index">{{ index }}.</p>
-      <p class="indice-content">{{ content }}</p>
+    <div class="flex items-center gap-2 w-3/4">
+    <div class="flex items-center gap-2 basis-3/4">
+        <p class="number-index">{{ index }}.</p>
+        <p class="indice-content">{{ content }}</p>
     </div>
-    <div class="flex row-center fw-25">
-      <font-awesome-icon icon="fa-solid fa-x" @click.prevent="emit('remove', props.index - 1)" />
+    <div class="flex items-center justify-center basis-1/4">
+        <font-awesome-icon icon="fa-solid fa-x" @click.prevent="emit('remove', props.index - 1)" />
     </div>
-  </div>
+    </div>
 
 </template>
 
@@ -32,7 +32,7 @@ const emit = defineEmits(['remove']);
 
 .number-index {
   color:  #f97316;
-  font-size: 12px; 
+  font-size: 15px; 
 }
 
 

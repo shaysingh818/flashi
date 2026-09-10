@@ -4,6 +4,7 @@
     
       <GnFormTextField
           v-model="text"
+          @gn-update="emitQuestionText"
           backgroundColor="var(--app-color-surface)" 
           borderColor="transparent" 
           :disabled="false" 
@@ -41,9 +42,13 @@
 
 <script setup>
 import { ref } from "vue";
-import FormInputField from "../../../components/shared/forms/FormInputField.vue";
-import FormTextField from "../../../components/shared/forms/FormTextField.vue";
-import Tag from "../../../components/shared/Tag.vue";
+import {
+  GnFormTextField,
+  GnFormInputField,
+  GnIconButton,
+  GnTag
+} from "@graphyne/web-components"
+
 
 const text = ref(''); 
 const newKeyword = ref('');
@@ -53,6 +58,7 @@ const emit = defineEmits(['update:text', 'update:keywords']);
 function addKeyword() {
   keywords.value.push(newKeyword.value); 
   newKeyword.value = '';
+  emitKeywords();
 }
 
 function emitKeywords() {

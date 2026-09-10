@@ -116,7 +116,6 @@ onMounted(async () => {
     label: item.name,
     value: item.name.toLowerCase().replace(/\s+/g, "-"),
   }));
-  console.log("NAMES: ", names); 
   answerTypeNames.value = names;
 })
 
@@ -207,8 +206,8 @@ async function submitQuestion() {
   const deckId = props.deckId; 
   let questionInsertId = -1;
   let questionInsertResult = ""; 
-  
-  if (selectedOption.value === 'Multiple Choice') {    
+
+  if (selectedOption.value === 'multiple-choice') {    
     const answerTypeId = retrieveAnswerTypeId('Multiple Choice');
     const answerId = await submitMultipleChoice(multipleChoiceAnswers.value);     
     if (answerId !== -1) { 
@@ -235,7 +234,7 @@ async function submitQuestion() {
         { title: 'Recalli', kind: 'info' }
       );
     }
-  } else if (selectedOption.value === 'Open Ended') { 
+  } else if (selectedOption.value === 'open-ended') { 
     const answerTypeId = retrieveAnswerTypeId('Open Ended');
     const answerId = await submitOpenEnded(
       openEndedText.value,
@@ -267,8 +266,9 @@ async function submitQuestion() {
       );
     }
 
-  } else if (selectedOption.value === 'Ordered Sequence') { 
+  } else if (selectedOption.value === 'ordered-sequence') { 
     const answerTypeId = retrieveAnswerTypeId('Ordered Sequence');
+    console.log(orderedSequences.value); 
     const answerId = await submitOrderedSequence(
       orderedSequences.value,
       ''
