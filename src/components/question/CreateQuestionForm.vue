@@ -11,7 +11,17 @@
         label="Enter question text"
         textColor="var(--app-color-accent)" />
 
-    
+    <GnFileUploadField
+        v-model="selectedPaths"
+        label="Upload optional image associated with text"
+        accept="image/*" 
+        backgroundColor="var(--app-color-surface)" 
+        borderColor="var(--app-color-accent)" 
+        color="var(--app-color-accent)" 
+        :disabled="false" 
+        multiple 
+        textColor="var(--app-color-accent)" />
+        
     <GnFormDropDownField 
         v-model="selectedOption"
         :options="answerTypeNames"
@@ -20,16 +30,7 @@
         borderColor="var(--app-color-surface)"
         textColor="var(--app-color-accent)"> 
       </GnFormDropDownField>
-
-    <!-- <div class="flex centered-all w-75 oultine">
-        <FileUploadField
-            fieldLabel="Upload Images (Optional)"
-            :multiple="true"
-            @update:modelValue="onImagesSelected"
-        />
-    </div> -->
-    
-
+ 
     <CreateMultipleChoiceForm 
       v-if="selectedOption == 'multiple-choice'" 
       @update:items="multipleChoiceAnswers = $event"
@@ -46,7 +47,6 @@
       @update:sequence="orderedSequences = $event" 
     />
 
-    
     <br />
     <div class="flex flex-row gap-4 justify-center" style="height: 35px">      
       <GnButton :disabled="false" variant="secondary" @gn-click="goBack">
@@ -268,7 +268,6 @@ async function submitQuestion() {
 
   } else if (selectedOption.value === 'ordered-sequence') { 
     const answerTypeId = retrieveAnswerTypeId('Ordered Sequence');
-    console.log(orderedSequences.value); 
     const answerId = await submitOrderedSequence(
       orderedSequences.value,
       ''
