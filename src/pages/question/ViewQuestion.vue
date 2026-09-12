@@ -209,8 +209,6 @@ async function selectImages() {
   }));
 }
 
-
-
 async function onImagesSelected(items) {
   
   const imageIds = []; 
@@ -384,29 +382,11 @@ watch(() => route.params.id, (newId) => {
   if (newId) loadData(newId);
 });
 
-// watch(
-  
-//   imageArtifacts,
-//   (newList, oldList = []) => {
-//     for (const item of newList) {
-//       if (!imageUrls[item]) loadThumbnail(item);
-//     }
-//     for (const item of oldList) {
-//       if (!newList.includes(item) && imageUrls[item]) {
-//         URL.revokeObjectURL(imageUrls[item]);
-//         delete imageUrls[item];
-//       }
-//     }
-//   },
-//   { immediate: true }
-// );
-
 onBeforeUnmount(() => {
   for (const url of Object.values(imageUrls)) URL.revokeObjectURL(url);
 });
 
 </script>
-
 
 <style scoped>
 
