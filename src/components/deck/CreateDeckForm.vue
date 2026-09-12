@@ -40,7 +40,8 @@
         v-for="(item, index) in tags"
         :key="index"
         :label="item"
-        height="10px"
+        height="10px" 
+        @gn-dblclick="removeTag(index)"
       />
     </div>
 
@@ -89,6 +90,11 @@ function goBack() {
 function addTag() {
   tags.value.push(newTag.value);
   newTag.value = "";
+}
+
+
+function removeTag(index) {
+  tags.value.splice(index, 1);
 }
 
 async function submitForm() {

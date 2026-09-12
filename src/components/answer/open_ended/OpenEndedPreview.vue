@@ -26,14 +26,14 @@
     <font-awesome-icon icon="fa-solid fa-plus" style="color: #f97316" @click="addKeyword" />
   </div>
 
-  <div class="flex row-center align-left wrap gap-2 p-4 w-85">
-    <Tag
-      v-if="visible === true"
-      v-for="(item, index) in props.keywords"
-      :key="index"
-      :title="item"
-      height="10px"
-      @remove="removeKeyword(index)"
+  <div class="flex row-center align-left wrap gap-2 p-4 w-85"> 
+    <GnTag
+        v-if="visible === true"
+        v-for="(item, index) in keywords"
+        :key="index"
+        :label="item"
+        height="10px"
+        @gn-dblclick="removeKeyword(index)"
     />
   </div>
 </div>
@@ -44,6 +44,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import Tag from '../../shared/Tag.vue';
+import { GnTag } from '@graphyne/web-components';
 import FormInputField from '../../shared/forms/FormInputField.vue';
 import FormTextField from '../../../components/shared/forms/FormTextField.vue';
 
