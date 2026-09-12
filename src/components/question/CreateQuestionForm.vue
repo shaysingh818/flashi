@@ -13,6 +13,8 @@
 
     <GnFileUploadField
         v-model="selectedPaths"
+        @gn-update="onImagesSelected"
+        :filePicker="selectImages"
         label="Upload optional image associated with text"
         accept="image/*" 
         backgroundColor="var(--app-color-surface)" 
@@ -63,7 +65,8 @@
 import { ref } from "vue";
 import { onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { message } from '@tauri-apps/plugin-dialog';
+import { convertFileSrc } from '@tauri-apps/api/core';
+import { message, open } from '@tauri-apps/plugin-dialog';
 import CreateMultipleChoiceForm from "../answer/multiple_choice/CreateMultipleChoiceForm.vue";
 import CreateOpenEndedForm from "../answer/open_ended/CreateOpenEndedForm.vue";
 import CreateOrderedSequenceForm from "../answer/ordered_sequence/CreateOrderedSequenceForm.vue";
@@ -119,14 +122,30 @@ onMounted(async () => {
   answerTypeNames.value = names;
 })
 
-async function onImagesSelected(paths) {
-  selectedPaths.value = paths;
+
+async function selectImages() {
+  const result = await open({
+    multiple: true,
+    filters: [{ name: "Image Filter", extensions: ["png", "jpeg", "jpg", "webp"] }]
+  });
+
+  if (result === null) return [];
+
+  const paths = Array.isArray(result) ? result : [result];
+  return paths.map((path) => ({
+    name: path.split(/[\\/]/).pop() ?? path,
+    path,
+    previewUrl: convertFileSrc(path) // optional, for a thumbnail
+  }));
+}
+
+async function onImagesSelected() {
+  console.log(selectedPaths.value);
 }
 
 function fileName(path) {
   return path.split(/[\\/]/).pop();
 }
-
 
 function goBack(){
   router.go(-1); 
@@ -142,9 +161,9 @@ function retrieveAnswerTypeId(key) {
 
 async function submitQuestionImages(selectedImagePaths) {
   let imageArtifactIds = []; 
-  for (const item of selectedImagePaths) {
-    const fileName = item.split('/').pop(); 
-    const localPath = item.slice(0, -fileName.length - 1);
+  for (const item of selectedImagePaths) {    
+    const fileName = item.name; 
+    const localPath = item.path.slice(0, -fileName.length - 1); 
     const [id, result] = await imageArtifactStore.createImageArtifact(
       fileName,
       localPath
