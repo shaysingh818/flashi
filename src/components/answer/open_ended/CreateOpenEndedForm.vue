@@ -1,24 +1,38 @@
 <template>
 
-  <div class="flex col-center w-75 gap-2">
+  <div class="flex flex-col gap-2">
     
-    <div class="flex p-4 w-100">
-      <FormTextField description="Type open ended answers" @update:text="text = $event; emitQuestionText()" />
-    </div>
+      <GnFormTextField
+          v-model="text"
+          @gn-update="emitQuestionText"
+          backgroundColor="var(--app-color-surface)" 
+          borderColor="transparent" 
+          :disabled="false" 
+          placeholder="Write something…" 
+          :rows="4"        
+          label="Enter question answer text"
+          textColor="var(--app-color-accent)" />
     
-    <div class="flex row-center gap-2 w-100" style="height: 35px;">
-      <FormInputField
-        placeholder="Add keyword for open ended answer"
-        @update:text="newKeyword = $event; emitKeywords()"
-      />
-      <font-awesome-icon icon="fa-solid fa-plus" style="color: #f97316" @click="addKeyword" />
-    </div>
+    <div class="flex flex-row items-end gap-2">
+        <GnFormInputField
+            class="flex-1"
+            v-model="newKeyword"
+            backgroundColor="var(--app-color-surface)" 
+            borderColor="transparent" 
+            :disabled="false" 
+            placeholder="Add answer keyword…" 
+            label="Add answer keyword"
+            textColor="var(--app-color-accent)" />
+        <GnIconButton label="Add tag" variant="primary" @gn-click="addKeyword">
+            <font-awesome-icon icon="fa-solid fa-plus" />
+        </GnIconButton>
+    </div> 
 
-    <div class="flex row-center align-left wrap gap-2 p-2">
-      <Tag
+    <div class="flex flex-row flex-wrap justify-center gap-2 p-4" style="min-height: 15px;">
+      <GnTag
         v-for="(item, index) in keywords"
         :key="index"
-        :title="item"
+        :label="item"
         height="10px"
       />
     </div>
@@ -28,9 +42,13 @@
 
 <script setup>
 import { ref } from "vue";
-import FormInputField from "../../../components/shared/forms/FormInputField.vue";
-import FormTextField from "../../../components/shared/forms/FormTextField.vue";
-import Tag from "../../../components/shared/Tag.vue";
+import {
+  GnFormTextField,
+  GnFormInputField,
+  GnIconButton,
+  GnTag
+} from "@graphyne/web-components"
+
 
 const text = ref(''); 
 const newKeyword = ref('');
@@ -40,6 +58,7 @@ const emit = defineEmits(['update:text', 'update:keywords']);
 function addKeyword() {
   keywords.value.push(newKeyword.value); 
   newKeyword.value = '';
+  emitKeywords();
 }
 
 function emitKeywords() {

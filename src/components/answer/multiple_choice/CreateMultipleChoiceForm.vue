@@ -1,19 +1,27 @@
 <template>
-  <div class="flex col-center gap-4">
+  <div class="flex flex-col gap-4">
 
-    <div class="flex w-75">
+    <div class="p-6">
       <SettingsToggle text="Allow random generation of multiple choice answers. This will add multiple choice items that come from other answers to other questions in the deck." />
     </div>
     
-    <div class="flex row-center gap-2 w-75" style="height: 40px">
-      <FormInputField
-        placeholder="Add multiple choice answer"
-        @update:text="newItem = $event"
-      />
-      <font-awesome-icon icon="fa-solid fa-plus" @click="addItem" />
-    </div>
 
-    <div class="flex col-center p-2 w-75">
+    <div class="flex flex-row items-end gap-2">
+        <GnFormInputField
+            class="flex-1"
+            v-model="newItem"
+            backgroundColor="var(--app-color-surface)" 
+            borderColor="transparent" 
+            :disabled="false" 
+            placeholder="Add multiple choice item" 
+            label="Add multiple choice item"
+            textColor="var(--app-color-accent)" />
+        <GnIconButton label="Add tag" variant="primary" @gn-click="addItem">
+            <font-awesome-icon icon="fa-solid fa-plus" />
+        </GnIconButton>
+    </div> 
+
+    <div class="flex flex-col p-2">
       <MultipleChoiceItem
         v-for="(item, index) in items"
         :key="index"
@@ -54,8 +62,3 @@ function removeItem(index) {
 
 </script>
 
-<style scoped>
-svg {
-  color: #f97316;
-}
-</style>

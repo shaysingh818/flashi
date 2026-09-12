@@ -11,48 +11,52 @@
         label="Enter question text"
         textColor="var(--app-color-accent)" />
 
-    
-      <GnFormDropDownField >
-          
-      </GnFormDropDownField>
-
-    <div class="flex centered-all w-75 oultine">
-        <FileUploadField
-            fieldLabel="Upload Images (Optional)"
-            :multiple="true"
-            @update:modelValue="onImagesSelected"
-        />
-    </div>
-    
-    <div class="flex centered-all w-75">
-      <DropDownFormField
-        title="choose option"
-        @update:title="selectedOption = $event;"
+    <GnFileUploadField
+        v-model="selectedPaths"
+        @gn-update="onImagesSelected"
+        :filePicker="selectImages"
+        label="Upload optional image associated with text"
+        accept="image/*" 
+        backgroundColor="var(--app-color-surface)" 
+        borderColor="var(--app-color-accent)" 
+        color="var(--app-color-accent)" 
+        :disabled="false" 
+        multiple 
+        textColor="var(--app-color-accent)" />
+        
+    <GnFormDropDownField 
+        v-model="selectedOption"
         :options="answerTypeNames"
-      />
-    </div>
-
+        label="Chose answer type" 
+        backgroundColor="var(--app-color-surface)" 
+        borderColor="var(--app-color-surface)"
+        textColor="var(--app-color-accent)"> 
+      </GnFormDropDownField>
+ 
     <CreateMultipleChoiceForm 
-      v-if="selectedOption == 'Multiple Choice'" 
+      v-if="selectedOption == 'multiple-choice'" 
       @update:items="multipleChoiceAnswers = $event"
     />
 
     <CreateOpenEndedForm 
-      v-if="selectedOption == 'Open Ended'" 
+      v-if="selectedOption == 'open-ended'" 
       @update:text="openEndedText = $event" 
       @update:keywords="openEndedKeywords = $event"
     />
 
     <CreateOrderedSequenceForm 
-      v-if="selectedOption == 'Ordered Sequence'"
+      v-if="selectedOption == 'ordered-sequence'"
       @update:sequence="orderedSequences = $event" 
     />
 
-    
     <br />
-    <div class="flex row-center gap-4" style="height: 35px">
-      <SecondaryButton @click="goBack" text="Discard" />
-      <PrimaryButton @click="submitQuestion" text="Submit" />
+    <div class="flex flex-row gap-4 justify-center" style="height: 35px">      
+      <GnButton :disabled="false" variant="secondary" @gn-click="goBack">
+          Discard
+      </GnButton>
+      <GnButton :disabled="false" variant="primary" @gn-click="submitQuestion">
+          Submit
+      </GnButton>
     </div>
   </div>
 </template>
@@ -61,7 +65,8 @@
 import { ref } from "vue";
 import { onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { message } from '@tauri-apps/plugin-dialog';
+import { convertFileSrc } from '@tauri-apps/api/core';
+import { message, open } from '@tauri-apps/plugin-dialog';
 import CreateMultipleChoiceForm from "../answer/multiple_choice/CreateMultipleChoiceForm.vue";
 import CreateOpenEndedForm from "../answer/open_ended/CreateOpenEndedForm.vue";
 import CreateOrderedSequenceForm from "../answer/ordered_sequence/CreateOrderedSequenceForm.vue";
@@ -110,18 +115,37 @@ const answerTypeNames = ref([]);
 
 onMounted(async () => {
   await answerTypeStore.loadAnswerTypes();
-  const names = answerTypeStore.answerTypes.map(item => item.name);
+  const names = answerTypeStore.answerTypes.map(item => ({
+    label: item.name,
+    value: item.name.toLowerCase().replace(/\s+/g, "-"),
+  }));
   answerTypeNames.value = names;
 })
 
-async function onImagesSelected(paths) {
-  selectedPaths.value = paths;
+
+async function selectImages() {
+  const result = await open({
+    multiple: true,
+    filters: [{ name: "Image Filter", extensions: ["png", "jpeg", "jpg", "webp"] }]
+  });
+
+  if (result === null) return [];
+
+  const paths = Array.isArray(result) ? result : [result];
+  return paths.map((path) => ({
+    name: path.split(/[\\/]/).pop() ?? path,
+    path,
+    previewUrl: convertFileSrc(path) // optional, for a thumbnail
+  }));
+}
+
+async function onImagesSelected() {
+  console.log(selectedPaths.value);
 }
 
 function fileName(path) {
   return path.split(/[\\/]/).pop();
 }
-
 
 function goBack(){
   router.go(-1); 
@@ -137,9 +161,9 @@ function retrieveAnswerTypeId(key) {
 
 async function submitQuestionImages(selectedImagePaths) {
   let imageArtifactIds = []; 
-  for (const item of selectedImagePaths) {
-    const fileName = item.split('/').pop(); 
-    const localPath = item.slice(0, -fileName.length - 1);
+  for (const item of selectedImagePaths) {    
+    const fileName = item.name; 
+    const localPath = item.path.slice(0, -fileName.length - 1); 
     const [id, result] = await imageArtifactStore.createImageArtifact(
       fileName,
       localPath
@@ -201,8 +225,8 @@ async function submitQuestion() {
   const deckId = props.deckId; 
   let questionInsertId = -1;
   let questionInsertResult = ""; 
-  
-  if (selectedOption.value === 'Multiple Choice') {    
+
+  if (selectedOption.value === 'multiple-choice') {    
     const answerTypeId = retrieveAnswerTypeId('Multiple Choice');
     const answerId = await submitMultipleChoice(multipleChoiceAnswers.value);     
     if (answerId !== -1) { 
@@ -229,7 +253,7 @@ async function submitQuestion() {
         { title: 'Recalli', kind: 'info' }
       );
     }
-  } else if (selectedOption.value === 'Open Ended') { 
+  } else if (selectedOption.value === 'open-ended') { 
     const answerTypeId = retrieveAnswerTypeId('Open Ended');
     const answerId = await submitOpenEnded(
       openEndedText.value,
@@ -261,7 +285,7 @@ async function submitQuestion() {
       );
     }
 
-  } else if (selectedOption.value === 'Ordered Sequence') { 
+  } else if (selectedOption.value === 'ordered-sequence') { 
     const answerTypeId = retrieveAnswerTypeId('Ordered Sequence');
     const answerId = await submitOrderedSequence(
       orderedSequences.value,

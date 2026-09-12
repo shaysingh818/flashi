@@ -2,7 +2,6 @@
 export { default as DropDownFormField } from './forms/DropDownFormField.vue';
 export { default as FormHeader } from './forms/FormHeader.vue';
 export { default as FormInputField } from './forms/FormInputField.vue';
-export { default as FileUploadField } from './forms/FileUploadField.vue'; 
 export { default as FormTextField } from './forms/FormTextField.vue';
 export { default as SearchComponent } from './forms/SearchComponent.vue';
 

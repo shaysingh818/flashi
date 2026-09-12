@@ -27,7 +27,6 @@
           @gn-search="search"
         />
     </div>
-    <br> </br>
     <QuestionTableView :deckId="deckId"/>
     <HoverButton icon="fa-solid fa-plus" @click="createQuestion" />
   </div>
