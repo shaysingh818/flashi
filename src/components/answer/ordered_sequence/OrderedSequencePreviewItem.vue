@@ -1,6 +1,6 @@
 <template>
-  <div v-if="props.visible === false" class="flex row-center gap-2 w-100" style="height: 35px;">
-    <p style="color: #f97316;">{{ index }}. </p>
+  <div v-if="props.visible === false" class="flex row-center gap-2">
+    <p style="color: var(--app-color-accent);">{{ index }}. </p>
     <FormInputField 
       :text="text" 
       :placeholder="text" 
@@ -8,19 +8,31 @@
     />
   </div>
 
-  <div v-if="props.visible === true" class="flex row-center gap-4 w-100">
+  <div v-if="props.visible === true" class="flex row-center gap-">
 
-    <div class="flex row-center gap-2 w-90" style="height: 35px;">
-      <p style="color: #f97316;">{{ index }}. </p>
-      <FormInputField 
-        :text="text" 
-        :placeholder="text" 
-        @update:text="newItem = $event; emitText()"
-      />
+    <div class="flex flex-row items-center gap-2 w-full">
+        <p style="color: var(--app-color-accent)">{{ index }}. </p>
+        <GnFormInputField
+            class="flex-1"
+            @update:model-value="newItem = $event; emitText()"
+            :model-value="text"
+            backgroundColor="var(--app-color-surface)" 
+            borderColor="transparent" 
+            :disabled="false" 
+            :placeholder="text" 
+            textColor="var(--app-color-accent)" />
     </div>
 
-    <div class="flex row-center fw-10" style="height: 35px;">
-      <font-awesome-icon icon="fa-solid fa-x" style="color: #f97316"  @click="deleteSequence" />
+    <div class="flex">
+        <GnIconButton
+            label="Remove step"
+            variant="ghost"
+            size="sm"
+            color="var(--app-color-accent)"
+            @gn-click="deleteSequence"
+            >
+                <font-awesome-icon icon="fa-solid fa-x" />
+        </GnIconButton>
     </div>
 
   </div>

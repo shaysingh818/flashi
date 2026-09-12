@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col gap-4 p-2">
+  <div class="flex flex-col gap-4 p-6 w-full">
 
     <div v-if="props.visible === true" class="flex flex-row gap-2">
 
@@ -12,7 +12,7 @@
           placeholder="Add item for ordered sequence answer" 
           textColor="var(--app-color-accent)" />
           
-        <GnIconButton label="Add tag" variant="primary" @gn-click="addSequence">
+        <GnIconButton label="Add tag" variant="ghost" size="sm" @gn-click="addSequence">
             <font-awesome-icon icon="fa-solid fa-plus" />
         </GnIconButton>
  

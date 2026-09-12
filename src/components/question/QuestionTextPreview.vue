@@ -1,5 +1,5 @@
 <template>
-  <div class="flex centered-all w-85 question-box p-2">
+  <div class="flex justify-center question-box p-2 w-full">
     <p class="flex col items-left p-4" v-html="renderedText"> </p>
   </div>
 
@@ -37,10 +37,9 @@ const renderedText = computed(() => marked(props.text))
 <style scoped>
 
 .question-box {
-  background-color: rgb(28 25 23);
+  background-color: var(--app-color-surface);
   margin: 20px;
   border-radius: 10px;
-  height: 75%;
 }
 
 

@@ -25,23 +25,23 @@
       />
     </div>
 
-    
-     <!-- <div class="flex col-center w-100">
-        <div class="flex row-center w-75">
-            <ul v-if="imageArtifacts.length" class="selected-files">
-                <li v-for="item in imageArtifacts" :key="item" class="file-row">
-                    <img :src="item.image_path" alt="" width="40" height="40" class="file-thumb">
-                    <span class="file-name">Test</span>
-                    <button type="button" class="file-remove" @click="removePath(item)">✕</button>
-                </li>
-            </ul>
-        </div>
-    </div>  -->
+    <div class="p-6">
+        <GnFileUploadField
+            v-model="imageArtifacts"
+            @gn-update="onImagesSelected"
+            @gn-remove="onImageRemoved"
+            :filePicker="selectImages"
+            label="Upload optional image associated with text"
+            accept="image/*" 
+            backgroundColor="var(--app-color-surface)" 
+            borderColor="var(--app-color-accent)" 
+            color="var(--app-color-accent)" 
+            :disabled="false" 
+            multiple 
+            textColor="var(--app-color-accent)" />
+    </div>
 
-    <br/>
-    
-
-    <div class="flex items-center justify-center">
+    <div class="flex items-center justify-center p-4">
       
       <OrderedSequencePreview 
         v-if="answerType === 'Ordered Sequence'" 
@@ -84,11 +84,11 @@
     :questionText="question.raw"
     :closeFormHandler="showDropdown"
   />
-
-  
 </template>
 
 <script setup>
+import { convertFileSrc } from '@tauri-apps/api/core';
+import { open } from "@tauri-apps/plugin-dialog";
 import { readFile, BaseDirectory } from '@tauri-apps/plugin-fs';
 import { onMounted, ref, toRaw, watch, reactive, onBeforeUnmount } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -114,7 +114,8 @@ const route = useRoute();
 const router = useRouter();
 const questionId = route.params.id;
 const question = ref(null); 
-const imageArtifacts = ref([]); 
+const imageArtifacts = ref([]);
+const knownImagePaths = ref(new Set()); 
 const imageUrls = reactive({}); 
 const deck = ref(null); 
 const answerType = ref('');
@@ -192,6 +193,69 @@ async function loadThumbnail(item) {
   }
 }
 
+async function selectImages() {
+  const result = await open({
+    multiple: true,
+    filters: [{ name: "Image Filter", extensions: ["png", "jpeg", "jpg", "webp"] }]
+  });
+
+  if (result === null) return [];
+
+  const paths = Array.isArray(result) ? result : [result];
+  return paths.map((path) => ({
+    name: path.split(/[\\/]/).pop() ?? path,
+    path,
+    previewUrl: convertFileSrc(path) // optional, for a thumbnail
+  }));
+}
+
+
+
+async function onImagesSelected(items) {
+  
+  const imageIds = []; 
+  const newItems = items.filter((item) => !knownImagePaths.value.has(item.path));
+  if (newItems.length === 0) return;
+
+  for (const item of newItems) {
+    const fileName = item.name; 
+    const localPath = item.path.slice(0, -fileName.length - 1); 
+    const [id, result] = await imageArtifactStore.createImageArtifact(
+      fileName,
+      localPath
+    );
+
+    if (id !== -1) {
+      imageIds.push(id);
+      knownImagePaths.value.add(item.path); 
+    } else {
+      console.error("Error uploading image: ", item); 
+    }
+  }
+
+  for (const item of imageIds) {
+    const result = await questionStore.addImageArtifactToQuestion(questionId.toString(), item.toString());
+    if (result !== "Success") {
+      await message(
+        'Could not associated one or more images with question',
+        { title: 'Recalli', kind: 'info' }
+      );
+    }
+  }
+
+}
+
+async function onImageRemoved(item) {
+  await imageArtifactStore.deleteImageArtifact(question.value.id, item.path);
+  knownImagePaths.value.delete(item.path);
+
+  const url = imageUrls[item.path];
+  if (url) {
+    URL.revokeObjectURL(url);
+    delete imageUrls[item.path];
+  }
+}
+
 function fileName(item) {
   return item.split('/').pop(); // or however you want to derive display name
 }
@@ -204,11 +268,19 @@ async function loadData(id) {
   deck.value = await deckStore.viewDeck(`${question.value.deck_id}`); 
 
   await imageArtifactStore.loadImageArtifacts(`${id}`); 
-  imageArtifacts.value = imageArtifactStore.images;
-  for (const item of imageArtifacts.value) {
-    const newUrl = await loadThumbnail(item.image_path);
-    item.image_path = newUrl;
-  }
+
+  const mapped = [];
+   for (const item of imageArtifactStore.images) {
+     const previewUrl = await loadThumbnail(item.image_path);
+     if (previewUrl) imageUrls[item.image_path] = previewUrl;
+     mapped.push({
+       name: fileName(item.image_path),
+       path: item.image_path,
+       previewUrl
+     });
+   }
+   imageArtifacts.value = mapped;
+   knownImagePaths.value = new Set(mapped.map((item) => item.path));
 
   console.log("IMAGES: ", imageArtifacts.value); 
  
@@ -330,7 +402,7 @@ watch(() => route.params.id, (newId) => {
 // );
 
 onBeforeUnmount(() => {
-  Object.values(imageUrls).forEach((url) => URL.revokeObjectURL(url));
+  for (const url of Object.values(imageUrls)) URL.revokeObjectURL(url);
 });
 
 </script>
