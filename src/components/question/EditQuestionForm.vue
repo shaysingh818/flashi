@@ -1,24 +1,27 @@
 <template>
-  <div
-    style="background-color: rgb(28 25 23)"
-    class="flex col-center gap-4 p-4 w-75 centered-overlay  rounded-2">
+  <div class="gn-edit-question-overlay">
 
-    <h1 style="font-weight: bold;"> Edit Question Text </h1>
-    
-    <div class="flex w-75" style="height: 250px">
-      <FormTextField 
-        :text="props.questionText" 
-        :description="props.questionText" 
-        backgroundColor="rgb(41 37 36)"
-        @update:text="newText = $event;"
-      />
-    </div>
-    
-    <br />
-    <div class="flex row-center gap-4" style="height: 35px">
-      <SecondaryButton @click="props.closeFormHandler" text="Discard" />
-      <PrimaryButton @click="submitQuestionText" text="Submit" />
-    </div>
+      <div class="gn-edit-question-box" @click.stop> 
+          <h1 class="gn-edit-question-box__title"> Edit Question Text </h1>
+
+          <div class="w-full"> 
+              <GnFormTextField
+                @update:model-value="newText = $event"
+                :model-value="props.questionText"
+                backgroundColor="var(--app-color-surface)" 
+                borderColor="transparent" 
+                :disabled="false" 
+                :rows="4"        
+                label="Edit question text"
+                textColor="var(--app-color-accent)" />
+          </div>
+              
+        <div class="flex flex-row gap-4">
+            <GnButton variant="secondary" @gn-click="props.closeFormHandler">Discard</GnButton>
+            <GnButton variant="primary" @gn-click="submitQuestionText">Submit</GnButton>
+        </div>
+      </div>
+ 
   </div>
 </template>
 
@@ -56,6 +59,7 @@ function goBack(){
 
 
 async function submitQuestionText() {
+  console.log("QUESTION ID PROP: ", props.questionId); 
   const currQuestion = await questionStore.viewQuestion(props.questionId);
   const result = await questionStore.editQuestion(
     props.questionId,
@@ -75,8 +79,32 @@ async function submitQuestionText() {
 
 <style scoped>
 
-.edit-form {
-  background-color: black;
+.gn-edit-question-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  flex-direction: column;
 }
 
+.gn-edit-question-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.0rem;
+  width: min(90%, 50rem);
+  padding: 1.25rem;
+  background-color: var(--app-color-background);
+  border-radius: 0.5rem;
+  box-sizing: border-box;
+}
+
+.gn-edit-question-box__title {
+  font-weight: bold;
+  color: #ffffff;
+  margin: 0;
+}
 </style>

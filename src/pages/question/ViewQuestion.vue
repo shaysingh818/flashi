@@ -12,7 +12,7 @@
         @gn-back="goBack">
         <font-awesome-icon icon="fa-solid fa-arrow-left" /> 
         <template #actions>
-          <GnIconButton label="Edit" variant="ghost" size="md">
+          <GnIconButton label="Edit" variant="ghost" size="md" @gn-click="showDropdown">
                <font-awesome-icon icon="fa-solid fa-pen-to-square" />  
           </GnIconButton>
         </template>
@@ -80,7 +80,7 @@
 
   <EditQuestionForm 
     v-if="isDropdownOpen"
-    :questionId="`${ question.id }`"
+    :questionId="question.id.toString()"
     :questionText="question.raw"
     :closeFormHandler="showDropdown"
   />
@@ -137,6 +137,7 @@ const updatedMultipleChoiceAnswers = ref([]);
 /* edit toggles */ 
 const editQuestionOpen = ref(false); 
 const isDropdownOpen = ref(false);
+const imageIdMap = ref({}); 
 
 
 async function nextQuestion() {
@@ -178,7 +179,7 @@ function appendChoice() {
 function showDropdown() {
   isDropdownOpen.value = !isDropdownOpen.value;
   if (!isDropdownOpen.value) {
-    loadData(); 
+    loadData(question.value.id); 
   }
 }
 
@@ -244,7 +245,15 @@ async function onImagesSelected(items) {
 }
 
 async function onImageRemoved(item) {
-  await imageArtifactStore.deleteImageArtifact(question.value.id, item.path);
+  const imageId = imageIdMap.value[item.path]; 
+  console.log("IMAGE ID TO REMOVE: ", imageId);
+
+  const deleteQuestionImageResult = await questionStore.removeImageArtifactFromQuestion(question.value.id.toString(), imageId.toString());
+  console.log("DELETE QUESTION IMAGE RESULT: ", deleteQuestionImageResult); 
+  
+  const deleteImageResult = await imageArtifactStore.deleteImageArtifact(imageId.toString(), item.path);
+  console.log("DELETE IMAGE RESULT: ", deleteImageResult); 
+  
   knownImagePaths.value.delete(item.path);
 
   const url = imageUrls[item.path];
@@ -276,11 +285,10 @@ async function loadData(id) {
        path: item.image_path,
        previewUrl
      });
+     imageIdMap.value[fileName(item.image_path)] = item.id;
    }
    imageArtifacts.value = mapped;
    knownImagePaths.value = new Set(mapped.map((item) => item.path));
-
-  console.log("IMAGES: ", imageArtifacts.value); 
  
   if (answerType.value === 'Ordered Sequence') {
     const answer = await orderedSequenceStore.viewOrderedSequenceAnswer(
@@ -321,17 +329,23 @@ async function editAnswer() {
 
   if (answerType.value === 'Ordered Sequence') {
 
-    const preservedAnswerOrder = [];
-    for (const [index, item] of updatedOrderedSequences.value.entries()) {
-      preservedAnswerOrder.push(item);
+
+    if (updatedOrderedSequences.value.length > 0) { 
+      const preservedAnswerOrder = [];
+      for (const [index, item] of updatedOrderedSequences.value.entries()) {
+        preservedAnswerOrder.push(item);
+      }
+  
+      const editResult = await orderedSequenceStore.editOrderedSequenceAnswer(
+        `${question.value.answer_id}`,
+        preservedAnswerOrder,
+        '',
+      );
+      loadData(question.value.id);
+    } else { 
+      console.log("No updates made to ordered sequences"); 
     }
 
-    const editResult = await orderedSequenceStore.editOrderedSequenceAnswer(
-      `${question.value.answer_id}`,
-      preservedAnswerOrder,
-      '',
-    );
-    loadData(question.value.id);
   }
 
   if (answerType.value === 'Multiple Choice') {
@@ -374,6 +388,10 @@ async function editAnswer() {
 
   }
 
+}
+
+function goBack() {
+  router.go(-1);
 }
 
 onMounted(() => loadData(route.params.id)); 

@@ -1,6 +1,6 @@
 <template>
 
-  <div class="flex row-center gap-2 w-100">
+  <div class="flex flex-row gap-2 w-full">
       
       <div class="fw-10">
         <label for="item" v-if="props.visible === true">
@@ -14,22 +14,23 @@
         </label>
       </div>
 
-      <div v-if="props.visible === true" class="flex row-center fw-75 gap-2" style="height: 35px;">
-        <FormInputField 
-          :text="text" 
-          :placeholder="text" 
-          @update:text="newText = $event; emitText()"
-        />
-        <font-awesome-icon 
-          icon="fa-solid fa-x" 
-          style="color: #f97316"
-          @click="deleteMultipleChoiceItem" 
-        />
+      <div v-if="props.visible === true" class="flex row-center w-full gap-2">
+        <GnFormInputField
+            class="flex-1"
+            @update:model-value="newText = $event; emitText()"
+            :model-value="text"
+            backgroundColor="var(--app-color-surface)" 
+            borderColor="transparent" 
+            :disabled="false" 
+            textColor="var(--app-color-accent)" />
+        <GnIconButton label="Add tag" variant="ghost" @gn-click="deleteMultipleChoiceItem">
+            <font-awesome-icon icon="fa-solid fa-x" />
+        </GnIconButton>
       </div>
   </div>
 
   
-<div v-if="props.visible === false" class="flex row-center w-85"> 
+<div v-if="props.visible === false" class="flex flex-row w-full"> 
    <label for="item">
      <input 
        type="checkbox" 
