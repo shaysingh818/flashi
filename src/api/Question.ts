@@ -113,11 +113,11 @@ export const imageArtifactStore = reactive({
     return await invoke("edit_image_artifact", { id, imageFileName, appImagePath, userLocalImagePath, dbPath });  
   },
 
-  async deleteImageArtifact(id: string, userLocalImagePath: string): Promise<string> {    
+  async deleteImageArtifact(id: string, imageFileName: string): Promise<string> {    
     const dbPath = await this.getDbPath();       
     const dataDirPath = await dataDir(); 
     const appImagePath = `${dataDirPath}/flashi/images`; 
-    return await invoke("delete_image_artifact", { dbPath, id, appImagePath, userLocalImagePath });  
+    return await invoke("delete_image_artifact", { dbPath, id, appImagePath, imageFileName });  
   },
  
 })

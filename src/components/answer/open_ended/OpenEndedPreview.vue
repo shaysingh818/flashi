@@ -1,38 +1,38 @@
 <template>
 
-<div class="flex col-center w-100">
-  <div class="flex w-85 p-4" style="height: 100px;">
-    
-   <FormTextField   
-    v-if="props.visible === true"
-    :description="props.placeholderText"
-    :text="props.placeholderText"
-    @update:text="newText = $event; emitQuestionText()"
-    />
+<div class="flex flex-col gap-4 p-6 w-full">
+  
+  <GnFormTextField
+      v-if="props.visible === true"
+      :model-value="props.placeholderText"
+      @update:model-value="newText = $event; emitQuestionText()"
+      @gn-update="emitQuestionText"
+      backgroundColor="var(--app-color-surface)" 
+      borderColor="transparent" 
+      :disabled="false" 
+      :rows="4"        
+      textColor="var(--app-color-accent)" />
 
-    <FormTextField   
-     v-if="visible === false"
-     description="Enter your answer"
-     @update:text="newText = $event; emitQuestionText()"
-    />
-    
+  <div v-if="visible === true" class="flex flex-row gap-2">
+    <GnFormInputField
+        class="flex-1"
+        @update:model-value="newKeyword = $event; emitText()"
+        backgroundColor="var(--app-color-surface)" 
+        borderColor="transparent"
+        placeholder="Add more keywords for open ended answer, you can delete keywords by double clicking on them."
+        :disabled="false" 
+        textColor="var(--app-color-accent)" />
+    <GnIconButton label="Add tag" variant="ghost" @gn-click="addKeyword">
+        <font-awesome-icon icon="fa-solid fa-plus" />
+    </GnIconButton>
   </div>
 
-  <div v-if="visible === true" class="flex row-center gap-2 w-85" style="height: 35px;">
-    <FormInputField
-      placeholder="Add more keywords for open ended answer, you can delete keywords by double clicking on them."
-      @update:text="newKeyword = $event; emitKeywords()"
-    />
-    <font-awesome-icon icon="fa-solid fa-plus" style="color: #f97316" @click="addKeyword" />
-  </div>
-
-  <div class="flex row-center align-left wrap gap-2 p-4 w-85"> 
+  <div class="flex flex-row flex-wrap justify-center gap-2 p-4"> 
     <GnTag
         v-if="visible === true"
         v-for="(item, index) in keywords"
         :key="index"
         :label="item"
-        height="10px"
         @gn-dblclick="removeKeyword(index)"
     />
   </div>

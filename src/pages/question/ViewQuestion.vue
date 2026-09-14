@@ -12,7 +12,7 @@
         @gn-back="goBack">
         <font-awesome-icon icon="fa-solid fa-arrow-left" /> 
         <template #actions>
-          <GnIconButton label="Edit" variant="ghost" size="md">
+          <GnIconButton label="Edit" variant="ghost" size="md" @gn-click="showDropdown">
                <font-awesome-icon icon="fa-solid fa-pen-to-square" />  
           </GnIconButton>
         </template>
@@ -25,23 +25,23 @@
       />
     </div>
 
-    
-     <!-- <div class="flex col-center w-100">
-        <div class="flex row-center w-75">
-            <ul v-if="imageArtifacts.length" class="selected-files">
-                <li v-for="item in imageArtifacts" :key="item" class="file-row">
-                    <img :src="item.image_path" alt="" width="40" height="40" class="file-thumb">
-                    <span class="file-name">Test</span>
-                    <button type="button" class="file-remove" @click="removePath(item)">✕</button>
-                </li>
-            </ul>
-        </div>
-    </div>  -->
+    <div class="p-6">
+        <GnFileUploadField
+            v-model="imageArtifacts"
+            @gn-update="onImagesSelected"
+            @gn-remove="onImageRemoved"
+            :filePicker="selectImages"
+            label="Upload optional image associated with text"
+            accept="image/*" 
+            backgroundColor="var(--app-color-surface)" 
+            borderColor="var(--app-color-accent)" 
+            color="var(--app-color-accent)" 
+            :disabled="false" 
+            multiple 
+            textColor="var(--app-color-accent)" />
+    </div>
 
-    <br/>
-    
-
-    <div class="flex items-center justify-center">
+    <div class="flex items-center justify-center p-4">
       
       <OrderedSequencePreview 
         v-if="answerType === 'Ordered Sequence'" 
@@ -80,15 +80,15 @@
 
   <EditQuestionForm 
     v-if="isDropdownOpen"
-    :questionId="`${ question.id }`"
+    :questionId="question.id.toString()"
     :questionText="question.raw"
     :closeFormHandler="showDropdown"
   />
-
-  
 </template>
 
 <script setup>
+import { convertFileSrc } from '@tauri-apps/api/core';
+import { open } from "@tauri-apps/plugin-dialog";
 import { readFile, BaseDirectory } from '@tauri-apps/plugin-fs';
 import { onMounted, ref, toRaw, watch, reactive, onBeforeUnmount } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -114,7 +114,8 @@ const route = useRoute();
 const router = useRouter();
 const questionId = route.params.id;
 const question = ref(null); 
-const imageArtifacts = ref([]); 
+const imageArtifacts = ref([]);
+const knownImagePaths = ref(new Set()); 
 const imageUrls = reactive({}); 
 const deck = ref(null); 
 const answerType = ref('');
@@ -136,6 +137,7 @@ const updatedMultipleChoiceAnswers = ref([]);
 /* edit toggles */ 
 const editQuestionOpen = ref(false); 
 const isDropdownOpen = ref(false);
+const imageIdMap = ref({}); 
 
 
 async function nextQuestion() {
@@ -177,7 +179,7 @@ function appendChoice() {
 function showDropdown() {
   isDropdownOpen.value = !isDropdownOpen.value;
   if (!isDropdownOpen.value) {
-    loadData(); 
+    loadData(question.value.id); 
   }
 }
 
@@ -189,6 +191,75 @@ async function loadThumbnail(item) {
     return URL.createObjectURL(new Blob([fileBuffer]));
   } catch (err) {
     console.log(`Failed to load thumbnail for ${item}`, err);
+  }
+}
+
+async function selectImages() {
+  const result = await open({
+    multiple: true,
+    filters: [{ name: "Image Filter", extensions: ["png", "jpeg", "jpg", "webp"] }]
+  });
+
+  if (result === null) return [];
+
+  const paths = Array.isArray(result) ? result : [result];
+  return paths.map((path) => ({
+    name: path.split(/[\\/]/).pop() ?? path,
+    path,
+    previewUrl: convertFileSrc(path) // optional, for a thumbnail
+  }));
+}
+
+async function onImagesSelected(items) {
+  
+  const imageIds = []; 
+  const newItems = items.filter((item) => !knownImagePaths.value.has(item.path));
+  if (newItems.length === 0) return;
+
+  for (const item of newItems) {
+    const fileName = item.name; 
+    const localPath = item.path.slice(0, -fileName.length - 1); 
+    const [id, result] = await imageArtifactStore.createImageArtifact(
+      fileName,
+      localPath
+    );
+
+    if (id !== -1) {
+      imageIds.push(id);
+      knownImagePaths.value.add(item.path); 
+    } else {
+      console.error("Error uploading image: ", item); 
+    }
+  }
+
+  for (const item of imageIds) {
+    const result = await questionStore.addImageArtifactToQuestion(questionId.toString(), item.toString());
+    if (result !== "Success") {
+      await message(
+        'Could not associated one or more images with question',
+        { title: 'Recalli', kind: 'info' }
+      );
+    }
+  }
+
+}
+
+async function onImageRemoved(item) {
+  const imageId = imageIdMap.value[item.path]; 
+  console.log("IMAGE ID TO REMOVE: ", imageId);
+
+  const deleteQuestionImageResult = await questionStore.removeImageArtifactFromQuestion(question.value.id.toString(), imageId.toString());
+  console.log("DELETE QUESTION IMAGE RESULT: ", deleteQuestionImageResult); 
+  
+  const deleteImageResult = await imageArtifactStore.deleteImageArtifact(imageId.toString(), item.path);
+  console.log("DELETE IMAGE RESULT: ", deleteImageResult); 
+  
+  knownImagePaths.value.delete(item.path);
+
+  const url = imageUrls[item.path];
+  if (url) {
+    URL.revokeObjectURL(url);
+    delete imageUrls[item.path];
   }
 }
 
@@ -204,13 +275,20 @@ async function loadData(id) {
   deck.value = await deckStore.viewDeck(`${question.value.deck_id}`); 
 
   await imageArtifactStore.loadImageArtifacts(`${id}`); 
-  imageArtifacts.value = imageArtifactStore.images;
-  for (const item of imageArtifacts.value) {
-    const newUrl = await loadThumbnail(item.image_path);
-    item.image_path = newUrl;
-  }
 
-  console.log("IMAGES: ", imageArtifacts.value); 
+  const mapped = [];
+   for (const item of imageArtifactStore.images) {
+     const previewUrl = await loadThumbnail(item.image_path);
+     if (previewUrl) imageUrls[item.image_path] = previewUrl;
+     mapped.push({
+       name: fileName(item.image_path),
+       path: item.image_path,
+       previewUrl
+     });
+     imageIdMap.value[fileName(item.image_path)] = item.id;
+   }
+   imageArtifacts.value = mapped;
+   knownImagePaths.value = new Set(mapped.map((item) => item.path));
  
   if (answerType.value === 'Ordered Sequence') {
     const answer = await orderedSequenceStore.viewOrderedSequenceAnswer(
@@ -251,17 +329,23 @@ async function editAnswer() {
 
   if (answerType.value === 'Ordered Sequence') {
 
-    const preservedAnswerOrder = [];
-    for (const [index, item] of updatedOrderedSequences.value.entries()) {
-      preservedAnswerOrder.push(item);
+
+    if (updatedOrderedSequences.value.length > 0) { 
+      const preservedAnswerOrder = [];
+      for (const [index, item] of updatedOrderedSequences.value.entries()) {
+        preservedAnswerOrder.push(item);
+      }
+  
+      const editResult = await orderedSequenceStore.editOrderedSequenceAnswer(
+        `${question.value.answer_id}`,
+        preservedAnswerOrder,
+        '',
+      );
+      loadData(question.value.id);
+    } else { 
+      console.log("No updates made to ordered sequences"); 
     }
 
-    const editResult = await orderedSequenceStore.editOrderedSequenceAnswer(
-      `${question.value.answer_id}`,
-      preservedAnswerOrder,
-      '',
-    );
-    loadData(question.value.id);
   }
 
   if (answerType.value === 'Multiple Choice') {
@@ -306,35 +390,21 @@ async function editAnswer() {
 
 }
 
+function goBack() {
+  router.go(-1);
+}
+
 onMounted(() => loadData(route.params.id)); 
 
 watch(() => route.params.id, (newId) => {
   if (newId) loadData(newId);
 });
 
-// watch(
-  
-//   imageArtifacts,
-//   (newList, oldList = []) => {
-//     for (const item of newList) {
-//       if (!imageUrls[item]) loadThumbnail(item);
-//     }
-//     for (const item of oldList) {
-//       if (!newList.includes(item) && imageUrls[item]) {
-//         URL.revokeObjectURL(imageUrls[item]);
-//         delete imageUrls[item];
-//       }
-//     }
-//   },
-//   { immediate: true }
-// );
-
 onBeforeUnmount(() => {
-  Object.values(imageUrls).forEach((url) => URL.revokeObjectURL(url));
+  for (const url of Object.values(imageUrls)) URL.revokeObjectURL(url);
 });
 
 </script>
-
 
 <style scoped>
 

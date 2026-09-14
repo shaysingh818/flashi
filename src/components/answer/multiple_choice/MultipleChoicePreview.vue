@@ -1,17 +1,18 @@
 <template>
-  <div class="flex col-center w-100 gap-2 p-2">
+  <div class="flex flex-col gap-4 w-full p-6">
 
-    <div v-if="visible === true" class="flex row-center gap-2 w-85" style="height: 35px;">
-      <FormInputField
-        placeholder="Add more multiple choice items."
-        @update:text="newItem = $event"
-      />
-
-      <font-awesome-icon 
-        icon="fa-solid fa-plus" 
-        style="color: #f97316" 
-        @click="addMultipleChoice" 
-      />
+    <div v-if="visible === true" class="flex flex-row items-end gap-2" style="height: 35px;">
+      <GnFormInputField
+          class="flex-1"
+          v-model="newItem"
+          backgroundColor="var(--app-color-surface)" 
+          borderColor="transparent" 
+          :disabled="false" 
+          placeholder="Add multiple choice item" 
+          textColor="var(--app-color-accent)" />
+      <GnIconButton label="Add tag" variant="ghost" size="sm" @gn-click="addMultipleChoice">
+          <font-awesome-icon icon="fa-solid fa-plus" />
+      </GnIconButton>
     </div>
 
     <MultipleChoicePreviewItem
@@ -24,8 +25,7 @@
       :isSelected="item.is_correct"
       @update:text="newItem = $event; updateAnswer(index)"
       @update:selected="selectedItem = $event; updateAnswer(index)"
-      @update:delete="deleteIndex = $event; deleteAnswer()"
-    />
+      @update:delete="deleteIndex = $event; deleteAnswer()" />
     
     <MultipleChoicePreviewItem
       v-if="props.visible === false"
@@ -35,8 +35,7 @@
       :index="index"
       :text="item.answer"
       :isSelected="selectedItems.some(s => s.id === item.id)"
-      @update:selected="selectedItem = $event; selectAnswer(index)"
-    />
+      @update:selected="selectedItem = $event; selectAnswer(index)" />
   </div> 
 
 </template>

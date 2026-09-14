@@ -33,7 +33,6 @@
         v-for="(item, index) in keywords"
         :key="index"
         :label="item"
-        height="10px"        
         @gn-dblclick="removeKeyword(index)"
       />
     </div>

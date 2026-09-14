@@ -57,6 +57,10 @@ function search() {
   console.log("search")
 }
 
+function goBack() {
+  router.go(-1);
+}
+
 onMounted(async () => {
   deck.value = await deckStore.viewDeck(`${deckId}`);
   console.log(deck.value);  
