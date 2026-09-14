@@ -12,7 +12,6 @@ import EditDeck from "./pages/deck/EditDeck.vue";
 import DeckDetail from "./pages/deck/DeckDetail.vue";
 import CreateQuestion from "./pages/question/CreateQuestion.vue";
 import ViewQuestion from "./pages/question/ViewQuestion.vue";
-import EditQuestion from "./pages/question/EditQuestion.vue";
 import SessionDetail from "./pages/session/SessionDetail.vue";
 import SessionQuestionDetail from "./pages/session/SessionQuestionDetail.vue";
 import CreateSession from "./pages/session/CreateSession.vue";
@@ -38,7 +37,6 @@ const routes: Array<RouteRecordRaw> = [
   // questions
   { path: "/question/create/:id", component: CreateQuestion },
   { path: "/question/view/:id", component: ViewQuestion },
-  { path: "/question/edit/:id", component: EditQuestion },
 
   // sessions
   { path: "/sessions", component: SessionsPage },

@@ -50,8 +50,8 @@ const props = defineProps({
   }
 });
 
-const router = useRouter(); 
-const newText = ref(''); 
+const router = useRouter();
+const newText = ref(props.questionText);
 
 function goBack(){
   router.go(-1); 
@@ -59,7 +59,6 @@ function goBack(){
 
 
 async function submitQuestionText() {
-  console.log("QUESTION ID PROP: ", props.questionId); 
   const currQuestion = await questionStore.viewQuestion(props.questionId);
   const result = await questionStore.editQuestion(
     props.questionId,
