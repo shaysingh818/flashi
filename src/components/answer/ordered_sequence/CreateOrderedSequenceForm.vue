@@ -12,7 +12,7 @@
             placeholder="Add ordered sequence item" 
             label="Add ordered sequence item"
             textColor="var(--app-color-accent)" />
-        <GnIconButton label="Add tag" variant="primary" @gn-click="addSequence">
+        <GnIconButton label="Add tag" variant="ghost" size="sm" @gn-click="addSequence">
             <font-awesome-icon icon="fa-solid fa-plus" />
         </GnIconButton>
     </div> 

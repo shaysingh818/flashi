@@ -1,23 +1,35 @@
 <template>
-  <div class="flex col-center gap-4 w-100">
-    <div class="flex w-75" style="height: 40px;">
-      <FormInputField 
-        placeholder="Name your session" 
-        @update:text="name = $event"
-      />
+  <div class="flex flex-col p-6 gap-4">
+
+    <GnFormInputField 
+        v-model="name"
+        backgroundColor="var(--app-color-surface)" 
+        borderColor="transparent" 
+        :disabled="false" 
+        placeholder="Session Name" 
+        textColor="var(--app-color-accent)" 
+        label="Enter  session name"
+        type="text" />
+
+    <GnFormTextField
+        v-model="description"
+        backgroundColor="var(--app-color-surface)" 
+        borderColor="transparent" 
+        :disabled="false" 
+        placeholder="Write something…" 
+        :rows="4"        
+        label="Enter session description"
+        textColor="var(--app-color-accent)" />
+
+    <div class="flex flex-row gap-4 items-center justify-center">
+        <GnButton :disabled="false" variant="secondary" @gn-click="goBack">
+            Discard
+        </GnButton>
+        <GnButton :disabled="false" variant="primary" @gn-click="submitSession">
+            Submit
+        </GnButton>
     </div>
 
-    <div class="flex w-75" style="height: 60px;">
-      <FormTextField 
-        description="Enter description for session"
-        @update:text="description = $event"
-      />
-    </div>
-
-    <div class="flex row-center w-75 gap-4" style="height: 40px;">
-      <SecondaryButton @click="goBack" text="Discard" />
-      <PrimaryButton @click="submitSession" text="Submit" />
-    </div>
   </div>
 </template>
 
@@ -26,10 +38,6 @@ import { ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { message } from '@tauri-apps/plugin-dialog';
 import { sessionStore } from "../../api";
-import FormInputField from "../../components/shared/forms/FormInputField.vue";
-import FormTextField from "../../components/shared/forms/FormTextField.vue";
-import PrimaryButton from "../../components/shared/buttons/PrimaryButton.vue";
-import SecondaryButton from "../../components/shared/buttons/SecondaryButton.vue";
 
 const router = useRouter(); 
 const name = ref(''); 

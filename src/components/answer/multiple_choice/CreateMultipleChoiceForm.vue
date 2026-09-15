@@ -16,7 +16,7 @@
             placeholder="Add multiple choice item" 
             label="Add multiple choice item"
             textColor="var(--app-color-accent)" />
-        <GnIconButton label="Add tag" variant="primary" @gn-click="addItem">
+        <GnIconButton label="Add tag" variant="ghost" size="sm" @gn-click="addItem">
             <font-awesome-icon icon="fa-solid fa-plus" />
         </GnIconButton>
     </div> 

@@ -1,5 +1,5 @@
 <template>
- <div class="flex col-center w-100 g-1">
+ <div class="flex flex-col g-1">
    <br>
     <FormHeader
       header="Create a study session"
@@ -9,12 +9,7 @@
     />
     <br />
 
-    <CreateSessionForm
-      sessionNameText="Session name"
-      sessionDescriptionText="Enter description of session"
-      submitText="Submit"
-      :submitHandler="submitSession"
-    />
+    <CreateSessionForm />
   </div>
 </template>
 

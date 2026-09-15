@@ -23,7 +23,7 @@
             placeholder="Add answer keyword…" 
             label="Add answer keyword"
             textColor="var(--app-color-accent)" />
-        <GnIconButton label="Add tag" variant="primary" @gn-click="addKeyword">
+        <GnIconButton label="Add tag" variant="ghost" size="sm" @gn-click="addKeyword">
             <font-awesome-icon icon="fa-solid fa-plus" />
         </GnIconButton>
     </div> 

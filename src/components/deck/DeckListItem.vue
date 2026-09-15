@@ -84,11 +84,16 @@
     </template>
     
     <template #trailing>
-       <GnIconButton label="More options" variant="ghost" size="sm">
-           <font-awesome-icon
-             @click.stop="showDropdown"
-             icon="fa-solid fa-ellipsis-vertical"
-           />
+       <GnIconButton  @gn-click="showDropdown" label="More options" variant="ghost" size="sm" v-if="props.actionType === 'view'">
+          <font-awesome-icon icon="fa-solid fa-ellipsis-vertical" />
+       </GnIconButton>
+
+       <GnIconButton @gn-click="addDeckToSession" label="More options" variant="ghost" size="sm" v-if="props.actionType === 'add'">
+          <font-awesome-icon icon="fa-solid fa-plus" />
+       </GnIconButton>
+
+       <GnIconButton @gn-click="removeDeckFromSession" label="More options" variant="ghost" size="sm" v-if="props.actionType === 'remove'">
+          <font-awesome-icon icon="fa-solid fa-x" />
        </GnIconButton>
     </template>
   </GnListTile>
