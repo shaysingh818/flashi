@@ -38,12 +38,14 @@
 <script setup>
 import { ref, onMounted } from "vue"; 
 import { useRoute } from "vue-router";
+import { useRouter } from "vue-router";
 import { deckStore } from "../../api"; 
 import SearchComponent from '../../components/shared/forms/SearchComponent.vue';
 import DeckListView from '../../components/deck/DeckListView.vue';
 import BackBar from '../../components/shared/navigation/BackBar.vue';
 
 
+const router = useRouter(); 
 const route = useRoute(); 
 const sessionId = route.params.id;
 

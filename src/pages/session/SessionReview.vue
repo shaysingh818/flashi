@@ -1,16 +1,18 @@
 <template>
-  <div class="flex flex-col items-center">
-    <br />
+  <div class="flex flex-col items-center p-6">
     <div
-      class="flex flex-col rounded-2 gap-1 p-4 items-center justify-center"
-      style="background-color: rgb(28 25 23); width: 90%"
+      class="flex flex-col gap-1 p-4 items-center justify-center w-full"
+      style="background-color: var(--app-color-surface); border-radius: 5px;"
     >
-      <div class="flex flex-row gap-2">
-        <PlayButton icon="fa-solid fa-play" @click="startSessionReview" />
+      <div class="flex flex-row gap-2 items-center justify-center">
+
+        <GnIconButton label="Add tag" variant="primary" size="sm" @gn-click="startSessionReview">
+            <font-awesome-icon icon="fa-solid fa-play" />
+        </GnIconButton>
         <p>{{ sessionProgressMessage }}</p>
       </div>
 
-      <div class="flex row-center gap-4 w-100" style="height: 10px;">
+      <div class="flex items-center justify-center gap-4 w-full" style="height: 10px;">
         <ProgressBar :progress="completionPercentage" />
         <p>{{ completed }}/{{ total }}</p>
       </div>
