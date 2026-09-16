@@ -1,7 +1,12 @@
 <template>
   <div class="bottom-actions-bar">
-    <SecondaryButton @click="props.skipHandler" text="Skip" />
-    <PrimaryButton @click="props.submitHandler" text="Submit" />
+    <GnButton :disabled="false" variant="secondary" @gn-click="props.skipHandler">
+        Previous
+    </GnButton>
+   
+    <GnButton :disabled="false" variant="primary" @gn-click="props.submitHandler">
+        Update
+    </GnButton>
   </div>
 </template>
 
@@ -32,7 +37,7 @@ const props = defineProps({
   height: 35px;
   position: fixed;
   background-color: rgb(28 25 23);
-  padding: 10px; 
+  padding: 25px; 
   bottom: 0;
   justify-content: center;
   align-items: center;

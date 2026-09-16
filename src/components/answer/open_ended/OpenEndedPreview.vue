@@ -13,6 +13,17 @@
       :rows="4"        
       textColor="var(--app-color-accent)" />
 
+  <GnFormTextField
+      v-if="props.visible === false"
+      placeholder="Enter your answer"
+      @update:model-value="newText = $event; emitQuestionText()"
+      @gn-update="emitQuestionText"
+      backgroundColor="var(--app-color-surface)" 
+      borderColor="transparent" 
+      :disabled="false" 
+      :rows="4"        
+      textColor="var(--app-color-accent)" />
+
   <div v-if="visible === true" class="flex flex-row gap-2">
     <GnFormInputField
         class="flex-1"

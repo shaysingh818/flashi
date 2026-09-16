@@ -1,11 +1,16 @@
 <template>
-  <div v-if="props.visible === false" class="flex row-center gap-2">
+  <div v-if="props.visible === false" class="flex flex-row items-center gap-2">
     <p style="color: var(--app-color-accent);">{{ index }}. </p>
-    <FormInputField 
-      :text="text" 
+    <GnFormInputField
+      class="flex-1"
+      @update:model-value="newItem = $event; emitText()"
+      placeholder="Enter answer"
+      backgroundColor="var(--app-color-surface)" 
+      borderColor="transparent" 
+      :disabled="false" 
       :placeholder="text" 
-      @update:text="newItem = $event; emitText()"
-    />
+      textColor="var(--app-color-accent)" />
+
   </div>
 
   <div v-if="props.visible === true" class="flex row-center gap-">
