@@ -1,11 +1,11 @@
 <template>
   <div class="bottom-actions-bar">
     <GnButton :disabled="false" variant="secondary" @gn-click="props.skipHandler">
-        Previous
+        Skip
     </GnButton>
    
     <GnButton :disabled="false" variant="primary" @gn-click="props.submitHandler">
-        Update
+        Submit
     </GnButton>
   </div>
 </template>

@@ -3,7 +3,9 @@
     <td class="date-column">{{ props.dateStarted }}</td>
     <td class="date-column">{{ formattedReviewTime }}</td>
     <td class="date-column"> {{ props.totalReviewCount }}</td>    
-    <td class="tag-column"><Tag :title="`${props.accuracy}%`" height="10px" /></td>
+    <td class="tag-column">
+      <GnTag :label="`${props.accuracy}%`" />
+    </td>
   </tr>
 </template>
 

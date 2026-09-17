@@ -20,18 +20,30 @@
       />
     </div>
 
-    <div class="grid grid-cols-2 gap-2">
+    <div v-if="questionImageArtifacts.length === 1" class="flex justify-center gap-2 p-6">
 
       <div
-	 v-for="img in questionImageArtifacts"
-	 :key="img.id"
-	 class="question-image"
-	 :style="{ backgroundImage: `url('${questionImageUrls[img.image_path]}')` }">
+	      v-for="img in questionImageArtifacts"
+	      :key="img.id"
+	      class="question-image question-image-single"
+	      :style="{ backgroundImage: `url('${questionImageUrls[img.image_path]}')` }">
 
       </div>
 
     </div>
-    
+
+    <div v-if="questionImageArtifacts.length > 1" class="question-image-grid-container place-items-center">
+
+      <div
+	      v-for="img in questionImageArtifacts"
+	      :key="img.id"
+	      class="question-image question-image-grid"
+	      :style="{ backgroundImage: `url('${questionImageUrls[img.image_path]}')` }">
+
+      </div>
+
+    </div>
+
     <div class="flex centered-all w-full">
       
       <OrderedSequencePreview 
@@ -287,11 +299,31 @@ watch(() => route.params.id, (newId) => {
 
 .question-image {
   width: 100%;
-  height: 150px; /* or whatever fixed/aspect-ratio height you want */
+  aspect-ratio: 4 / 3;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  border-radius: 5px; 
+  border-radius: 10px;
+}
+
+.question-image-single {
+  max-width: 500px;
+  max-height: 500px;
+}
+
+.question-image-grid-container {
+  display: grid;
+  grid-template-columns: repeat(2, max-content);
+  column-gap: 0.5rem;
+  row-gap: 0.5rem;
+  padding: 0.5rem;
+  justify-content: center; 
+}
+
+.question-image-grid {
+  width: 340px;
+  height: 220px;
+  aspect-ratio: auto;
 }
 
 </style>
