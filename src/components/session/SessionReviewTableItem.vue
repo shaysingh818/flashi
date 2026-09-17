@@ -4,7 +4,7 @@
     <td class="date-column">{{ formattedReviewTime }}</td>
     <td class="date-column"> {{ props.totalReviewCount }}</td>    
     <td class="tag-column">
-      <GnTag :label="`${props.accuracy}%`" />
+      <GnTag :label="`${formattedAccuracy}%`" />
     </td>
   </tr>
 </template>
@@ -39,6 +39,7 @@ const router = useRouter();
 const answerTypeText = ref('');
 const emit = defineEmits(["update:delete"]); 
 const formattedReviewTime = computed(() => formatDuration(props.reviewTime));
+const formattedAccuracy = computed(() => (Math.round(Number(props.accuracy) * 100) / 100).toString());
 
 function formatDuration(totalSeconds) {
   const hours = Math.floor(totalSeconds / 3600);
@@ -76,7 +77,8 @@ td {
 }
 
 .tag-column {
-  width: 10%; 
+  width: 10%;
+  text-align: center;
 }
 
 .date-column {
