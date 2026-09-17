@@ -1,7 +1,7 @@
 <template>
-  <div class="flex flex-col gap-4 w-full p-6">
+  <div class="flex flex-col gap-2 w-full p-6">
 
-    <div v-if="visible === true" class="flex flex-row items-end gap-2" style="height: 35px;">
+    <div v-if="visible === true" class="flex flex-row items-end gap-2 p-2" style="height: 35px;">
       <GnFormInputField
           class="flex-1"
           v-model="newItem"
@@ -14,6 +14,7 @@
           <font-awesome-icon icon="fa-solid fa-plus" />
       </GnIconButton>
     </div>
+
 
     <MultipleChoicePreviewItem
       v-if="props.visible === true"

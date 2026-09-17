@@ -238,7 +238,7 @@ pub fn create_image_artifact(
 
 #[tauri::command]
 pub fn view_question_image_artifacts(db_path: &str, question_id: &str) -> Vec<ImageArtifact> {
-  
+ 
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {

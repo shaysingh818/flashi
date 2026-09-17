@@ -1,21 +1,50 @@
 <template>
-  <div class="flex col-center w-100">
-    <BackBar 
-      v-if="session" 
-      :text="session.name"
-      :actions="[
-         { icon: 'fa-solid fa-pen-to-square', handler: showDropdown },
-      ]"
-    />
+  <div class="flex flex-col">
 
-    <div class="flex centered-all w-100">
+    <GnBackBar 
+      	v-if="session" 
+        :title="session.name"
+        subtitle="Last updated 04/02/2026"
+        textColor="var(--app-color-text)"
+        color="var(--app-color-accent)"
+        backgroundColor="var(--app-color-surface)"
+        borderColor="var(--app-color-surface)"
+        @gn-back="goBack">
+        <font-awesome-icon icon="fa-solid fa-arrow-left" />  
+    </GnBackBar>
+
+    <div class="flex items-center justify-center">
       <QuestionTextPreview
         v-if="question"
         :text="question.raw"
       />
     </div>
-    
-    <div class="flex centered-all w-100">
+
+    <div v-if="questionImageArtifacts.length === 1" class="flex justify-center gap-2 p-6">
+
+      <div
+	      v-for="img in questionImageArtifacts"
+	      :key="img.id"
+	      class="question-image question-image-single"
+	      :style="{ backgroundImage: `url('${questionImageUrls[img.image_path]}')` }">
+
+      </div>
+
+    </div>
+
+    <div v-if="questionImageArtifacts.length > 1" class="question-image-grid-container place-items-center">
+
+      <div
+	      v-for="img in questionImageArtifacts"
+	      :key="img.id"
+	      class="question-image question-image-grid"
+	      :style="{ backgroundImage: `url('${questionImageUrls[img.image_path]}')` }">
+
+      </div>
+
+    </div>
+
+    <div class="flex centered-all w-full">
       
       <OrderedSequencePreview 
         v-if="answerType === 'Ordered Sequence'" 
@@ -50,7 +79,8 @@
 </template>
 
 <script setup>
-import { onMounted, computed, ref, toRaw, watch } from "vue";
+import { readFile, BaseDirectory } from '@tauri-apps/plugin-fs';
+import { onMounted, onBeforeUnmount, computed, reactive, ref, toRaw, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import BackBar from "../../components/shared/navigation/BackBar.vue";
 import QuestionTextPreview from "../../components/question/QuestionTextPreview.vue";
@@ -62,6 +92,7 @@ import EditQuestionForm from "../../components/question/EditQuestionForm.vue";
 import { 
   deckStore,
   questionStore,
+  imageArtifactStore,
   sessionStore,
   sessionReviewStore,
   getCurrentTimestamp,
@@ -81,6 +112,8 @@ const sessionQuestion = ref(null);
 const session = ref(null);
 const sessionReview = ref(null); 
 const question = ref(null);
+const questionImageArtifacts = ref([]);
+const questionImageUrls = reactive({});
 const deck = ref(null); 
 const answerType = ref('');
 
@@ -116,12 +149,37 @@ function showDropdown() {
   }
 }
 
+async function loadThumbnail(imageFileName) {
+  try {
+    const fileBuffer = await readFile(`flashi/images/${imageFileName}`, {
+      baseDir: BaseDirectory.Data,
+    });
+    return URL.createObjectURL(new Blob([fileBuffer]));
+  } catch (err) {
+    console.log(`Failed to load thumbnail for ${imageFileName}`, err);
+  }
+}
+
 async function loadData() {
+
 
   session.value = await sessionStore.viewSession(`${sessionId.value}`);
   sessionQuestion.value = await sessionReviewStore.viewSessionReviewQuestion(`${sessionQuestionId.value}`);
-  sessionReview.value = await sessionReviewStore.viewSessionReview(`${sessionQuestion.value.session_review_id}`); 
+  sessionReview.value = await sessionReviewStore.viewSessionReview(`${sessionQuestion.value.session_review_id}`);
+
   question.value = await questionStore.viewQuestion(`${sessionQuestion.value.question_id}`);
+
+  await imageArtifactStore.loadImageArtifacts(`${sessionQuestion.value.question_id}`);
+  questionImageArtifacts.value = imageArtifactStore.images;
+
+  for (const url of Object.values(questionImageUrls)) URL.revokeObjectURL(url);
+  for (const key of Object.keys(questionImageUrls)) delete questionImageUrls[key];
+  for (const img of questionImageArtifacts.value) {
+    const url = await loadThumbnail(img.image_path);
+    if (url) questionImageUrls[img.image_path] = url;
+  }
+
+
   const answerTypeText = await answerTypeStore.viewAnswerType(`${question.value.answer_type_id}`);
   answerType.value = answerTypeText.name;
   deck.value = await deckStore.viewDeck(`${question.value.deck_id}`); 
@@ -214,7 +272,15 @@ async function validateAnswer() {
 
 }
 
-onMounted(() => loadData(route.params.session_id, route.params.id)); 
+function goBack() {
+  router.go(-1);
+}
+
+onMounted(() => loadData(route.params.session_id, route.params.id));
+
+onBeforeUnmount(() => {
+  for (const url of Object.values(questionImageUrls)) URL.revokeObjectURL(url);
+});
 
 watch(() => route.params.id, (newId) => {
 
@@ -227,3 +293,37 @@ watch(() => route.params.id, (newId) => {
 });
 
 </script>
+
+
+<style scoped>
+
+.question-image {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 10px;
+}
+
+.question-image-single {
+  max-width: 500px;
+  max-height: 500px;
+}
+
+.question-image-grid-container {
+  display: grid;
+  grid-template-columns: repeat(2, max-content);
+  column-gap: 0.5rem;
+  row-gap: 0.5rem;
+  padding: 0.5rem;
+  justify-content: center; 
+}
+
+.question-image-grid {
+  width: 340px;
+  height: 220px;
+  aspect-ratio: auto;
+}
+
+</style>
