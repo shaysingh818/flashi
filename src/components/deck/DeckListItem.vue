@@ -84,9 +84,36 @@
     </template>
     
     <template #trailing>
+
+      <!--
        <GnIconButton  @gn-click="showDropdown" label="More options" variant="ghost" size="sm" v-if="props.actionType === 'view'">
           <font-awesome-icon icon="fa-solid fa-ellipsis-vertical" />
-       </GnIconButton>
+       </GnIconButton> -->
+
+
+        <GnDropDownMenu
+          backgroundColor="var(--app-color-surface)"
+          borderColor="var(--app-color-surface)"
+          align="right"
+          :disabled="false"
+          closeOnEscape="true"
+          closeOnOutsideClick="true"
+          v-if="props.actionType === 'view'">
+            <template #trigger>
+              <GnIconButton label="Options" variant="ghost">
+                <font-awesome-icon icon="fa-solid fa-ellipsis-vertical" />
+              </GnIconButton>
+            </template>
+            <template #items>
+              <GnDropDownMenuItem label="Edit Deck" @gn-click="editDeck">
+                <font-awesome-icon icon="fa-solid fa-pen-to-square" />
+              </GnDropDownMenuItem>
+              <GnDropDownMenuItem label="Delete Deck" color="#dc2626" text-color="#dc2626" @gn-click="deleteDeck">
+                <font-awesome-icon icon="fa-solid fa-x" />
+              </GnDropDownMenuItem>
+            </template>
+        </GnDropDownMenu>
+
 
        <GnIconButton @gn-click="addDeckToSession" label="More options" variant="ghost" size="sm" v-if="props.actionType === 'add'">
           <font-awesome-icon icon="fa-solid fa-plus" />

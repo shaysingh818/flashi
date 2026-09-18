@@ -1,6 +1,6 @@
 <template>
     <div class="flex p-2"> 
-        <div class="flex flex-col" style="background-color: var(--app-color-surface); border-radius: 10px;">
+        <div class="flex flex-col w-full" style="background-color: var(--app-color-surface); border-radius: 10px;">
         <div class="p-6">
             <h1>{{ header }}</h1>
             <p>{{ description }}</p>
