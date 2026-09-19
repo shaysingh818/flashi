@@ -29,15 +29,19 @@
 <script setup>
 import { ref } from 'vue';
 import { onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { subjectStore } from '../../api/Subject';
 import FormHeader from '../../components/shared/forms/FormHeader.vue';
 import EditSubjectForm from '../../components/subject/EditSubjectForm.vue';
 
-
+const router = useRouter(); 
 const route = useRoute(); 
 const subjectId = route.params.id;
 const subject = ref(null); 
+
+function goBack() {
+  router.go(-1);
+}
 
 onMounted(async () => {
   subject.value = await subjectStore.viewSubject(subjectId);
