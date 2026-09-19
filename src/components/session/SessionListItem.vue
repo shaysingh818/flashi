@@ -1,52 +1,4 @@
 <template>
-  <!-- <div class="flex row w-100 list-item" style="height: 50px;" @click="sessionDetail">
-    <div class="flex leading centered-all">
-      <font-awesome-icon
-        icon="fa-regular fa-calendar"
-        class="list-item-icon-style"
-      />
-    </div>
-
-    <div class="content">
-      <h1>{{ title }}</h1>
-      <p>{{ description }}</p>
-    </div>
-
-    <div class="flex row gap-4 trailing centered-all">
-      <p :style="{ color: '#F97316' }">{{ dateUpdated }}</p>
-      <font-awesome-icon
-        @click.stop="showDropdown"
-        icon="fa-solid fa-ellipsis-vertical"
-        class="trailing-icon-style"
-      />
-
-      <div 
-        v-if="isDropdownOpen" 
-        class="flex col absolute gap-2 p-2 transform-50-80 rounded-1" 
-        style="background-color: rgb(28 25 23);"
-      >
-        <DropDownItem
-          icon="fa-solid fa-pen-to-square"
-          text="Edit Session"
-          :onClickHandler="editSession"
-        />
-        <DropDownItem
-          icon="fa-solid fa-x"
-          text="Delete Session"
-          :onClickHandler="deleteSession"
-        />
-      </div>
-
-      <Teleport to="body">
-        <ConfirmDialog
-          v-if="showDialog"
-          text="Deleting a session will delete all the metrics and session review questions associated with it. Are you sure you want to delete this session?"
-          @close="showDialog = false"
-          @confirm="confirmDelete"
-        />
-      </Teleport>
-    </div>
-  </div> -->
 
   <GnListTile 
     :description="description" 
@@ -61,15 +13,30 @@
     </template> 
     
     <template #trailing>
-       <GnIconButton label="More options" variant="ghost" size="sm">
-           <font-awesome-icon
-             @click.stop="showDropdown"
-             icon="fa-solid fa-ellipsis-vertical"
-           />
-       </GnIconButton>
+
+      <GnDropDownMenu
+        backgroundColor="var(--app-color-surface)"
+        borderColor="var(--app-color-surface)"
+        align="right"
+        :disabled="false"
+        closeOnEscape="true"
+        closeOnOutsideClick="true">
+          <template #trigger>
+            <GnIconButton label="Options" variant="ghost">
+              <font-awesome-icon icon="fa-solid fa-ellipsis-vertical" />
+            </GnIconButton>
+          </template>
+          <template #items>
+            <GnDropDownMenuItem label="Edit Session" @gn-click="editSession">
+              <font-awesome-icon icon="fa-solid fa-pen-to-square" />
+            </GnDropDownMenuItem>
+            <GnDropDownMenuItem label="Delete Session" color="#dc2626" text-color="#dc2626" @gn-click="deleteSession">
+              <font-awesome-icon icon="fa-solid fa-x" />
+            </GnDropDownMenuItem>
+          </template>
+      </GnDropDownMenu>
     </template>
   </GnListTile>
-
 
 </template>
 

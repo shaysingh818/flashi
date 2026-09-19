@@ -1,72 +1,4 @@
 <template>
-  <!-- <div class="flex row w-100 list-item">
-    <div class="flex row-center w-100" @click="deckDetail">
-      <div class="flex leading centered-all">
-        <font-awesome-icon
-          icon="fa-solid fa-list-check"
-          class="list-item-icon-style"
-        />
-      </div>
-
-      <div class="content">
-        <h1>{{ title }}</h1>
-        <p>{{ description }}</p>
-        <div class="flex items-left row gap-2 p-2" style="height: 20px">
-          <Tag v-for="(item, index) in tags" :key="index" :title="item" />
-        </div>
-      </div>
-
-      <div class="flex row gap-4 trailing centered-all">
-        <p :style="{ color: '#F97316' }">{{ dateUpdated }}</p>
-        <font-awesome-icon
-          v-if="props.actionType === 'view'"
-          @click.stop="showDropdown"
-          icon="fa-solid fa-ellipsis-vertical"
-          class="trailing-icon-style"
-        />
-
-        <font-awesome-icon
-          v-if="props.actionType === 'add'"
-          @click.stop="addDeckToSession"
-          icon="fa-solid fa-plus"
-          class="trailing-icon-style"
-        />
-
-        <font-awesome-icon
-          v-if="props.actionType === 'remove'"
-          @click.stop="removeDeckFromSession"
-          icon="fa-solid fa-x"
-          class="trailing-icon-style"
-        />
-
-        <div
-          v-if="isDropdownOpen"
-          class="flex col absolute gap-2 p-2 transform-50-80 rounded-1"
-          style="background-color: rgb(28 25 23)"
-        >
-          <DropDownItem
-            icon="fa-solid fa-pen-to-square"
-            text="Edit Deck"
-            :onClickHandler="editDeck"
-          />
-          <DropDownItem
-            icon="fa-solid fa-x"
-            text="Delete Deck"
-            :onClickHandler="deleteDeck"
-          />
-        </div>
-
-        <Teleport to="body">
-          <ConfirmDialog
-            v-if="showDialog"
-            text="Are you sure you want to delete the subject"
-            @close="showDialog = false"
-            @confirm="confirmDelete"
-          />
-        </Teleport>
-      </div>
-    </div>
-  </div> -->
   <GnListTile 
     :description="description" 
     :title="title"
@@ -85,43 +17,36 @@
     
     <template #trailing>
 
-      <!--
-       <GnIconButton  @gn-click="showDropdown" label="More options" variant="ghost" size="sm" v-if="props.actionType === 'view'">
-          <font-awesome-icon icon="fa-solid fa-ellipsis-vertical" />
-       </GnIconButton> -->
+      <GnDropDownMenu
+        backgroundColor="var(--app-color-surface)"
+        borderColor="var(--app-color-surface)"
+        align="right"
+        :disabled="false"
+        closeOnEscape="true"
+        closeOnOutsideClick="true"
+        v-if="props.actionType === 'view'">
+          <template #trigger>
+            <GnIconButton label="Options" variant="ghost">
+              <font-awesome-icon icon="fa-solid fa-ellipsis-vertical" />
+            </GnIconButton>
+          </template>
+          <template #items>
+            <GnDropDownMenuItem label="Edit Deck" @gn-click="editDeck">
+              <font-awesome-icon icon="fa-solid fa-pen-to-square" />
+            </GnDropDownMenuItem>
+            <GnDropDownMenuItem label="Delete Deck" color="#dc2626" text-color="#dc2626" @gn-click="deleteDeck">
+              <font-awesome-icon icon="fa-solid fa-x" />
+            </GnDropDownMenuItem>
+          </template>
+      </GnDropDownMenu>
 
+     <GnIconButton @gn-click="addDeckToSession" label="More options" variant="ghost" size="sm" v-if="props.actionType === 'add'">
+        <font-awesome-icon icon="fa-solid fa-plus" />
+     </GnIconButton>
 
-        <GnDropDownMenu
-          backgroundColor="var(--app-color-surface)"
-          borderColor="var(--app-color-surface)"
-          align="right"
-          :disabled="false"
-          closeOnEscape="true"
-          closeOnOutsideClick="true"
-          v-if="props.actionType === 'view'">
-            <template #trigger>
-              <GnIconButton label="Options" variant="ghost">
-                <font-awesome-icon icon="fa-solid fa-ellipsis-vertical" />
-              </GnIconButton>
-            </template>
-            <template #items>
-              <GnDropDownMenuItem label="Edit Deck" @gn-click="editDeck">
-                <font-awesome-icon icon="fa-solid fa-pen-to-square" />
-              </GnDropDownMenuItem>
-              <GnDropDownMenuItem label="Delete Deck" color="#dc2626" text-color="#dc2626" @gn-click="deleteDeck">
-                <font-awesome-icon icon="fa-solid fa-x" />
-              </GnDropDownMenuItem>
-            </template>
-        </GnDropDownMenu>
-
-
-       <GnIconButton @gn-click="addDeckToSession" label="More options" variant="ghost" size="sm" v-if="props.actionType === 'add'">
-          <font-awesome-icon icon="fa-solid fa-plus" />
-       </GnIconButton>
-
-       <GnIconButton @gn-click="removeDeckFromSession" label="More options" variant="ghost" size="sm" v-if="props.actionType === 'remove'">
-          <font-awesome-icon icon="fa-solid fa-x" />
-       </GnIconButton>
+     <GnIconButton @gn-click="removeDeckFromSession" label="More options" variant="ghost" size="sm" v-if="props.actionType === 'remove'">
+        <font-awesome-icon icon="fa-solid fa-x" />
+     </GnIconButton>
     </template>
   </GnListTile>
   

@@ -1,17 +1,36 @@
 <template>
-  <div class="flex col-center gap-4 w-100">
-    <div class="flex w-75" style="height: 40px;">
-      <FormInputField v-model:text="name" :placeholder="`${sessionName}`" />
+  <div class="flex flex-col gap-4 p-4">
+
+    <GnFormInputField
+        @update:model-value="name = $event"
+        :model-value="name"
+        backgroundColor="var(--app-color-surface)" 
+        borderColor="transparent" 
+        :disabled="false" 
+        textColor="var(--app-color-accent)" 
+        label="Enter session name"
+        type="text" />
+
+    <GnFormTextField
+        @update:model-value="description = $event"
+        :model-value="description"
+        backgroundColor="var(--app-color-surface)" 
+        borderColor="transparent" 
+        :disabled="false" 
+        placeholder="Write something…" 
+        :rows="4"        
+        label="Enter deck description"
+        textColor="var(--app-color-accent)" />
+
+    <div class="flex flex-row gap-4 items-center justify-center">
+        <GnButton :disabled="false" variant="secondary" @gn-click="goBack">
+            Discard
+        </GnButton>
+        <GnButton :disabled="false" variant="primary" @gn-click="submitForm">
+            Submit
+        </GnButton>
     </div>
 
-    <div class="flex w-75" style="height: 40px;">
-      <FormTextField v-model:text="description" :description="`${sessionDescription}`" />
-    </div>
-
-    <div class="flex row-center w-75 gap-4" style="height: 40px;">
-      <SecondaryButton @click="goBack" text="Discard" />
-      <PrimaryButton @click="submitForm" text="Save" />
-    </div>
   </div>
 </template>
 
@@ -19,10 +38,6 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { sessionStore } from "../../api";
-import FormInputField from "../../components/shared/forms/FormInputField.vue";
-import FormTextField from "../../components/shared/forms/FormTextField.vue";
-import PrimaryButton from "../../components/shared/buttons/PrimaryButton.vue";
-import SecondaryButton from "../../components/shared/buttons/SecondaryButton.vue";
 
 const props = defineProps({ 
     sessionId: {
@@ -37,12 +52,11 @@ const props = defineProps({
       type: String,
       required: true,
     },
-})
-
+}); 
 
 const router = useRouter(); 
-const name = ref(props.deckName);
-const description = ref(props.deckDescription);
+const name = ref(props.sessionName);
+const description = ref(props.sessionDescription);
 
 
 function goBack() {

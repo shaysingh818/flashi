@@ -1,55 +1,4 @@
 <template>
-  <!-- <div
-    class="flex row w-100 list-item"
-    style="height: 50px"
-    @click="subjectDetail"
-  >
-    <div class="flex leading centered-all">
-      <font-awesome-icon
-        icon="fa-regular fa-clone"
-        class="list-item-icon-style"
-      />
-    </div>
-
-    <div class="content">
-      <h1>{{ title }}</h1>
-      <p>{{ description }}</p>
-    </div>
-
-    <div class="flex row gap-4 trailing centered-all">
-      <p :style="{ color: '#F97316' }">{{ dateUpdated }}</p>
-      <font-awesome-icon
-        @click.stop="showDropdown"
-        icon="fa-solid fa-ellipsis-vertical"
-        class="trailing-icon-style"
-      />
-
-      <div
-        v-if="isDropdownOpen"
-        class="flex col absolute gap-2 p-2 transform-50-80 rounded-1"
-        style="background-color: rgb(28 25 23)"
-      >
-        <DropDownItem
-          icon="fa-solid fa-pen-to-square"
-          text="Edit Subject"
-          :onClickHandler="editSubject"
-        />
-        <DropDownItem
-          icon="fa-solid fa-x"
-          text="Delete Subject"
-          :onClickHandler="deleteSubject"
-        />
-      </div>
-      <Teleport to="body">
-        <ConfirmDialog
-          v-if="showDialog"
-          text="Are you sure you want to delete the subject"
-          @close="showDialog = false"
-          @confirm="confirmDelete"
-        />
-      </Teleport>
-    </div>
-  </div> -->
 
   <GnListTile 
     :description="description" 
@@ -64,16 +13,31 @@
     </template> 
     
     <template #trailing>
-       <GnIconButton label="More options" variant="ghost" size="sm">
-           <font-awesome-icon
-             @click.stop="showDropdown"
-             icon="fa-solid fa-ellipsis-vertical"
-           />
-       </GnIconButton>
+
+      <GnDropDownMenu
+        backgroundColor="var(--app-color-surface)"
+        borderColor="var(--app-color-surface)"
+        align="right"
+        :disabled="false"
+        closeOnEscape="true"
+        closeOnOutsideClick="true">
+          <template #trigger>
+            <GnIconButton label="Options" variant="ghost">
+              <font-awesome-icon icon="fa-solid fa-ellipsis-vertical" />
+            </GnIconButton>
+          </template>
+          <template #items>
+            <GnDropDownMenuItem label="Edit Subject" @gn-click="editSubject ">
+              <font-awesome-icon icon="fa-solid fa-pen-to-square" />
+            </GnDropDownMenuItem>
+            <GnDropDownMenuItem label="Delete Subject" color="#dc2626" text-color="#dc2626" @gn-click="deleteSubject">
+              <font-awesome-icon icon="fa-solid fa-x" />
+            </GnDropDownMenuItem>
+          </template>
+      </GnDropDownMenu>
     </template>
   </GnListTile>
 
-  
 </template>
 
 <script setup>
