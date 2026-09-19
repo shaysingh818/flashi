@@ -12,8 +12,6 @@
          <font-awesome-icon icon="fa-solid fa-arrow-left" />  
      </GnBackBar>
      
-   <br></br>
-
     <FormHeader
       header="Create a subject"
       description="A subject is a top-level category that helps you organize

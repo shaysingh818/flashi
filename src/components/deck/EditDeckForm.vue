@@ -1,44 +1,61 @@
 <template>
-  <div
-    class="flex col-center gap-4 w-75 p-4"
-    style="height: auto"
-  >
-    <div class="flex w-100" style="height: 40px">
-      <FormInputField v-model:text="name" :placeholder="`${deckName}`" />
+  <div class="flex flex-col gap-4 p-4">
+
+    <GnFormInputField 
+        @update:model-value="name = $event"
+        :model-value="props.deckName"
+        backgroundColor="var(--app-color-surface)" 
+        borderColor="transparent" 
+        :disabled="false" 
+        textColor="var(--app-color-accent)" 
+        label="Enter deck name"
+        type="text" />
+
+    <GnFormTextField
+        @update:model-value="description = $event"
+        :model-value="props.deckDescription"
+        backgroundColor="var(--app-color-surface)" 
+        borderColor="transparent" 
+        :disabled="false" 
+        placeholder="Write something…" 
+        :rows="4"        
+        label="Enter deck description"
+        textColor="var(--app-color-accent)" />
+
+    <div class="flex flex-row items-end gap-2">
+        <GnFormInputField
+            class="flex-1"
+            v-model="newTag"
+            backgroundColor="var(--app-color-surface)" 
+            borderColor="transparent" 
+            :disabled="false" 
+            placeholder="Add Tag…" 
+            label="Add tag to deck"
+            textColor="var(--app-color-accent)" />
+        <GnIconButton label="Add tag" variant="primary" @gn-click="addTag">
+            <font-awesome-icon icon="fa-solid fa-plus" />
+        </GnIconButton>
     </div>
 
-    <div class="flex w-100" style="height: 100px;">
-      <FormTextField v-model:text="description" :description="`${deckDescription}`" />
-    </div>
-
-    <div class="flex col-center gap-2 w-100">
-      <div class="flex row-center gap-2 w-100" style="height: 40px">
-        <FormInputField
-          placeholder="Update tags for deck"
-          :text="newTag"
-          @update:text="newTag = $event"
-        />
-        <font-awesome-icon icon="fa-solid fa-plus" @click="addTag" />
-      </div>
-    </div>
-
-    <div
-      class="flex centered align-left row gap-2"
-      style="min-height: 15px; flex-wrap: wrap; align-items: flex-start"
-    >
-      <Tag
+    <div class="flex flex-row flex-wrap justify-center gap-2 p-4" style="min-height: 15px;">
+      <GnTag
         v-for="(item, index) in tags"
         :key="index"
-        :title="item"
-        height="10px"
+        :label="item"
+        height="10px" 
+        @gn-dblclick="removeTag(index)"
       />
     </div>
 
-    <br> </br>
-    <div class="flex row-center gap-4" style="height: 35px">
-      <SecondaryButton @click="goBack" text="Discard" />
-      <PrimaryButton @click="submitForm" text="Update" />
+    <div class="flex flex-row gap-4 items-center justify-center">
+        <GnButton :disabled="false" variant="secondary" @gn-click="goBack">
+            Discard
+        </GnButton>
+        <GnButton :disabled="false" variant="primary" @gn-click="submitForm">
+            Submit
+        </GnButton>
     </div>
+
   </div>
 </template>
 
@@ -76,10 +93,6 @@ const tags = ref(props.tags);
 const newTag = ref(''); 
 const name = ref(props.deckName);
 const description = ref(props.deckDescription);
-
-function goBack() {
-  router.go(-1); 
-}
 
 function addTag() {  
   tags.value.push(newTag.value);

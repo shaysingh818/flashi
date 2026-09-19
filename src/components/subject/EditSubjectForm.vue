@@ -1,17 +1,36 @@
 <template>
-  <div class="flex col-center gap-4 w-100">
-    <div class="flex w-75" style="height: 40px;">
-      <FormInputField v-model:text="name" :placeholder="subjectName"/>
+  <div class="flex flex-col gap-4 p-4">
+
+    <GnFormInputField 
+        @update:model-value="name = $event"
+        :model-value="props.subjectName"
+        backgroundColor="var(--app-color-surface)" 
+        borderColor="transparent" 
+        :disabled="false" 
+        textColor="var(--app-color-accent)" 
+        label="Enter deck name"
+        type="text" />
+
+    <GnFormTextField
+        @update:model-value="description = $event"
+        :model-value="props.subjectDescription"
+        backgroundColor="var(--app-color-surface)" 
+        borderColor="transparent" 
+        :disabled="false" 
+        placeholder="Write something…" 
+        :rows="4"        
+        label="Enter deck description"
+        textColor="var(--app-color-accent)" />
+
+    <div class="flex flex-row gap-4 items-center justify-center">
+        <GnButton :disabled="false" variant="secondary" @gn-click="goBack">
+            Discard
+        </GnButton>
+        <GnButton :disabled="false" variant="primary" @gn-click="submitForm">
+            Submit
+        </GnButton>
     </div>
 
-    <div class="flex w-75" style="height: 100px;">
-      <FormTextField v-model:text="description" :description="subjectDescription" />
-    </div>
-
-    <div class="flex row-center w-75 gap-4" style="height: 40px;">
-      <SecondaryButton @click="goBack" text="Discard" />
-      <PrimaryButton @click="submitForm" text="Save" />
-    </div>
   </div>
 </template>
 
@@ -52,11 +71,3 @@ async function submitForm() {
   console.log(editSubject); 
 }
 </script>
-
-<style scoped>
-
-input {
-  width: 100%;
-  height: 100%;
-}
-</style>
