@@ -1,9 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { dataDir} from '@tauri-apps/api/path';
 import { reactive } from 'vue';
-import { MultipleChoiceAnswer } from './types'; 
-import { sessionReviewStore, getCurrentTimestamp } from './Session'; 
-import { SessionReview, SessionReviewQuestion } from './types';
+import { MultipleChoiceAnswer } from './types';
 
 export const multipleChoiceAnswerStore = reactive({
 

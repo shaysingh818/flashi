@@ -27,12 +27,8 @@
 
 <script setup>
 import { ref } from "vue";
-import { onMounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRouter } from "vue-router";
 import { questionStore } from "../../api/Question";
-import FormTextField from "../../components/shared/forms/FormTextField.vue";
-import PrimaryButton from "../../components/shared/buttons/PrimaryButton.vue";
-import SecondaryButton from "../../components/shared/buttons/SecondaryButton.vue";
 
 
 const props = defineProps({

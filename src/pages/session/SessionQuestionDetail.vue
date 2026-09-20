@@ -80,16 +80,14 @@
 
 <script setup>
 import { readFile, BaseDirectory } from '@tauri-apps/plugin-fs';
-import { onMounted, onBeforeUnmount, computed, reactive, ref, toRaw, watch } from "vue";
+import { onMounted, onBeforeUnmount, computed, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import BackBar from "../../components/shared/navigation/BackBar.vue";
 import QuestionTextPreview from "../../components/question/QuestionTextPreview.vue";
 import OrderedSequencePreview from "../../components/answer/ordered_sequence/OrderedSequencePreview.vue";
 import MultipleChoicePreview from "../../components/answer/multiple_choice/MultipleChoicePreview.vue";
 import OpenEndedPreview from "../../components/answer/open_ended/OpenEndedPreview.vue";
 import SessionActionsBar from "../../components/session/SessionActionsBar.vue";
-import EditQuestionForm from "../../components/question/EditQuestionForm.vue";
-import { 
+import {
   deckStore,
   questionStore,
   imageArtifactStore,
@@ -99,7 +97,6 @@ import {
   answerTypeStore,
   openEndedStore,
   orderedSequenceStore,
-  multipleChoiceStore,
   multipleChoiceAnswerStore
 } from "../../api";
 

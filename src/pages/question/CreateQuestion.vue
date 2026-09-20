@@ -27,9 +27,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import { BackBar } from "../../components/shared";
 import FormHeader from "../../components/shared/forms/FormHeader.vue";
 import CreateQuestionForm from "../../components/question/CreateQuestionForm.vue";
 

@@ -90,9 +90,8 @@
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { open } from "@tauri-apps/plugin-dialog";
 import { readFile, BaseDirectory } from '@tauri-apps/plugin-fs';
-import { onMounted, ref, toRaw, watch, reactive, onBeforeUnmount } from "vue";
+import { onMounted, ref, watch, reactive, onBeforeUnmount } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import BackBar from "../../components/shared/navigation/BackBar.vue";
 import QuestionTextPreview from "../../components/question/QuestionTextPreview.vue";
 import OrderedSequencePreview from "../../components/answer/ordered_sequence/OrderedSequencePreview.vue";
 import MultipleChoicePreview from "../../components/answer/multiple_choice/MultipleChoicePreview.vue";
@@ -106,7 +105,6 @@ import {
   answerTypeStore,
   openEndedStore,
   orderedSequenceStore,
-  multipleChoiceStore,
   multipleChoiceAnswerStore
 } from "../../api";
 

@@ -37,9 +37,7 @@ import { ref } from "vue";
 import { onMounted } from "vue";
 import { deckStore } from "../../api/Deck";
 import { useRouter, useRoute } from "vue-router";
-import BackBar from "../../components/shared/navigation/BackBar.vue";
 import { GnSearchFormField } from '@graphyne/web-components';
-import MetricCard from "../../components/shared/MetricCard.vue";
 import HoverButton from "../../components/shared/buttons/HoverButton.vue";
 import QuestionTableView from "../../components/question/QuestionTableView.vue";
 

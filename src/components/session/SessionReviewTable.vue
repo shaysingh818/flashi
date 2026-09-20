@@ -28,7 +28,6 @@
 <script setup>
 import { onMounted } from 'vue'; 
 import { sessionReviewStore } from '../../api';
-import Tag from '../shared/Tag.vue';
 import SessionReviewTableItem from './SessionReviewTableItem.vue';
 
 

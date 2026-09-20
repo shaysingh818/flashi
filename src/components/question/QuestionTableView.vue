@@ -28,7 +28,6 @@
 import { onMounted } from 'vue';
 import { message } from '@tauri-apps/plugin-dialog';
 import { questionStore } from '../../api/Question';
-import Tag from '../shared/Tag.vue';
 import QuestionTableItem from './QuestionTableItem.vue';
 
 const props = defineProps({

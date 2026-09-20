@@ -66,7 +66,6 @@ import {
   GnFormInputField,
   GnFormTextField,
   GnButton,
-  GnBackBar,
   GnTag
 } from '@graphyne/web-components';
 

@@ -64,7 +64,7 @@
 <script setup>
 import { ref } from "vue";
 import { onMounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRouter } from "vue-router";
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { message, open } from '@tauri-apps/plugin-dialog';
 import CreateMultipleChoiceForm from "../answer/multiple_choice/CreateMultipleChoiceForm.vue";
@@ -72,15 +72,6 @@ import CreateOpenEndedForm from "../answer/open_ended/CreateOpenEndedForm.vue";
 import CreateOrderedSequenceForm from "../answer/ordered_sequence/CreateOrderedSequenceForm.vue";
 
 import {
-  PrimaryButton,
-  SecondaryButton,  
-  FormInputField,
-  FormTextField,
-  DropDownFormField,
-  Tag
-} from "../../components/shared";
-
-import { 
   questionStore,
   imageArtifactStore,
   answerTypeStore,

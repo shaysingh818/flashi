@@ -72,10 +72,7 @@
 
 <script setup>
 import { ref, onMounted }  from "vue"; 
-import { analyticsStore } from "../api/Analytics"; 
-import MetricCard from '../components/shared/analytics/MetricCard.vue';
-import LineChart from '../components/shared/analytics/LineChart.vue';
-import DataView from '../components/shared/analytics/DataView.vue';
+import { analyticsStore } from "../api/Analytics";
 import FormHeader from '../components/shared/forms/FormHeader.vue';
 
 

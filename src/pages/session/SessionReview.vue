@@ -31,8 +31,6 @@ import { message } from '@tauri-apps/plugin-dialog';
 import { sessionReviewStore, sessionStore } from "../../api";
 import SessionReviewTable from "../../components/session/SessionReviewTable.vue";
 import HoverButton from "../../components/shared/buttons/HoverButton.vue";
-import PlayButton from "../../components/shared/buttons/PlayButton.vue";
-import SearchComponent from "../../components/shared/forms/SearchComponent.vue";
 import ProgressBar from "../../components/shared/progress/ProgressBar.vue";
 
 
