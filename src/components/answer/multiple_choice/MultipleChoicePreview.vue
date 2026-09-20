@@ -42,10 +42,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
-import FormInputField from '../../shared/forms/FormInputField.vue';
+import { ref, watch } from 'vue';
 import MultipleChoicePreviewItem from './MultipleChoicePreviewItem.vue';
-import { multipleChoiceStore, multipleChoiceAnswerStore } from "../../../api";
 
 const props = defineProps({  
   visible: {

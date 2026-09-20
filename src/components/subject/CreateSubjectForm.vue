@@ -36,7 +36,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { message } from '@tauri-apps/plugin-dialog';
 import { subjectStore } from '../../api/Subject';
-import { GnFormInputField, GnFormTextField, GnButton, GnBackBar } from '@graphyne/web-components';
+import { GnFormInputField, GnFormTextField, GnButton } from '@graphyne/web-components';
 
 const props = defineProps({
   subjectNameText: {

@@ -53,11 +53,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import Tag from '../../shared/Tag.vue';
+import { ref } from 'vue';
 import { GnTag } from '@graphyne/web-components';
-import FormInputField from '../../shared/forms/FormInputField.vue';
-import FormTextField from '../../../components/shared/forms/FormTextField.vue';
 
 const props = defineProps({
   visible: {

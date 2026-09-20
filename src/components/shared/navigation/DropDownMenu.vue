@@ -21,7 +21,6 @@
 </template>
 
 <script>
-import DropDownItem from './DropDownItem.vue';
 
 export default {
   name: "DropDownMenu",

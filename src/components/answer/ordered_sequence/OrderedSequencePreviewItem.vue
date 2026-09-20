@@ -46,7 +46,6 @@
 
 <script setup>
 import { ref } from "vue";
-import FormInputField from "../../../components/shared/forms/FormInputField.vue";
 
 const props = defineProps({
   index: {

@@ -28,7 +28,6 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import FormHeader from '../../components/shared/forms/FormHeader.vue';
 import CreateDeckForm from '../../components/deck/CreateDeckForm.vue';

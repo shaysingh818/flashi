@@ -49,12 +49,9 @@ import { useRoute, useRouter } from "vue-router";
 import { onMounted } from "vue";
 import { subjectStore } from "../../api/Subject";
 import { deckStore } from "../../api/Deck";
-import BackBar from "../../components/shared/navigation/BackBar.vue";
 import { GnSearchFormField, GnMetricCard, GnBackBar } from '@graphyne/web-components';
 import HoverButton from "../../components/shared/buttons/HoverButton.vue";
 import DeckListView from "../../components/deck/DeckListView.vue";
-import MetricCard from "../../components/shared/analytics/MetricCard.vue";
-import { definition } from "@fortawesome/free-solid-svg-icons/faRocket";
 
 const route = useRoute();
 const router = useRouter();

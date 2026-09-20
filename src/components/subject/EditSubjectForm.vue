@@ -37,10 +37,6 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import FormInputField from "../../components/shared/forms/FormInputField.vue";
-import FormTextField from "../../components/shared/forms/FormTextField.vue";
-import PrimaryButton from "../../components/shared/buttons/PrimaryButton.vue";
-import SecondaryButton from "../../components/shared/buttons/SecondaryButton.vue";
 import { subjectStore } from '../../api/Subject';
 
 const props = defineProps({

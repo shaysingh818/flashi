@@ -31,8 +31,6 @@
 
 <script setup>
 import { ref } from "vue";
-import FormInputField from "../../../components/shared/forms/FormInputField.vue";
-import Tag from "../../../components/shared/Tag.vue";
 import OrderedSequenceFormItem from "./OrderedSequenceFormItem.vue";
 
 const newSequence = ref(''); 

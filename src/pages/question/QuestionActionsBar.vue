@@ -16,8 +16,6 @@
 
 
 <script setup>
-import PrimaryButton from '../../components/shared/buttons/PrimaryButton.vue';
-import SecondaryButton from '../../components/shared/buttons/SecondaryButton.vue';
 
 const props = defineProps({
   previousHandler: {

@@ -11,10 +11,8 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import Tag from '../shared/Tag.vue';
 import { useRouter } from 'vue-router';
-import { onMounted } from 'vue';
-import { answerTypeStore, questionStore } from '../../api';
+import { questionStore } from '../../api';
 
 const props = defineProps({
   reviewTime: {

@@ -44,8 +44,6 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { GnListTile  } from "@graphyne/web-components";
-import ConfirmDialog from "../shared/ConfirmDialog.vue";
-import DropDownItem from "../shared/navigation/DropDownItem.vue";
 import { subjectStore } from "../../api/Subject";
 
 const props = defineProps({

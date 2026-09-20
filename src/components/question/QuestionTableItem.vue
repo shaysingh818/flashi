@@ -15,7 +15,6 @@
 
 <script setup>
 import { ref } from 'vue';
-import Tag from '../shared/Tag.vue';
 import { useRouter } from 'vue-router';
 import { onMounted } from 'vue';
 import { answerTypeStore, questionStore } from '../../api';

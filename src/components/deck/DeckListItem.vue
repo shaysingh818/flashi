@@ -55,10 +55,7 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { svgPathData } from "@fortawesome/free-solid-svg-icons/faRotateRight";
 import { deckStore } from "../../api/Deck";
-import ConfirmDialog from "../shared/ConfirmDialog.vue";
-import DropDownItem from "../shared/navigation/DropDownItem.vue";
 import { GnTag, GnListTile } from "@graphyne/web-components";
 
 

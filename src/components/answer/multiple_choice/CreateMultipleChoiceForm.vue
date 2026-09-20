@@ -36,7 +36,6 @@
 
 <script setup>
 import { ref } from "vue";
-import FormInputField from "../../../components/shared/forms/FormInputField.vue";
 import MultipleChoiceItem from "./MultipleChoiceItem.vue";
 import SettingsToggle from "../../../components/shared/SettingsToggle.vue";
 

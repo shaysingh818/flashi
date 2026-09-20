@@ -63,11 +63,6 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { deckStore } from "../../api/Deck";
-import FormInputField from "../../components/shared/forms/FormInputField.vue";
-import FormTextField from "../../components/shared/forms/FormTextField.vue";
-import PrimaryButton from "../../components/shared/buttons/PrimaryButton.vue";
-import SecondaryButton from "../../components/shared/buttons/SecondaryButton.vue";
-import Tag from "../shared/Tag.vue";
 
 const props = defineProps({   
   deckId: {

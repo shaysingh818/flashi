@@ -32,7 +32,6 @@
 import { onMounted, ref } from "vue"; 
 import { useRouter, useRoute } from "vue-router";
 import { sessionStore } from '../../api';
-import SearchComponent from '../../components/shared/forms/SearchComponent.vue';
 import HoverButton from '../../components/shared/buttons/HoverButton.vue';
 import DeckListView from '../../components/deck/DeckListView.vue';
 

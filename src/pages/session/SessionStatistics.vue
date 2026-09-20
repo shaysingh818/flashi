@@ -67,10 +67,6 @@ import {
   GnDoughnutChart,
   GnPieChart
 } from "@graphyne/web-components";
-import DoughnutChart from "../../components/shared/analytics/DoughnutChart.vue";
-import PieChart from "../../components/shared/analytics/PieChart.vue";
-import BarChart from "../../components/shared/analytics/BarChart.vue";
-import LineChart from "../../components/shared/analytics/LineChart.vue";
 import DataView from "../../components/shared/analytics/DataView.vue";
 
 const props = defineProps({

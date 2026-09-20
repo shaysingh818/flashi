@@ -35,7 +35,7 @@
 
 <script setup>
 import { ref } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRouter } from "vue-router";
 import { message } from '@tauri-apps/plugin-dialog';
 import { sessionStore } from "../../api";
 

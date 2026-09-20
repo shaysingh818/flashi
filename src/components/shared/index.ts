@@ -12,9 +12,5 @@ export { default as PrimaryButton } from './buttons/PrimaryButton.vue';
 export { default as SecondaryButton } from './buttons/SecondaryButton.vue';
 
 /* navigation */
-export { default as BackBar } from './navigation/BackBar.vue';
 export { default as DropDownItem } from './navigation/DropDownItem.vue';
 export { default as DropDownMenu } from './navigation/DropDownMenu.vue';
-
-/* misc  */
-export { default as Tag } from './Tag.vue'; 

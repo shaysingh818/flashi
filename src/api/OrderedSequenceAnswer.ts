@@ -1,8 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { dataDir} from '@tauri-apps/api/path';
 import { reactive } from 'vue';
-import { sessionReviewStore, getCurrentTimestamp } from './Session'; 
-import { OrderedSequenceAnswer, SessionReview, SessionReviewQuestion } from './types';
+import { OrderedSequenceAnswer } from './types';
 
 export const orderedSequenceStore = reactive({
 

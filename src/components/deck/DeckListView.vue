@@ -18,7 +18,7 @@
 
 <script setup>
 import DeckListItem from "./DeckListItem.vue";
-import { deckStore, sessionStore, sessionReviewStore } from "../../api";
+import { sessionStore } from "../../api";
 import { message } from '@tauri-apps/plugin-dialog'; 
 
 
