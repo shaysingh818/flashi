@@ -7,44 +7,54 @@
     </div>
 
     <div class="grid grid-cols-2 gap-4 p-4">
-        <GnDoughnutChart 
-            title="Question accuracy ratio"
-            height="28rem"
-            backgroundColor="var(--app-color-surface)"
-            borderColor="var(--app-color-surface)"
-            textColor="#ffffff"
-            :labels="['Correct', 'Incorrect']"
-            :data="[totalCorrect, totalIncorrect]" /> 
+
+      <GnDoughnutChart 
+          title="Question accuracy ratio"
+          height="28rem"
+          backgroundColor="var(--app-color-surface)"
+          borderColor="var(--app-color-surface)"
+          textColor="#ffffff"
+          :labels="['Correct', 'Incorrect']"
+          :data="[totalCorrect, totalIncorrect]" /> 
         
-      <PieChart 
-            title="Question type breakdown"
-            :labels="questionBreakdownLabels"
-            :values="questionBreakdownCounts" />
+      <GnPieChart
+        datasetLabel="Question Type"
+        title="Question type breakdown"
+        :labels="questionBreakdownLabels"
+        :data="questionBreakdownCounts"
+        height="28rem"
+        backgroundColor="var(--app-color-surface)"
+        borderColor="var(--app-color-surface)"
+        textColor="#ffffff" />
+
     </div>
 
     <div class="grid grid-cols-1 cols-responsive gap-4 p-4">
-      <LineChart 
-            title="Historical review metrics" 
-            :labels="accuracyDates"
-            :datasets="accuracyHistory" />
+      <GnLineChart 
+        height="22rem"
+        title="Historical review metrics" 
+        :labels="accuracyDates"
+        :datasets="accuracyHistory"
+        backgroundColor="var(--app-color-surface)"
+        borderColor="var(--app-color-surface)"
+        gridColor="gray"
+        textColor="#ffffff" />
     </div>
 
     <div class="grid grid-cols-2 cols-responsive gap-4 p-4">
 
         <DataView 
-            title="Most incorrect questions"
-            entityType="incorrect"
-            :questions="incorrectQuestions" />
+          title="Most incorrect questions"
+          entityType="incorrect"
+          :questions="incorrectQuestions" />
         
-      <DataView 
-            title="Most correct question"
-            entityType="correct"
-            :questions="correctQuestions" />
+        <DataView 
+          title="Most correct question"
+          entityType="correct"
+          :questions="correctQuestions" />
             
     </div>
 
-    <br />
-    <br />
   </div>
 </template>
 
