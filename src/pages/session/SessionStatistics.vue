@@ -1,15 +1,20 @@
 <template>
   <div class="flex flex-col">
-    <div class="grid grid-cols-3 gap-6 place-center p-4">
+    <div class="grid grid-cols-3 gap-4 place-center p-4">
       <GnMetricCard metric="Average Accuracy" :numeric="avgAccuracy" />
       <GnMetricCard metric="Total Questions Reviewed" :numeric="totalQuestionsReviewed" />
       <GnMetricCard metric="Total Review Time" :numeric="totalReviewTime" />
     </div>
 
     <div class="grid grid-cols-2 gap-4 p-4">
-        <DoughnutChart 
+        <GnDoughnutChart 
             title="Question accuracy ratio"
-            :values="[totalCorrect, totalIncorrect]" /> 
+            height="28rem"
+            backgroundColor="var(--app-color-surface)"
+            borderColor="var(--app-color-surface)"
+            textColor="#ffffff"
+            :labels="['Correct', 'Incorrect']"
+            :data="[totalCorrect, totalIncorrect]" /> 
         
       <PieChart 
             title="Question type breakdown"
