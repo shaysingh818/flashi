@@ -1,8 +1,6 @@
 <template>
 
-  <div class="flex col-center w-100">
-
-    <br />
+  <div class="flex flex-col">
 
     <FormHeader
       header="Study Metrics"
@@ -10,55 +8,62 @@
       These metrics are captured across all subjects, decks and questions reviewed."
     />
     
-    <div class="flex items-left w-90">
+    <div class="flex items-left p-4">
       <h2> General </h2>
     </div>
     
-    <div class="grid cols-3 w-90 gap-6 place-center p-6">
-      <MetricCard metric="Subject Count" :numeric="subjectCount" />
-      <MetricCard metric="Deck Count" :numeric="deckCount" />
-      <MetricCard metric="Session Count" :numeric="sessionCount" />
+    <div class="grid grid-cols-3 gap-4 place-center p-4">
+      <GnMetricCard metric="Subject Count" :numeric="subjectCount" />
+      <GnMetricCard metric="Deck Count" :numeric="deckCount" />
+      <GnMetricCard metric="Session Count" :numeric="sessionCount" />
     </div>
     
-    <div class="flex items-left w-90">
+    <div class="flex items-left p-4">
       <h2> Review Time </h2>
     </div>
     
-    <div class="grid cols-3 w-90 gap-6 place-center p-6">
-      <MetricCard metric="Daily Review Time" :numeric="dailyReviewTime" />
-      <MetricCard metric="Weekly Review Time" :numeric="weeklyReviewTime" />
-      <MetricCard metric="Monthly Review Time" :numeric="monthlyReviewTime" />
+    <div class="grid grid-cols-3 gap-4 place-center p-4">
+      <GnMetricCard metric="Daily Review Time" :numeric="dailyReviewTime" />
+      <GnMetricCard metric="Weekly Review Time" :numeric="weeklyReviewTime" />
+      <GnMetricCard metric="Monthly Review Time" :numeric="monthlyReviewTime" />
     </div>
     
-    <div class="flex items-left w-90">
+    <div class="flex items-left p-4">
       <h2> Questions </h2>
     </div>
     
-    <div class="grid cols-3 w-90 gap-6 place-center p-6">
-      <MetricCard metric="Questions reviewed all time" :numeric="questionReviewedAllTime" />
-      <MetricCard metric="Questions reviewed per day" :numeric="dailyQuestionReviewed" />
-      <MetricCard metric="Questions reviewed per week" :numeric="weeklyQuestionReviewed" />
+    <div class="grid grid-cols-3 gap-4 place-center p-4">
+      <GnMetricCard metric="Questions reviewed all time" :numeric="questionReviewedAllTime" />
+      <GnMetricCard metric="Questions reviewed per day" :numeric="dailyQuestionReviewed" />
+      <GnMetricCard metric="Questions reviewed per week" :numeric="weeklyQuestionReviewed" />
     </div>
  
-    <div class="grid cols-1 cols-responsive w-95 gap-4">
-      <LineChart 
-            title="Historical review metrics"
-            :labels="historicalDates"
-            :datasets="historicalAccuracy" />
+    <div class="grid grid-cols-1 gap-4 p-4">
+      <GnLineChart
+        height="22rem"
+        title="Historical review metrics"
+        :labels="historicalDates"
+        :datasets="historicalAccuracy"
+        backgroundColor="var(--app-color-surface)"
+        borderColor="var(--app-color-surface)" 
+        gridColor="gray"
+        textColor="#ffffff"/>
     </div>
+ 
+    <div class="grid grid-cols-1 gap-4 p-4">
 
-    <br />
-    
-    <div class="grid cols-1 cols-responsive w-95 gap-4">
-      <LineChart 
-            title="Question correct/incorrect ratio"
-            :labels="historicalDates"
-            :datasets="historicalCorrectIncorrect" />
+      <GnLineChart
+        height="22rem"
+        title="Question correct/incorrect ratio"
+        :labels="historicalDates"
+        :datasets="historicalCorrectIncorrect"
+        backgroundColor="var(--app-color-surface)"
+        borderColor="var(--app-color-surface)" 
+        gridColor="gray"
+        textColor="#ffffff"/>
+
     </div>
     
-    <br />
-    <br /> 
-    <br /> 
   </div>
 
 
@@ -156,6 +161,7 @@ onMounted(async () => {
 <style scoped>
 h2 {
   margin-bottom: 0;
+  font-weight: bold; 
 }
 
 </style>

@@ -1,17 +1,16 @@
 <template>
-  <div class="flex row-center w-100 gap-4" style="height: 50px;">
-    <Tag :title="`${score}/${totalAttempts}`" height="10px" /> 
-      <p> {{ questionText }}</p>
+  <div class="flex flex-row gap-4 p-4">
+    <div class="flex-shrink-0">
+      <GnTag :label="`${score}/${totalAttempts}`" />
+    </div>
+    <p> {{ questionText }}</p>
   </div>
 </template>
 
 <script>
-import Tag from '../shared/Tag.vue';
-
 export default {
   name: "QuestionAccuracyItem",
-  components: {Tag},
-  props: {    
+  props: {
     score: {
       type: String,
       default: () => "10",
@@ -36,9 +35,9 @@ export default {
 <style scoped>
 
 p {
-
+  flex: 1;
+  min-width: 0;
   color: #b5b3b3;
-  font-size: 10px; 
-  width: 65%; 
+  font-size: 10px;
 }
 </style>

@@ -1,12 +1,12 @@
 <template>
-<div class="flex col-center rounded-2 card">
+<div class="flex flex-col rounded-2 card">
 
   <br /> 
-  <div class="flex centered-all w-100">
+  <div class="flex justify-center">
     <h2> {{ title }} </h2>
   </div>
   
-  <div class="flex col-center w-100"> 
+  <div class="flex flex-col"> 
      <QuestionAccuracyItem
         v-for="(item, index) in props.questions"
         :key="index"
@@ -43,15 +43,17 @@ const props = defineProps({
 
 .card {
   background-color: rgb(28, 25, 23);
-  height: 300px;
+  height: 350px;
   overflow-y: auto; 
   justify-content: flex-start;
+  border-radius: 10px; 
 }
 
 h2 {
   color: white;
   padding-bottom: 0;
   font-size: 20px;
+  font-weight: bold; 
 }
 
 </style>
