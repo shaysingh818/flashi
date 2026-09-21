@@ -163,7 +163,7 @@ pub fn delete_deck(db_path: &str, deck_id: &str) -> String {
             return format!("Success");
         }
         Err(e) => {
-            return format!("Error retrieving subject with id: {:?} Cause: {:?}", deck_id, e);
+            return format!("Error retrieving deck with id: {:?} Cause: {:?}", deck_id, e);
         }
     }
 }

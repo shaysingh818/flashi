@@ -55,9 +55,9 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { deckStore } from "../../api/Deck";
+import { message } from '@tauri-apps/plugin-dialog';
 import { GnTag, GnListTile } from "@graphyne/web-components";
-
+import { deckStore } from "../../api/Deck";
 
 const props = defineProps({  
   id: {
@@ -101,16 +101,21 @@ function showDropdown() {
   isDropdownOpen.value = !isDropdownOpen.value;
 }
 
-async function confirmDelete() {
-  const result = await deckStore.deleteDeck(`${props.id}`);
-  console.log(result);
-  await deckStore.loadDecks(`${props.subjectId}`);
-  showDialog.value = false;
-}
-
 async function deleteDeck() {
-  isDropdownOpen.value = false;
-  showDialog.value = true;
+  const deleteResult = await deckStore.deleteDeck(`${props.id}`);
+  console.log("DELETE RESULT: ", deleteResult); 
+  if (deleteResult === "Success") {    
+    await message(
+      'Successfully deleted deck',
+      { title: 'Recalli', kind: 'info' }
+    );
+    await deckStore.loadDecksBySubject(`${props.subjectId}`);
+  } else {    
+    await message(
+      'Could not delete deck, please check to see if deck is still associated with a session',
+      { title: 'Recalli', kind: 'info' }
+    );
+  }
 }
 
 function editDeck() {
