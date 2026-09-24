@@ -167,3 +167,47 @@ pub fn delete_deck(db_path: &str, deck_id: &str) -> String {
         }
     }
 }
+
+#[tauri::command]
+pub fn export_deck(db_path: &str, deck_id: &str, path: &str) -> String {
+  
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return format!("Database connection error: {:?}", e);
+        }
+    };
+
+    match Deck::view(&conn, deck_id) {
+        Ok(mut deck) => {
+            let _ = deck.export(&conn, deck_id, path);
+            return format!("Success");
+        }
+        Err(e) => {
+            return format!("Error retrieving deck with id: {:?} Cause: {:?}", deck_id, e);
+        }
+    }
+}
+
+#[tauri::command]
+pub fn import_deck(db_path: &str, deck_id: &str, subject_id: &str, path: &str) -> String {
+  
+    let mut conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return format!("Database connection error: {:?}", e);
+        }
+    };
+
+    match Deck::view(&conn, deck_id) {
+        Ok(mut deck) => {
+            let _ = deck.import(&mut conn, deck_id, subject_id, path);
+            return format!("Success");
+        }
+        Err(e) => {
+            return format!("Error importing deck with subject id: {:?} Cause: {:?}", subject_id, e);
+        }
+    }
+}

@@ -233,4 +233,46 @@ impl Deck {
         decks
     }
 
+
+    pub fn import(&mut self, conn: &mut Connection, id: &str, subject_id: &str, path: &str) -> Result<()> {
+        
+        let import_deck_sql: &str = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"), 
+            "/database/sql/ROUTINES/IMPORT_DECK.sql"
+        ));
+
+        let sql = import_deck_sql
+            .replace("{path}", &path.replace('\'', "''"))
+            .replace("{subject_id}", &subject_id.to_string()); 
+
+        let tx = conn.transaction()?; 
+        tx.execute_batch(&sql)?; 
+        tx.commit()
+
+    }
+
+    pub fn export(&mut self, conn: &Connection, id: &str, path: &str) -> Result<()> {
+        
+        let deck_id: i64 = id.parse().map_err(|_| {
+            duckdb::Error::InvalidParameterName(format!("Invalid deck id: {id}"))
+        })?; 
+
+        let sql = format!(
+            "COPY (SELECT * FROM EXPORT_DECK({deck_id}) to '{}' (HEADER, DELIMITER ',')",
+            path.replace('\'', "''")
+        ); 
+
+        match conn.execute_batch(&sql) {
+            Ok(_) => {
+                println!("Succesfully exported deck"); 
+                return Ok(());
+            },
+            Err(err) => {
+                println!("[deck::export] Error exporting deck {:?}", err); 
+                return Err(err);
+            }
+        }
+
+    }
+
 }

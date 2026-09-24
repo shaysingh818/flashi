@@ -20,7 +20,7 @@ use crate::handlers::subject::{
 };
 
 use crate::handlers::deck::{
-    create_deck, delete_deck, edit_deck, search_decks, view_deck, view_decks, view_decks_by_subject,
+    create_deck, delete_deck, edit_deck, search_decks, view_deck, view_decks, view_decks_by_subject, import_deck, export_deck
 };
 
 use crate::handlers::question::{
@@ -108,6 +108,8 @@ pub fn run() {
             view_deck,
             view_decks,
             view_decks_by_subject,
+            import_deck,
+            export_deck,
             /* Questions  */
             create_question,
             delete_question,
