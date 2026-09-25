@@ -62,6 +62,16 @@ export const deckStore = reactive({
     } catch (error) {
       console.error("Error loading decks from search term: ", error); 
     }
-  }
+  }, 
+
+  async exportDeck(deckId: string): Promise<string> {    
+    const dbPath = await this.getDbPath();    
+    return await invoke("export_deck", { dbPath, deckId });  
+  },
+
+  async importDeck(subjectId: string, path: string): Promise<string> {    
+    const dbPath = await this.getDbPath();    
+    return await invoke("import_deck", { dbPath, subjectId, path });  
+  },
   
 })

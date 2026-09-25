@@ -34,6 +34,9 @@
             <GnDropDownMenuItem label="Edit Deck" @gn-click="editDeck">
               <font-awesome-icon icon="fa-solid fa-pen-to-square" />
             </GnDropDownMenuItem>
+            <GnDropDownMenuItem label="Export Deck" @gn-click="exportDeck">
+              <font-awesome-icon icon="fa-solid fa-file-export" />
+            </GnDropDownMenuItem>
             <GnDropDownMenuItem label="Delete Deck" color="#dc2626" text-color="#dc2626" @gn-click="deleteDeck">
               <font-awesome-icon icon="fa-solid fa-x" />
             </GnDropDownMenuItem>
@@ -116,6 +119,11 @@ async function deleteDeck() {
       { title: 'Recalli', kind: 'info' }
     );
   }
+}
+
+async function exportDeck() {
+  const exportResult = await deckStore.exportDeck(`${props.subjectId}`);
+  console.log(exportResult);
 }
 
 function editDeck() {

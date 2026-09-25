@@ -1,4 +1,6 @@
 use chrono;
+use std::fs;
+use std::io::ErrorKind;
 use serde::{Deserialize, Serialize};
 use duckdb::{params, Connection, Result}; 
 
@@ -251,18 +253,47 @@ impl Deck {
 
     }
 
-    pub fn export(&mut self, conn: &Connection, id: &str, path: &str) -> Result<()> {
+    pub fn export(&mut self, conn: &Connection, deck_id: &str, path: &str) -> Result<()> {
         
-        let deck_id: i64 = id.parse().map_err(|_| {
-            duckdb::Error::InvalidParameterName(format!("Invalid deck id: {id}"))
+        let deck_id_parsed: i64 = deck_id.parse().map_err(|_| {
+            duckdb::Error::InvalidParameterName(format!("Invalid deck id: {deck_id}"))
         })?; 
 
-        let sql = format!(
-            "COPY (SELECT * FROM EXPORT_DECK({deck_id}) to '{}' (HEADER, DELIMITER ',')",
+        let image_sql = format!(
+            "COPY 
+                (SELECT * FROM EXPORT_DECK({deck_id_parsed}) to '{}' 
+            (HEADER, DELIMITER ',')",
             path.replace('\'', "''")
         ); 
 
-        match conn.execute_batch(&sql) {
+        let mut image_query_stmt = conn.prepare("
+            SELECT 
+                IA.IMAGE_PATH
+            FROM QUESTION_IMAGE AS QI
+            LEFT JOIN IMAGE_ARTIFACT AS IA
+            ON IA.ID = QI.IMAGE_ID
+            WHERE QUESTION_ID IN ( SELECT ID FROM QUESTION WHERE DECK_ID = ?)
+        ")?;
+
+        // Create a folder with export format naming convention
+        let format_path = format!("{:?}/{:?}", path, "testing_export");
+        match fs::create_dir(format_path) {
+            Ok(()) => {
+                
+            },
+            Err(e) => match e.kind() {
+                ErrorKind::AlreadyExists => println!("Folder already exists"),
+                ErrorKind::NotFound => eprintln!("Parent directory doesn't exist"),
+                ErrorKind::PermissionDenied => eprintln!("Permission denied"),
+                _ => eprintln!("Error: {e}"),
+            },
+        }
+
+        // Extract all images associated with deck and put in images sub folder
+
+        // Place deck structured data csv file in root of export folder
+
+        match conn.execute_batch(&image_sql) {
             Ok(_) => {
                 println!("Succesfully exported deck"); 
                 return Ok(());

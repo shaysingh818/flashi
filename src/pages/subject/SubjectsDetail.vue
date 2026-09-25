@@ -10,7 +10,12 @@
         backgroundColor="var(--app-color-surface)"
         borderColor="var(--app-color-surface)"
         @gn-back="goBack">
-        <font-awesome-icon icon="fa-solid fa-arrow-left" />  
+        <font-awesome-icon icon="fa-solid fa-arrow-left" /> 
+        <template #actions> 
+          <GnIconButton label="Import Deck" variant="ghost" size="md" @gn-click="addKeyword">
+              <font-awesome-icon icon="fa-solid fa-file-import" />
+          </GnIconButton>
+        </template>
     </GnBackBar>
 
     <div class="grid grid-cols-3 gap-4 p-4">
