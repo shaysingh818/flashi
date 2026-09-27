@@ -1,6 +1,8 @@
 use chrono;
 use std::fs;
+use std::path::Path;
 use std::io::ErrorKind;
+use tauri::Manager;
 use serde::{Deserialize, Serialize};
 use duckdb::{params, Connection, Result}; 
 
@@ -253,18 +255,16 @@ impl Deck {
 
     }
 
-    pub fn export(&mut self, conn: &Connection, deck_id: &str, path: &str) -> Result<()> {
+    pub fn export(&mut self, conn: &Connection, deck_id: &str, path: &str, app_image_dir: &Path) -> Result<()> {
         
         let deck_id_parsed: i64 = deck_id.parse().map_err(|_| {
             duckdb::Error::InvalidParameterName(format!("Invalid deck id: {deck_id}"))
         })?; 
 
-        let image_sql = format!(
-            "COPY 
-                (SELECT * FROM EXPORT_DECK({deck_id_parsed}) to '{}' 
-            (HEADER, DELIMITER ',')",
-            path.replace('\'', "''")
-        ); 
+        // Create a folder with export format naming convention
+        let format_path = Path::new(path).join("testing_export");
+        fs::create_dir_all(&format_path)
+            .map_err(|_| duckdb::Error::InvalidPath(format_path.clone()))?; 
 
         let mut image_query_stmt = conn.prepare("
             SELECT 
@@ -275,23 +275,42 @@ impl Deck {
             WHERE QUESTION_ID IN ( SELECT ID FROM QUESTION WHERE DECK_ID = ?)
         ")?;
 
-        // Create a folder with export format naming convention
-        let format_path = format!("{:?}/{:?}", path, "testing_export");
-        match fs::create_dir(format_path) {
-            Ok(()) => {
-                
-            },
-            Err(e) => match e.kind() {
-                ErrorKind::AlreadyExists => println!("Folder already exists"),
-                ErrorKind::NotFound => eprintln!("Parent directory doesn't exist"),
-                ErrorKind::PermissionDenied => eprintln!("Permission denied"),
-                _ => eprintln!("Error: {e}"),
-            },
-        }
-
         // Extract all images associated with deck and put in images sub folder
+        let rows: Vec<String> = image_query_stmt
+            .query_map(params![deck_id], |row| row.get::<_, String>(0))?
+            .collect::<Result<Vec<String>>>()?;
+        println!("Image rows: {:?}", rows);
 
-        // Place deck structured data csv file in root of export folder
+        // Place deck structured data csv file in root of export folder  
+        let export_images_dir = format_path.join("images");
+        fs::create_dir_all(&export_images_dir)
+            .map_err(|_| duckdb::Error::InvalidPath(export_images_dir.clone()))?; 
+
+        for image_file in &rows {
+
+            let src = app_image_dir.join(image_file);
+            let Some(file_name) = src.file_name() else {
+                eprintln!("[deck::export] Skipping image with no file name: {image_file}");
+                continue;
+            }; 
+
+            let dest = export_images_dir.join(file_name);
+            if let Err(e) = fs::copy(src, &dest) {
+                eprintln!("[deck::export] failed to copy {image_file} -> {:?}: {e}", dest); 
+            }
+        }
+    
+        let csv_path = format_path.join("deck.csv"); 
+        let csv_path_str = csv_path
+            .to_str()
+            .ok_or_else(|| duckdb::Error::InvalidPath(csv_path.clone()))?
+            .replace('\'', "''");
+
+        let image_sql = format!(
+            "COPY 
+                (SELECT * FROM EXPORT_DECK({deck_id_parsed})) to '{csv_path_str}' 
+            (HEADER, DELIMITER ',')",
+        ); 
 
         match conn.execute_batch(&image_sql) {
             Ok(_) => {

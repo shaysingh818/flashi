@@ -106,7 +106,6 @@ function showDropdown() {
 
 async function deleteDeck() {
   const deleteResult = await deckStore.deleteDeck(`${props.id}`);
-  console.log("DELETE RESULT: ", deleteResult); 
   if (deleteResult === "Success") {    
     await message(
       'Successfully deleted deck',
@@ -122,8 +121,18 @@ async function deleteDeck() {
 }
 
 async function exportDeck() {
-  const exportResult = await deckStore.exportDeck(`${props.subjectId}`);
-  console.log(exportResult);
+  const exportResult = await deckStore.exportDeck(`${props.id}`);
+  if (exportResult === "Success") {    
+    await message(
+      'Successfully exported deck',
+      { title: 'Recalli', kind: 'info' }
+    );
+  } else {    
+    await message(
+      'Could not export deck, please check to see if proper export path is set in settings',
+      { title: 'Recalli', kind: 'info' }
+    );
+  }
 }
 
 function editDeck() {

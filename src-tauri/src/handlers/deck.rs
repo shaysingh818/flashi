@@ -2,6 +2,7 @@ use std::ffi::OsStr;
 use std::fs;
 use std::path::Path;
 use uuid::Uuid;
+use tauri::Manager;
 
 use duckdb::{Connection, Result}; 
 
@@ -169,8 +170,13 @@ pub fn delete_deck(db_path: &str, deck_id: &str) -> String {
 }
 
 #[tauri::command]
-pub fn export_deck(db_path: &str, deck_id: &str, path: &str) -> String {
+pub fn export_deck(app: tauri::AppHandle, db_path: &str, deck_id: &str, export_path: &str) -> String {
   
+    let app_image_dir = match app.path().data_dir() {
+        Ok(dir) => dir.join("flashi").join("images"),
+        Err(e) => return format!("Could not resolve data dir: {e}"),
+    };
+
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
@@ -181,7 +187,7 @@ pub fn export_deck(db_path: &str, deck_id: &str, path: &str) -> String {
 
     match Deck::view(&conn, deck_id) {
         Ok(mut deck) => {
-            let _ = deck.export(&conn, deck_id, path);
+            let _ = deck.export(&conn, deck_id, export_path, &app_image_dir);
             return format!("Success");
         }
         Err(e) => {
