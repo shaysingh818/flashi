@@ -66,8 +66,8 @@ export const deckStore = reactive({
 
   async exportDeck(deckId: string): Promise<string> {    
     const dbPath = await this.getDbPath();   
-    const path = "/home/shay-gaming/Documents/projects/desktop_applications";
-    return await invoke("export_deck", { dbPath, deckId, path });  
+    const exportPath = "/home/shay-gaming/Documents/projects/desktop_applications";
+    return await invoke("export_deck", { dbPath, deckId, exportPath });  
   },
 
   async importDeck(subjectId: string, path: string): Promise<string> {    
