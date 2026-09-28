@@ -9,6 +9,7 @@ import SettingsPage from "./pages/SettingsPage.vue";
 import SubjectsDetail from "./pages/subject/SubjectsDetail.vue";
 import CreateDeck from "./pages/deck/CreateDeck.vue";
 import EditDeck from "./pages/deck/EditDeck.vue";
+import ImportDeck from "./pages/deck/ImportDeck.vue";
 import DeckDetail from "./pages/deck/DeckDetail.vue";
 import CreateQuestion from "./pages/question/CreateQuestion.vue";
 import ViewQuestion from "./pages/question/ViewQuestion.vue";
@@ -32,6 +33,7 @@ const routes: Array<RouteRecordRaw> = [
   // decks
   { path: "/deck/create/:id", component: CreateDeck },
   { path: "/deck/edit/:id", component: EditDeck },
+  { path: "/deck/import/:id", component: ImportDeck },
   { path: "/deck/detail/:id", component: DeckDetail },
 
   // questions

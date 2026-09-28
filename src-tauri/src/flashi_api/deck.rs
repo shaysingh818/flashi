@@ -6,6 +6,8 @@ use tauri::Manager;
 use serde::{Deserialize, Serialize};
 use duckdb::{params, Connection, Result}; 
 
+use crate::flashi_api::queries;
+
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Deck {
@@ -213,14 +215,10 @@ impl Deck {
 
     pub fn search(conn: &Connection, search_term: &str) -> Result<Vec<Deck>> {
 
-        let query = format!(
-          "SELECT ID, SUBJECT_ID, NAME, TAGS::VARCHAR, DESCRIPTION, REVIEWED, CREATED::VARCHAR, UPDATED::VARCHAR FROM DECK WHERE NAME LIKE '%{}%'",
-          search_term
-        );
-        
-        let mut stmt = conn.prepare(&query)?;
+        let mut stmt = conn.prepare(&queries::SEARCH_DECK)?;
+
         let decks: Result<Vec<Deck>> = stmt
-            .query_map([], |row| { 
+            .query_map([search_term], |row| { 
                 let tags_raw: String = row.get(3)?;
                 Ok(Deck {
                     id: row.get(0)?,
@@ -236,7 +234,6 @@ impl Deck {
             .collect();
         decks
     }
-
 
     pub fn import(&mut self, conn: &mut Connection, id: &str, subject_id: &str, path: &str) -> Result<()> {
         
@@ -256,26 +253,25 @@ impl Deck {
     }
 
     pub fn export(&mut self, conn: &Connection, deck_id: &str, path: &str, app_image_dir: &Path) -> Result<()> {
-        
+       
+        let curr_time = chrono::Local::now().format("%Y%m%d_%H%M%S").to_string();
         let deck_id_parsed: i64 = deck_id.parse().map_err(|_| {
             duckdb::Error::InvalidParameterName(format!("Invalid deck id: {deck_id}"))
         })?; 
 
-        // Create a folder with export format naming convention
-        let format_path = Path::new(path).join("testing_export");
+        let safe_name: String = self.name
+            .trim()
+            .chars()
+            .map(|c| if c.is_alphanumeric() || c == '-' || c == '_' { c } else { '_' })
+            .collect();
+        let deck_export_name = format!("{0}_{curr_time}", safe_name); 
+
+        let format_path = Path::new(path).join(&deck_export_name);
         fs::create_dir_all(&format_path)
             .map_err(|_| duckdb::Error::InvalidPath(format_path.clone()))?; 
 
-        let mut image_query_stmt = conn.prepare("
-            SELECT 
-                IA.IMAGE_PATH
-            FROM QUESTION_IMAGE AS QI
-            LEFT JOIN IMAGE_ARTIFACT AS IA
-            ON IA.ID = QI.IMAGE_ID
-            WHERE QUESTION_ID IN ( SELECT ID FROM QUESTION WHERE DECK_ID = ?)
-        ")?;
-
         // Extract all images associated with deck and put in images sub folder
+        let mut image_query_stmt = conn.prepare(queries::DECK_IMAGE_PATHS)?;
         let rows: Vec<String> = image_query_stmt
             .query_map(params![deck_id], |row| row.get::<_, String>(0))?
             .collect::<Result<Vec<String>>>()?;
@@ -300,19 +296,18 @@ impl Deck {
             }
         }
     
-        let csv_path = format_path.join("deck.csv"); 
-        let csv_path_str = csv_path
+        let parquet_file_name = format!("{0}.parquet", deck_export_name);
+        let parquet_path = format_path.join(parquet_file_name); 
+        let parquet_path_str = parquet_path
             .to_str()
-            .ok_or_else(|| duckdb::Error::InvalidPath(csv_path.clone()))?
+            .ok_or_else(|| duckdb::Error::InvalidPath(parquet_path.clone()))?
             .replace('\'', "''");
 
-        let image_sql = format!(
-            "COPY 
-                (SELECT * FROM EXPORT_DECK({deck_id_parsed})) to '{csv_path_str}' 
-            (HEADER, DELIMITER ',')",
-        ); 
+        let parquet_sql = queries::EXPORT_DECK_PARQUET
+            .replace("{deck_id}", &deck_id_parsed.to_string())
+            .replace("{path}", &parquet_path_str); 
 
-        match conn.execute_batch(&image_sql) {
+        match conn.execute_batch(&parquet_sql) {
             Ok(_) => {
                 println!("Succesfully exported deck"); 
                 return Ok(());

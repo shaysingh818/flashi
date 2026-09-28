@@ -12,7 +12,7 @@
         @gn-back="goBack">
         <font-awesome-icon icon="fa-solid fa-arrow-left" /> 
         <template #actions> 
-          <GnIconButton label="Import Deck" variant="ghost" size="md" @gn-click="addKeyword">
+          <GnIconButton label="Import Deck" variant="ghost" size="md" @gn-click="importDeck">
               <font-awesome-icon icon="fa-solid fa-file-import" />
           </GnIconButton>
         </template>
@@ -87,6 +87,10 @@ function goBack() {
 
 function createDeck() {
   router.push({ path: `/deck/create/${subjectId}` });
+}
+
+function importDeck() {
+  router.push({ path: `/deck/import/${subjectId}` });
 }
 
 async function search(searchTerm) {

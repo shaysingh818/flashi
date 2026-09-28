@@ -1,0 +1,23 @@
+use std::collections::HashMap;
+use std::sync::LazyLock;
+
+// DECK QUERIES'
+pub const DECK_IMAGE_PATHS: &str = "
+    SELECT IA.IMAGE_PATH FROM QUESTION_IMAGE AS QI
+    LEFT JOIN IMAGE_ARTIFACT AS IA ON IA.ID = QI.IMAGE_ID
+    WHERE QUESTION_ID IN (SELECT ID FROM QUESTION WHERE DECK_ID = ?)
+";
+
+pub const EXPORT_DECK_PARQUET: &str = "COPY  (SELECT * FROM EXPORT_DECK({deck_id})) TO '{path}' (FORMAT PARQUET)";
+
+pub const SEARCH_DECK: &str = "
+SELECT 
+    ID, 
+    SUBJECT_ID, 
+    NAME, 
+    TAGS::VARCHAR, 
+    DESCRIPTION, 
+    REVIEWED, 
+    CREATED::VARCHAR, 
+    UPDATED::VARCHAR 
+FROM DECK WHERE NAME LIKE '%' || ? || '%'";
