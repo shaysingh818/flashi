@@ -207,9 +207,8 @@ pub fn import_deck(db_path: &str, deck_id: &str, subject_id: &str, path: &str) -
         }
     };
 
-    match Deck::view(&conn, deck_id) {
-        Ok(mut deck) => {
-            let _ = deck.import(&mut conn, deck_id, subject_id, path);
+    match Deck::import(&conn, deck_id, subject_id, path) {
+        Ok(_) => {
             return format!("Success");
         }
         Err(e) => {

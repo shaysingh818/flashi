@@ -235,8 +235,35 @@ impl Deck {
         decks
     }
 
-    pub fn import(&mut self, conn: &mut Connection, id: &str, subject_id: &str, path: &str) -> Result<()> {
+    pub fn import(conn: &Connection, id: &str, subject_id: &str, path: &str) -> Result<()> {
+       
+        // Look for a parquet file in the folder, format the full path to the parquet file
+        let import_directory = Path::new(path);
+        let parquet_path = fs::read_dir(import_directory)
+            .map_err(|_| duckdb::Error::InvalidPath(import_directory.to_path_buf()))?
+            .filter_map(|entry| entry.ok())
+            .map(|entry| entry.path())
+            .find(|p| {
+                p.is_file() && p.extension()
+                    .and_then(|ext| ext.to_str())
+                    .is_some_and(|ext| ext.eq_ignore_ascii_case("parquet"))
+            })
+            .ok_or_else(|| duckdb::Error::InvalidPath(import_directory.to_path_buf()))?; 
+
+        let parquet_path_str = parquet_path
+            .to_str()
+            .ok_or_else(|| duckdb::Error::InvalidPath(parquet_path.clone()))?
+            .replace('\'', "''");
+
+        println!("PARQUET PATH: {:?}", parquet_path_str);
+
+
+        // format the /images folder on top of the path
         
+        // Copy the images to the images directory of the application
+
+
+        /*
         let import_deck_sql: &str = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"), 
             "/database/sql/ROUTINES/IMPORT_DECK.sql"
@@ -248,7 +275,8 @@ impl Deck {
 
         let tx = conn.transaction()?; 
         tx.execute_batch(&sql)?; 
-        tx.commit()
+        tx.commit() */
+        Ok(())
 
     }
 

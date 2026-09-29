@@ -54,7 +54,7 @@ async function selectFolder() {
 
   const result = await open({
     directory: true,
-    multiple: true,
+    multiple: false,
     recursive: true,
     title: 'Select exported deck folder'
   });
