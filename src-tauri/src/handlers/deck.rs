@@ -2,6 +2,7 @@ use std::ffi::OsStr;
 use std::fs;
 use std::path::Path;
 use uuid::Uuid;
+use tauri::Manager;
 
 use duckdb::{Connection, Result}; 
 
@@ -163,7 +164,60 @@ pub fn delete_deck(db_path: &str, deck_id: &str) -> String {
             return format!("Success");
         }
         Err(e) => {
-            return format!("Error retrieving subject with id: {:?} Cause: {:?}", deck_id, e);
+            return format!("Error retrieving deck with id: {:?} Cause: {:?}", deck_id, e);
+        }
+    }
+}
+
+#[tauri::command]
+pub fn export_deck(app: tauri::AppHandle, db_path: &str, deck_id: &str, export_path: &str) -> String {
+  
+    let app_image_dir = match app.path().data_dir() {
+        Ok(dir) => dir.join("flashi").join("images"),
+        Err(e) => return format!("Could not resolve data dir: {e}"),
+    };
+
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return format!("Database connection error: {:?}", e);
+        }
+    };
+
+    match Deck::view(&conn, deck_id) {
+        Ok(mut deck) => {
+            let _ = deck.export(&conn, deck_id, export_path, &app_image_dir);
+            return format!("Success");
+        }
+        Err(e) => {
+            return format!("Error retrieving deck with id: {:?} Cause: {:?}", deck_id, e);
+        }
+    }
+}
+
+#[tauri::command]
+pub fn import_deck(app: tauri::AppHandle, db_path: &str, subject_id: &str, path: &str) -> String {
+ 
+    let app_image_dir = match app.path().data_dir() {
+        Ok(dir) => dir.join("flashi").join("images"),
+        Err(e) => return format!("Could not resolve data dir: {e}"),
+    };
+
+    let mut conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return format!("Database connection error: {:?}", e);
+        }
+    };
+
+    match Deck::import(&mut conn, subject_id, path, &app_image_dir) {
+        Ok(_) => {
+            return format!("Success");
+        }
+        Err(e) => {
+            return format!("Error importing deck with subject id: {:?} Cause: {:?}", subject_id, e);
         }
     }
 }

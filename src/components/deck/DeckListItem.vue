@@ -34,6 +34,9 @@
             <GnDropDownMenuItem label="Edit Deck" @gn-click="editDeck">
               <font-awesome-icon icon="fa-solid fa-pen-to-square" />
             </GnDropDownMenuItem>
+            <GnDropDownMenuItem label="Export Deck" @gn-click="exportDeck">
+              <font-awesome-icon icon="fa-solid fa-file-export" />
+            </GnDropDownMenuItem>
             <GnDropDownMenuItem label="Delete Deck" color="#dc2626" text-color="#dc2626" @gn-click="deleteDeck">
               <font-awesome-icon icon="fa-solid fa-x" />
             </GnDropDownMenuItem>
@@ -55,9 +58,9 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { deckStore } from "../../api/Deck";
+import { message } from '@tauri-apps/plugin-dialog';
 import { GnTag, GnListTile } from "@graphyne/web-components";
-
+import { deckStore } from "../../api/Deck";
 
 const props = defineProps({  
   id: {
@@ -101,16 +104,35 @@ function showDropdown() {
   isDropdownOpen.value = !isDropdownOpen.value;
 }
 
-async function confirmDelete() {
-  const result = await deckStore.deleteDeck(`${props.id}`);
-  console.log(result);
-  await deckStore.loadDecks(`${props.subjectId}`);
-  showDialog.value = false;
+async function deleteDeck() {
+  const deleteResult = await deckStore.deleteDeck(`${props.id}`);
+  if (deleteResult === "Success") {    
+    await message(
+      'Successfully deleted deck',
+      { title: 'Recalli', kind: 'info' }
+    );
+    await deckStore.loadDecksBySubject(`${props.subjectId}`);
+  } else {    
+    await message(
+      'Could not delete deck, please check to see if deck is still associated with a session',
+      { title: 'Recalli', kind: 'info' }
+    );
+  }
 }
 
-async function deleteDeck() {
-  isDropdownOpen.value = false;
-  showDialog.value = true;
+async function exportDeck() {
+  const exportResult = await deckStore.exportDeck(`${props.id}`);
+  if (exportResult === "Success") {    
+    await message(
+      'Successfully exported deck',
+      { title: 'Recalli', kind: 'info' }
+    );
+  } else {    
+    await message(
+      'Could not export deck, please check to see if proper export path is set in settings',
+      { title: 'Recalli', kind: 'info' }
+    );
+  }
 }
 
 function editDeck() {

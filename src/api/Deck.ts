@@ -62,6 +62,17 @@ export const deckStore = reactive({
     } catch (error) {
       console.error("Error loading decks from search term: ", error); 
     }
-  }
+  }, 
+
+  async exportDeck(deckId: string): Promise<string> {    
+    const dbPath = await this.getDbPath();   
+    const exportPath = "/home/shay-gaming/Documents/projects/desktop_applications";
+    return await invoke("export_deck", { dbPath, deckId, exportPath });  
+  },
+
+  async importDeck(subjectId: string, path: string): Promise<string> {    
+    const dbPath = await this.getDbPath();    
+    return await invoke("import_deck", { dbPath, subjectId, path });  
+  },
   
 })

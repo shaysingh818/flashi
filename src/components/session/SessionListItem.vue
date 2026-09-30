@@ -44,6 +44,7 @@
 import { ref } from "vue";
 import { sessionStore } from  "../../api"; 
 import { useRouter } from "vue-router";
+import { message } from '@tauri-apps/plugin-dialog';
 import { GnListTile } from "@graphyne/web-components";
 
 const props = defineProps({ 
@@ -69,19 +70,21 @@ const router = useRouter();
 const showDialog = ref(false);
 const isDropdownOpen = ref(false);
 
-function showDropdown() {
-  isDropdownOpen.value = !isDropdownOpen.value;
-}
 
-async function confirmDelete() {
-  const result = await sessionStore.deleteSession(`${props.id}`);
-  await sessionStore.loadSessions();
-  showDialog.value = false;
-}
-
-function deleteSession() {
-  isDropdownOpen.value = false;
-  showDialog.value = true;
+async function deleteSession() {
+  const deleteResult = await sessionStore.deleteSession(`${props.id}`);
+  if (deleteResult === "Success") {    
+    await message(
+      'Successfully deleted session',
+      { title: 'Recalli', kind: 'info' }
+    );
+    await sessionStore.loadSessions();
+  } else {    
+    await message(
+      'Could not delete session',
+      { title: 'Recalli', kind: 'info' }
+    );
+  }
 }
 
 function editSession() {

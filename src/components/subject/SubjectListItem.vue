@@ -43,6 +43,7 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import { message } from '@tauri-apps/plugin-dialog';
 import { GnListTile  } from "@graphyne/web-components";
 import { subjectStore } from "../../api/Subject";
 
@@ -73,15 +74,20 @@ function showDropdown() {
   isDropdownOpen.value = !isDropdownOpen.value;
 }
 
-async function confirmDelete() {
-  await subjectStore.deleteSubject(`${props.id}`);
-  await subjectStore.loadSubjects(); // re-fetches and updates the reactive list
-  showDialog.value = false;
-}
-
 async function deleteSubject() {
-  isDropdownOpen.value = false;
-  showDialog.value = true;
+  const deleteResult = await subjectStore.deleteSubject(`${props.id}`);
+  if (deleteResult === "Success") {    
+    await message(
+      'Successfully deleted subject',
+      { title: 'Recalli', kind: 'info' }
+    );
+    await subjectStore.loadSubjects();
+  } else {    
+    await message(
+      'Could not delete subject',
+      { title: 'Recalli', kind: 'info' }
+    );
+  }
 }
 
 function editSubject() {

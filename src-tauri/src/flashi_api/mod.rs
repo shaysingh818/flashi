@@ -5,3 +5,4 @@ pub mod session;
 pub mod session_review;
 pub mod subject;
 pub mod analytics;
+pub mod queries; 
