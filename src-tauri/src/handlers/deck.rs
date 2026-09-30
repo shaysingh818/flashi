@@ -197,8 +197,13 @@ pub fn export_deck(app: tauri::AppHandle, db_path: &str, deck_id: &str, export_p
 }
 
 #[tauri::command]
-pub fn import_deck(db_path: &str, deck_id: &str, subject_id: &str, path: &str) -> String {
-  
+pub fn import_deck(app: tauri::AppHandle, db_path: &str, subject_id: &str, path: &str) -> String {
+ 
+    let app_image_dir = match app.path().data_dir() {
+        Ok(dir) => dir.join("flashi").join("images"),
+        Err(e) => return format!("Could not resolve data dir: {e}"),
+    };
+
     let mut conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
@@ -207,7 +212,7 @@ pub fn import_deck(db_path: &str, deck_id: &str, subject_id: &str, path: &str) -
         }
     };
 
-    match Deck::import(&conn, deck_id, subject_id, path) {
+    match Deck::import(&mut conn, subject_id, path, &app_image_dir) {
         Ok(_) => {
             return format!("Success");
         }
