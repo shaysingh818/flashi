@@ -1,6 +1,7 @@
 pub mod answer; 
 pub mod deck; 
 pub mod question; 
+pub mod image_artifact;
 pub mod session;
 pub mod session_review;
 pub mod subject;

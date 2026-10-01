@@ -8,6 +8,8 @@ use uuid::Uuid;
 use serde::{Deserialize, Serialize};
 use duckdb::{params, Connection, Result}; 
 
+use crate::flashi_api::queries;
+
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Question {
@@ -45,12 +47,7 @@ impl Question {
 
     pub fn insert(&mut self, conn: &Connection) -> Result<i64> {
          
-        let result = conn.prepare( 
-            "INSERT INTO QUESTION 
-                (DECK_ID, ANSWER_TYPE_ID, ANSWER_ID, REVIEWED, CORRECT, INCORRECT, RAW, CREATED, UPDATED)
-            VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
-            RETURNING ID",
-          )
+        let result = conn.prepare(queries::INSERT_QUESTION)
           .and_then(|mut stmt| {
               stmt.query_row(
                   params![ 
@@ -81,8 +78,8 @@ impl Question {
     }
 
     pub fn retrieve(conn: &Connection, deck_id: &str) -> Result<Vec<Question>> {
- 
-        let mut stmt = conn.prepare("SELECT ID, DECK_ID, ANSWER_TYPE_ID, ANSWER_ID, REVIEWED, CORRECT, INCORRECT, RAW, CREATED::VARCHAR AS CREATED, UPDATED::VARCHAR AS UPDATED FROM QUESTION WHERE DECK_ID = ?")?;
+
+        let mut stmt = conn.prepare(queries::VIEW_QUESTIONS)?;
 
         let questions: Result<Vec<Question>> = stmt
             .query_map([&deck_id], |row| {
@@ -108,14 +105,7 @@ impl Question {
       self.updated = chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
 
         let result = conn.execute(
-            "UPDATE QUESTION
-                SET 
-                    RAW=?1,
-                    REVIEWED=?2, 
-                    CORRECT=?3, 
-                    INCORRECT=?4,
-                    UPDATED=?5
-                WHERE ID=?6",
+            queries::UPDATE_QUESTION,
             params![
                 &self.raw,
                 &self.reviewed,
@@ -142,18 +132,14 @@ impl Question {
 
         // Images currently attached to this question
         let this_question_images: Vec<i64> = {
-            let mut stmt = conn.prepare(
-                "SELECT IMAGE_ID FROM QUESTION_IMAGE WHERE QUESTION_ID = ?",
-            )?;
+            let mut stmt = conn.prepare(queries::RETRIEVE_QUESTION_IMAGE_IDS)?;
             let rows = stmt.query_map([id], |row| row.get(0))?;
             rows.collect::<std::result::Result<Vec<i64>, _>>()?
         };
      
-        // Drop the association and its image artifact one image at a time,
-        // rather than deleting all associations first and all artifacts second.
         for image_id in &this_question_images {
             if let Err(err) = conn.execute(
-                "DELETE FROM QUESTION_IMAGE WHERE QUESTION_ID = ? AND IMAGE_ID = ?",
+                queries::DELETE_QUESTION_IMAGES,
                 duckdb::params![id, image_id],
             ) {
                 println!("[question::delete] Error removing question_image link for image {}: {:?}", image_id, err);
@@ -161,7 +147,7 @@ impl Question {
             } 
         }
     
-        match conn.execute("DELETE FROM QUESTION WHERE ID = ?", [id]) {
+        match conn.execute(queries::DELETE_QUESTION, [id]) {
             Ok(_) => {
                 println!("Successfully deleted question");
                 Ok(())
@@ -175,7 +161,7 @@ impl Question {
 
     pub fn view(conn: &Connection, id: &str) -> Result<Question> {
         conn.query_row(
-            "SELECT ID, DECK_ID, ANSWER_TYPE_ID, ANSWER_ID, REVIEWED, CORRECT, INCORRECT, RAW, CREATED::VARCHAR, UPDATED::VARCHAR FROM QUESTION WHERE ID = ?",
+            queries::VIEW_QUESTION,
             &[&id],
             |row| {
                 Ok(Question {
@@ -195,14 +181,10 @@ impl Question {
     }
 
     pub fn search(conn: &Connection, search_term: &str) -> Result<Vec<Question>> {
-        let query = format!(
-            "SELECT ID, DECK_ID, ANSWER_TYPE_ID, ANSWER_ID, REVIEWED, CORRECT, INCORRECT, RAW, CREATED::VARCHAR, UPDATED::VARCHAR FROM QUESTION WHERE RAW LIKE '%{}%'",
-            search_term
-        );
-        let mut stmt = conn.prepare(&query)?;
+        let mut stmt = conn.prepare(&queries::SEARCH_QUESTION)?;
 
         let questions: Result<Vec<Question>> = stmt
-            .query_map([], |row| {
+            .query_map([search_term], |row| {
                 Ok(Question {
                     id: row.get(0)?,
                     deck_id: row.get(1)?,
@@ -223,9 +205,7 @@ impl Question {
     pub fn add_image_artifact_to_question(&mut self, conn: &Connection, image_id: &str) -> Result<String> {
 
         let result = conn.execute(
-            "INSERT INTO QUESTION_IMAGE
-                (QUESTION_ID, IMAGE_ID, CREATED, UPDATED)
-            VALUES (?1, ?2, ?3, ?4)",
+            queries::ADD_QUESTION_IMAGE_ARTIFACT,
             params![
                 &self.id,
                 image_id,
@@ -259,8 +239,7 @@ impl Question {
     pub fn remove_image_artifact_from_question(&mut self, conn: &Connection, image_id: &str) -> Result<String> {
         
         let result = conn.execute(
-            "DELETE FROM QUESTION_IMAGE
-                WHERE QUESTION_ID = ?1 AND IMAGE_ID = ?2",
+            queries::REMOVE_QUESTION_IMAGE_ARTIFACT,
             params![
                 &self.id,
                 image_id,
@@ -281,278 +260,199 @@ impl Question {
 
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ImageArtifact {
-    pub id: usize,
-    pub image_path: String,
-    pub created: String,
-    pub updated: String,
+
+#[tauri::command]
+pub fn create_question(deck_id: &str, answer_type_id: &str, answer_id: &str, raw: &str, db_path: &str) -> (i64, String) {
+
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => return (-1, format!("Failed to open database: {}", e)),
+    };
+
+    let deck_id_usize: usize = deck_id.parse::<usize>().unwrap();
+    let answer_type_id_usize: usize = answer_type_id.parse::<usize>().unwrap();
+    let answer_id_usize: usize = answer_id.parse::<usize>().unwrap();
+
+    let mut question: Question = Question::new(deck_id_usize, answer_type_id_usize, answer_id_usize, raw);
+
+    match question.insert(&conn) {
+        Ok(id) => {
+            let _ = conn.close();
+            return (id, "Success".to_string());
+        }
+        Err(e) => (-1, format!("Failed to insert question: {}", e)),
+    }
 }
 
-impl ImageArtifact {
+#[tauri::command]
+pub fn edit_question(id: &str, raw: &str, reviewed: usize, correct: usize, incorrect: usize, db_path: &str) -> String {
 
-    pub fn new(image_path: &str) -> ImageArtifact {
-
-        let now = chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
-      
-        ImageArtifact {
-            id: 0,
-            image_path: image_path.to_string(),
-            created: now.clone(),
-            updated: now,
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return e.to_string();
         }
-    }
+    };
 
-    pub fn insert(&mut self, conn: &Connection) -> Result<i64> {
-        
-        let result = conn.prepare(
-              "INSERT INTO IMAGE_ARTIFACT
-                  (IMAGE_PATH, CREATED, UPDATED)
-              VALUES (?1, ?2, ?3)
-              RETURNING ID",
-          )
-          .and_then(|mut stmt| {
-              stmt.query_row(
-                  params![&self.image_path, &self.created, &self.updated],
-                  |row| row.get::<_, i64>(0),
-              )
-          });
-        
-        match result {
-            Ok(id) => {
-                println!("Successfully inserted image artifact with id: {:?}", id);
-                Ok(id)
-            },
-            Err(err) => {
-                println!("[image_artifact::insert] duckdb error {:?}", err);
-                Err(err)
+    match Question::view(&conn, id) {
+        Ok(mut question) => {
+          
+            question.raw = raw.to_string();           
+            question.reviewed = reviewed;
+            question.correct = correct; 
+            question.incorrect = incorrect;
+            
+            match question.update(&conn, id) {
+                Ok(()) => {
+                    let _ = conn.close();
+                    return "Success".to_string();
+                }
+                Err(e) => format!("Failed to update deck: {}", e),
             }
         }
-    }
-
-    pub fn retrieve(conn: &Connection) -> Result<Vec<ImageArtifact>> {
-        
-        let mut stmt = conn.prepare("SELECT ID, IMAGE_PATH, CREATED::VARCHAR, UPDATED::VARCHAR FROM IMAGE_ARTIFACT")?;
-
-        let image_artifacts: Result<Vec<ImageArtifact>> = stmt
-            .query_map([], |row| {
-                Ok(ImageArtifact {
-                    id: row.get(0)?,
-                    image_path: row.get(1)?,
-                    created: row.get(2)?,
-                    updated: row.get(3)?,
-                })
-            })?
-            .collect();
-        image_artifacts
-    }
-
-    pub fn retrieve_question_image_artifacts(conn: &Connection, question_id: &str) -> Result<Vec<ImageArtifact>> {
-
-        let mut stmt = conn.prepare(
-            "SELECT ID, IMAGE_PATH, CREATED::VARCHAR, UPDATED::VARCHAR
-            FROM IMAGE_ARTIFACT WHERE ID IN (
-            SELECT IMAGE_ID FROM QUESTION_IMAGE WHERE QUESTION_ID = ?)"
-        )?;
-
-        let images: Result<Vec<ImageArtifact>> = stmt
-            .query_map(params![question_id], |row| {
-                Ok(ImageArtifact {
-                    id: row.get(0)?,
-                    image_path: row.get(1)?,
-                    created: row.get(2)?,
-                    updated: row.get(3)?,   
-                })
-            })?
-            .collect();
-        images
-    }
-
-    pub fn update(&mut self, conn: &Connection, id: &str) -> Result<()> {
-
-        self.updated = chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
-
-        let result = conn.execute(
-            "UPDATE IMAGE_ARTIFACT
-                SET IAMGE_PATH=?1,
-                    UPDATED=?2
-                WHERE ID=?3",
-            params![
-                &self.image_path,
-                &self.updated,
-                id,
-            ],
-        );
-
-        match result {
-            Ok(_) => {
-                println!("Successfully updated image artifact");
-                Ok(())
-            },
-            Err(err) => {
-                println!("[image_artifact::update] duckdb error {:?}", err);
-                Err(err)
-            }
-        }
-    }
-
-    pub fn delete(&mut self, conn: &Connection, id: &str) -> Result<()> {
-        let result = conn.execute("DELETE FROM IMAGE_ARTIFACT WHERE ID=?", [id]);
-        match result {
-            Ok(_) => {
-                println!("Successfully deleted image artifact");
-                Ok(())
-            },
-            Err(err) => {
-                println!("[image_artifact::delete] Error deleting image artifact {:?}", err);
-                Err(err)
-            }
-        }
-    }
-
-    pub fn view(conn: &Connection, id: &str) -> Result<ImageArtifact> {
-        conn.query_row(
-            "SELECT ID, IMAGE_PATH, CREATED::VARCHAR, UPDATED::VARCHAR FROM IMAGE_ARTIFACT WHERE ID = ?",
-            &[&id],
-            |row| {
-                Ok(ImageArtifact {
-                    id: row.get(0)?,
-                    image_path: row.get(1)?,
-                    created: row.get(2)?,
-                    updated: row.get(3)?,
-                })
-            }
-        )
-    }
-
-    pub fn search(conn: &Connection, search_term: &str) -> Result<Vec<ImageArtifact>> {
-        let query = format!(
-            "SELECT ID, IMAGE_PATH, CREATED::VARCHAR, UPDATED::VARCHAR FROM IMAGE_ARTIFACT WHERE NAME LIKE '%{}%'",
-            search_term
-        );
-        let mut stmt = conn.prepare(&query)?;
-
-        let image_artifacts: Result<Vec<ImageArtifact>> = stmt
-            .query_map([], |row| {
-                Ok(ImageArtifact {
-                    id: row.get(0)?,
-                    image_path: row.get(1)?,
-                    created: row.get(2)?,
-                    updated: row.get(3)?,
-                })
-            })?
-            .collect();
-        image_artifacts
-    }
-
-}
-
-
-
-#[derive(Debug)]
-pub enum UploadImageError {
-    /// The provided file name has no extension (e.g. "photo" instead of "photo.jpg").
-    MissingExtension(String),
-    /// Copying the file from its local path to the thumbnail directory failed.
-    Copy {
-        source: io::Error,
-        from: String,
-        to: String,
-    },
-}
-
-impl fmt::Display for UploadImageError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            UploadImageError::MissingExtension(name) => {
-                write!(f, "'{name}' has no file extension")
-            }
-            UploadImageError::Copy { source, from, to } => {
-                write!(f, "failed to copy '{from}' to '{to}': {source}")
-            }
+        Err(e) => {
+            let msg = format!("Error updating deck: {:?}", e);
+            return msg.to_string();
         }
     }
 }
 
-impl std::error::Error for UploadImageError {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        match self {
-            UploadImageError::Copy { source, .. } => Some(source),
-            UploadImageError::MissingExtension(_) => None,
+#[tauri::command]
+pub fn view_questions(db_path: &str, deck_id: &str) -> Vec<Question> {
+  
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return Vec::new();
+        }
+    };
+
+    match Question::retrieve(&conn, deck_id) {
+        Ok(questions) => questions,
+        Err(e) => {
+            println!("{:?}", e);
+            Vec::new()
         }
     }
 }
 
-#[derive(Debug)]
-pub enum RemoveImageError {
-    /// Deleting the file at the given path failed.
-    Delete {
-        source: io::Error,
-        path: String,
-    },
-}
+#[tauri::command]
+pub fn view_question(db_path: &str, question_id: &str) -> Result<Question, String> {
 
-impl fmt::Display for RemoveImageError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            RemoveImageError::Delete { source, path } => {
-                write!(f, "failed to delete '{path}': {source}")
-            }
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            let err_msg = format!("Database connection error: {:?}", e);
+            return Err(err_msg.to_string());
+        }
+    };
+
+    match Question::view(&conn, question_id) {
+        Ok(question) => {
+            return Ok(question);
+        }
+        Err(e) => {
+            let err_msg = format!("Error retrieving question with id: {:?} Cause: {:?}", question_id, e);
+            return Err(err_msg.to_string());
         }
     }
 }
 
-impl std::error::Error for RemoveImageError {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        match self {
-            RemoveImageError::Delete { source, .. } => Some(source),
-        }
-    }
-}
 
-pub fn upload_image(
-    image_file_name: &str,    
-    user_local_image_path: &str,
-    app_image_path: &str,
-) -> Result<String, UploadImageError> {
+#[tauri::command]
+pub fn add_question_image_artifact(db_path: &str, question_id: &str, image_id: &str) -> String {
     
-    if image_file_name.is_empty() {
-        return Ok("default.webp".to_string());
-    }
-
-    let image_ext = Path::new(image_file_name)
-        .extension()
-        .and_then(OsStr::to_str)
-        .ok_or_else(|| UploadImageError::MissingExtension(image_file_name.to_string()))?;
-
-    let image_file_name_final = format!("{}.{}", Uuid::new_v4(), image_ext);
-    let src_path = format!("{user_local_image_path}/{image_file_name}"); 
-    let dest_path = format!("{app_image_path}/{image_file_name_final}");
-
-    let bytes = fs::copy(&src_path, &dest_path).map_err(|source| {
-        UploadImageError::Copy {
-            source,
-            from: src_path.to_string(),
-            to: dest_path.clone(),
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return format!("Database connection error: {:?}", e);
         }
-    })?;
+    };
 
-    println!("Successfully copied thumbnail with {bytes} bytes ({dest_path})");
-
-    Ok(image_file_name_final)
+    match Question::view(&conn, question_id) {
+        Ok(mut question) => {
+            let result = question.add_image_artifact_to_question(&conn, image_id).unwrap();
+            return result;
+        }
+        Err(e) => {
+            return format!("Error adding image artifact to question with id: {:?} Cause: {:?}", image_id, e);
+        }
+    }
+    
 }
 
-pub fn remove_image(
-    image_file_name: &str,
-    app_image_path: &str,
-) -> Result<String, RemoveImageError> {
-    let image_delete_path = format!("{}/{}", app_image_path, image_file_name);
+#[tauri::command]
+pub fn remove_question_image_artifact(db_path: &str, question_id: &str, image_id: &str) -> String {
+  
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return format!("Database connection error: {:?}", e);
+        }
+    };
 
-    fs::remove_file(&image_delete_path).map_err(|source| RemoveImageError::Delete {
-        source,
-        path: image_delete_path.clone(),
-    })?;
-
-    println!("Successfully removed thumbnail {}", image_delete_path);
-    Ok(image_file_name.to_string())
+    match Question::view(&conn, question_id) {
+        Ok(mut question) => {
+            let result = question.remove_image_artifact_from_question(&conn, image_id).unwrap();
+            return result;
+        }
+        Err(e) => {
+            return format!("Error adding deck to session with id: {:?} Cause: {:?}", image_id, e);
+        }
+    }
 }
+
+#[tauri::command]
+pub fn search_questions(db_path: &str, search_term: &str) -> Vec<Question> {
+
+  let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return Vec::new();
+        }
+    };
+
+    match Question::search(&conn, search_term) {
+        Ok(questions) => questions,
+        Err(e) => {
+            println!("Error searching deck: {:?}", e);
+            Vec::new()
+        }
+    }
+}
+
+#[tauri::command]
+pub fn delete_question(db_path: &str, question_id: &str) -> String {
+  
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return format!("Database connection error: {:?}", e);
+        }
+    };
+
+    match Question::view(&conn, question_id) {
+        Ok(mut question) => {
+
+            match question.delete(&conn, question_id) {
+                Ok(_) => {
+                    return format!("Success");
+                },
+                Err(err) => {
+                    return format!("Error deleting question {}: {:?}", question_id, err); 
+                }
+            }    
+        }
+        Err(e) => {
+            return format!("Error retrieving question with id: {:?} Cause: {:?}", question_id, e);
+        }
+    }
+}
+

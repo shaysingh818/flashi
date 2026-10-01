@@ -19,14 +19,16 @@ use crate::handlers::subject::{
     create_subject, delete_subject, edit_subject, search_subjects, view_subject, view_subjects, subject_metrics
 };
 
-use crate::handlers::deck::{
+use crate::flashi_api::deck::{
     create_deck, delete_deck, edit_deck, search_decks, view_deck, view_decks, view_decks_by_subject, import_deck, export_deck
 };
 
-use crate::handlers::question::{
-    create_question, delete_question, edit_question, search_questions, view_question,
-    view_questions, create_image_artifact, edit_image_artifact, delete_image_artifact, view_question_image_artifacts,
-    add_question_image_artifact, remove_question_image_artifact
+use crate::flashi_api::question::{
+    create_question, delete_question, edit_question, search_questions, view_question, view_questions, add_question_image_artifact, remove_question_image_artifact
+};
+
+use crate::flashi_api::image_artifact::{
+    create_image_artifact, edit_image_artifact, delete_image_artifact, view_question_image_artifacts
 };
 
 use crate::handlers::answer::answer_type::{
