@@ -3,6 +3,7 @@ use chrono::{Duration, Utc};
 use serde::{Deserialize, Serialize};
 use duckdb::{params, Connection, Result};
 use crate::flashi_api::deck::Deck; 
+use crate::flashi_api::queries::session::*;
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -48,9 +49,7 @@ impl Session {
 
     pub fn insert(&mut self, conn: &Connection) -> Result<()> {
         let result = conn.execute(
-            "INSERT INTO SESSION
-                (NAME, DESCRIPTION, CREATED, UPDATED)
-            VALUES (?1, ?2, ?3, ?4)",
+            INSERT_SESSION,
             params![
                 &self.name,
                 &self.description,
@@ -72,7 +71,8 @@ impl Session {
     }
 
     pub fn retrieve(conn: &Connection) -> Result<Vec<Session>> {
-        let mut stmt = conn.prepare("SELECT ID, NAME, DESCRIPTION, CREATED::VARCHAR, UPDATED::VARCHAR FROM SESSION")?;
+
+        let mut stmt = conn.prepare(RETRIEVE_SESSION)?;
 
         let sessions: Result<Vec<Session>> = stmt
             .query_map([], |row| {
@@ -90,13 +90,7 @@ impl Session {
 
     pub fn retrieve_session_decks(conn: &Connection, session_id: usize) -> Result<Vec<Deck>> {
 
-        let mut stmt = conn.prepare(
-            "SELECT d.ID, d.SUBJECT_ID, d.NAME, d.TAGS::VARCHAR, d.DESCRIPTION, d.REVIEWED, 
-                    d.CREATED::VARCHAR, d.UPDATED::VARCHAR
-             FROM DECK d
-             INNER JOIN SESSION_DECK sd ON sd.DECK_ID = d.ID
-             WHERE sd.SESSION_ID = ?1"
-        )?;
+        let mut stmt = conn.prepare(RETRIEVE_SESSION_DECKS)?;
 
         let decks: Result<Vec<Deck>> = stmt
             .query_map(params![session_id], |row| {
@@ -121,11 +115,7 @@ impl Session {
         self.updated = chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
 
         let result = conn.execute(
-            "UPDATE SESSION
-                SET NAME=?1,
-                    DESCRIPTION=?2,
-                    UPDATED=?3
-                WHERE ID=?4",
+            UPDATE_SESSION, 
             params![
                 &self.name,
                 &self.description,
@@ -202,7 +192,7 @@ impl Session {
     }
     
     pub fn delete_session_reviews(&mut self, conn: &Connection, id: &str) -> Result<()> {
-        let result = conn.execute("DELETE FROM SESSION_REVIEW WHERE SESSION_ID=?", [id]);
+        let result = conn.execute(DELETE_SESSION, [id]);
         match result {
             Ok(_) => {
                 println!("[session::delete_session_reviews] Successfully removed session review's from existing session");
@@ -219,15 +209,8 @@ impl Session {
     }
     
     pub fn delete_session_review_questions(&mut self, conn: &Connection, id: &str) -> Result<()> {
-
-        let query = "
-            DELETE FROM SESSION_REVIEW_QUESTION 
-            WHERE SESSION_REVIEW_ID IN (
-                SELECT ID FROM SESSION_REVIEW WHERE SESSION_ID = ?
-            )
-        ";
-        
-        let result = conn.execute(query, [id]);
+ 
+        let result = conn.execute(DELETE_SESSION_REVIEW_QUESTIONS, [id]);
         match result {
             Ok(_) => {
                 println!("[session::delete_session_review_questions] Successfully removed session review questions from existing session");
@@ -244,15 +227,8 @@ impl Session {
     }
 
     pub fn delete_session_review_metrics(&mut self, conn: &Connection, id: &str) -> Result<()> {
-
-        let query = "
-            DELETE FROM SESSION_REVIEW_METRICS 
-            WHERE SESSION_REVIEW_ID IN (
-                SELECT ID FROM SESSION_REVIEW WHERE SESSION_ID = ?
-            )
-        ";
-        
-        let result = conn.execute(query, [id]);
+ 
+        let result = conn.execute(DELETE_SESSION_REVIEW_QUESTIONS, [id]);
         match result {
             Ok(_) => {
                 println!("[session::delete_session_review_metrics] Successfully removed session review metrics from existing session");
@@ -269,7 +245,7 @@ impl Session {
     }
     
     pub fn delete_decks(&mut self, conn: &Connection, id: &str) -> Result<()> {
-        let result = conn.execute("DELETE FROM SESSION_DECK WHERE SESSION_ID=?", [id]);
+        let result = conn.execute(DELETE_SESSION_DECKS, [id]);
         match result {
             Ok(_) => {
                 println!("[session::delete_decks] Successfully removed all decks associated with session");
@@ -287,7 +263,7 @@ impl Session {
 
     pub fn view(conn: &Connection, id: &str) -> Result<Session> {
         conn.query_row(
-            "SELECT ID, NAME, DESCRIPTION, CREATED::VARCHAR, UPDATED::VARCHAR FROM SESSION WHERE ID = ?",
+            VIEW_SESSION,
             &[&id],
             |row| {
                 Ok(Session {
@@ -304,9 +280,7 @@ impl Session {
     pub fn add_deck_to_session(&mut self, conn: &Connection, deck_id: &str) -> Result<String> {
         
         let result = conn.execute(
-            "INSERT INTO SESSION_DECK
-                (SESSION_ID, DECK_ID, CREATED, UPDATED)
-            VALUES (?1, ?2, ?3, ?4)",
+            ADD_DECK_TO_SESSION,
             params![
                 &self.id,
                 deck_id,
@@ -340,8 +314,7 @@ impl Session {
     pub fn remove_deck_from_session(&mut self, conn: &Connection, deck_id: &str) -> Result<String> {
         
         let result = conn.execute(
-            "DELETE FROM SESSION_DECK
-                WHERE SESSION_ID = ?1 AND DECK_ID = ?2",
+            REMOVE_DECK_FROM_SESSION,
             params![
                 &self.id,
                 deck_id,
@@ -361,14 +334,11 @@ impl Session {
     }
 
     pub fn search(conn: &Connection, search_term: &str) -> Result<Vec<Session>> {
-        let query = format!(
-            "SELECT ID, NAME, DESCRIPTION, CREATED::VARCHAR, UPDATED::VARCHAR FROM SESSION WHERE NAME LIKE '%{}%'",
-            search_term
-        );
-        let mut stmt = conn.prepare(&query)?;
+
+        let mut stmt = conn.prepare(&SEARCH_SESSION)?;
 
         let sessions: Result<Vec<Session>> = stmt
-            .query_map([], |row| {
+            .query_map([search_term], |row| {
                 Ok(Session {
                     id: row.get(0)?,
                     name: row.get(1)?,
@@ -384,20 +354,8 @@ impl Session {
 
     pub fn session_progress_status(conn: &Connection, id: &str) -> Result<(usize, usize)> {
 
-        let query = "
-            WITH SESSION_QUESTIONS AS (
-                SELECT * FROM SESSION_REVIEW_QUESTION 
-                WHERE SESSION_REVIEW_ID IN (
-                    SELECT ID FROM SESSION_REVIEW WHERE COMPLETE != TRUE AND SESSION_ID = ?)
-            )
-            SELECT 
-                COUNT_IF(ACTIVE = FALSE) AS COMPLETED,
-                COUNT(*) AS TOTAL
-            FROM SESSION_QUESTIONS; 
-        "; 
-        
         conn.query_row(
-            query,
+            SESSION_PROGRESS_STATUS,
             &[&id],
             |row| {
                 let completed: Option<i64> = row.get(0)?; 
@@ -409,19 +367,8 @@ impl Session {
 
     pub fn metrics(conn: &Connection, id: &str) -> Result<(f64, usize, usize, usize, usize)> {
 
-        let query = "
-            SELECT 
-                SUM(ACCURACY) / COUNT(*) AS AVG_ACCURACY,
-                SUM(TOTAL_REVIEW_COUNT) AS TOTAL_REVIEWED,
-                SUM(REVIEW_TIME) AS TOTAL_REVIEW_TIME,
-                SUM(QUESTIONS_CORRECT) AS TOTAL_CORRECT,
-                SUM(QUESTIONS_INCORRECT) AS TOTAL_INCORRECT
-            FROM SESSION_REVIEW_METRICS
-            WHERE SESSION_REVIEW_ID IN (SELECT ID FROM SESSION_REVIEW WHERE SESSION_ID = ?)
-        ";
-
         conn.query_row(
-            query,
+            SESSION_METRICS,
             &[&id],
             |row| {
                 let avg_accuracy: Option<f64> = row.get(0)?; 
@@ -442,25 +389,7 @@ impl Session {
 
     pub fn question_breakdown(conn: &Connection, id: &str) -> Result<Vec<(String, i64)>> {
 
-        let query = "
-            WITH ANSWER_TYPE_GROUPING AS (
-               	SELECT 
-              		ANS_TYPE.NAME AS ANSWER_TYPE
-               	FROM SESSION_REVIEW_QUESTION AS SRQ
-               	LEFT JOIN QUESTION AS Q
-               	ON Q.ID = SRQ.QUESTION_ID
-               	LEFT JOIN ANSWER_TYPE AS ANS_TYPE
-               	ON Q.ANSWER_TYPE_ID = ANS_TYPE.ID
-               	WHERE SRQ.SESSION_REVIEW_ID IN (SELECT ID FROM SESSION_REVIEW WHERE SESSION_ID = ?)
-           	)
-            SELECT
-                ANSWER_TYPE,
-                COUNT(ANSWER_TYPE) AS ANSWER_TYPE_COUNT
-            FROM ANSWER_TYPE_GROUPING
-            GROUP BY ANSWER_TYPE ORDER BY ANSWER_TYPE_COUNT DESC
-        ";
-
-        let mut stmt = conn.prepare(query)?; 
+        let mut stmt = conn.prepare(SESSION_QUESTION_BREAKDOWN)?; 
         let rows = stmt.query_map(&[&id], |row| {
             let answer_type: String = row.get(0)?; 
             let count: i64 = row.get(1)?; 
@@ -475,18 +404,7 @@ impl Session {
         let cutoff = (Utc::now() - Duration::days(30)).date_naive();
         let cutoff_str = cutoff.to_string();
 
-        let query = "
-            SELECT 
-                CAST(DATE_TRUNC('day', CREATED) AS VARCHAR) AS DAY_DATE,
-                AVG(ACCURACY) AS AVG_ACCURACY
-            FROM SESSION_REVIEW_METRICS
-            WHERE SESSION_REVIEW_ID IN (SELECT ID FROM SESSION_REVIEW WHERE SESSION_ID = ?)
-            AND CREATED >= ?
-            GROUP BY DATE_TRUNC('day', CREATED)
-            ORDER BY DATE_TRUNC('day', CREATED)
-        ";
-
-        let mut stmt = conn.prepare(query)?; 
+        let mut stmt = conn.prepare(SESSION_DAILY_ACCURACY_HISTORY)?; 
         let rows = stmt.query_map(params![id, cutoff_str], |row| {
             let day_date: String = row.get(0)?;
             let accuracy: f64 = row.get(1)?;
@@ -498,35 +416,7 @@ impl Session {
 
     pub fn correct_incorrect_questions(conn: &Connection, id: &str) -> Result<(Vec<SessionCorrectQuestion>, Vec<SessionIncorrectQuestion>)> {
 
-        let correct_query = "
-            SELECT 
-               	Q.CORRECT,
-               	Q.REVIEWED,
-               	Q.RAW,
-               	Q.UPDATED::VARCHAR,
-               	(Q.CORRECT / Q.REVIEWED) AS CORRECT_RATIO
-            FROM SESSION_REVIEW_QUESTION AS SRQ
-            LEFT JOIN QUESTION AS Q
-            ON Q.ID = SRQ.QUESTION_ID
-            WHERE SESSION_REVIEW_ID IN (SELECT ID FROM SESSION_REVIEW WHERE SESSION_ID = ?)
-            ORDER BY CORRECT_RATIO DESC
-        ";
-
-        let incorrect_query = "
-            SELECT 
-               	Q.INCORRECT,
-               	Q.REVIEWED,
-               	Q.RAW,
-               	Q.UPDATED::VARCHAR,
-               	(Q.INCORRECT / Q.REVIEWED) AS INCORRECT_RATIO
-            FROM SESSION_REVIEW_QUESTION AS SRQ
-            LEFT JOIN QUESTION AS Q
-            ON Q.ID = SRQ.QUESTION_ID
-            WHERE SESSION_REVIEW_ID IN (SELECT ID FROM SESSION_REVIEW WHERE SESSION_ID = ?)
-            ORDER BY INCORRECT_RATIO DESC
-        ";
-
-        let mut stmt = conn.prepare(correct_query)?; 
+        let mut stmt = conn.prepare(SESSION_CORRECT_QUESTIONS)?; 
         let correct_questions: Result<Vec<SessionCorrectQuestion>> = stmt
             .query_map([id], |row| {
                 Ok(SessionCorrectQuestion {
@@ -539,7 +429,7 @@ impl Session {
             })?
             .collect();
                
-        let mut stmt = conn.prepare(incorrect_query)?; 
+        let mut stmt = conn.prepare(SESSION_INCORRECT_QUESTIONS)?; 
         let incorrect_questions: Result<Vec<SessionIncorrectQuestion>> = stmt
             .query_map([id], |row| {
                 Ok(SessionIncorrectQuestion {

@@ -6,7 +6,7 @@ use tauri::Manager;
 use serde::{Deserialize, Serialize};
 use duckdb::{params, Connection, Result}; 
 
-use crate::flashi_api::queries;
+use crate::flashi_api::queries::deck::*;
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -59,7 +59,7 @@ impl Deck {
         );
 
         let result = conn.execute(
-            &queries::INSERT_DECK.replace("{tags}", &tags_literal), 
+            &INSERT_DECK.replace("{tags}", &tags_literal), 
             params![
                 &self.subject_id,
                 &self.name,
@@ -84,7 +84,7 @@ impl Deck {
 
     pub fn retrieve(conn: &Connection) -> Result<Vec<Deck>> {
 
-        let mut stmt = conn.prepare(queries::VIEW_DECKS)?;
+        let mut stmt = conn.prepare(VIEW_DECKS)?;
 
         let decks: Result<Vec<Deck>> = stmt
             .query_map([], |row| {
@@ -105,7 +105,7 @@ impl Deck {
     }
 
     pub fn retrieve_by_subject(conn: &Connection, subject_id: &str) -> Result<Vec<Deck>> {
-        let mut stmt = conn.prepare(queries::DECK_BY_SUBJECT)?;
+        let mut stmt = conn.prepare(DECK_BY_SUBJECT)?;
 
         let decks: Result<Vec<Deck>> = stmt
             .query_map([&subject_id], |row| {
@@ -139,7 +139,7 @@ impl Deck {
         );
 
         let result = conn.execute(
-            &queries::UPDATE_DECK.replace("{tags}", &tags_literal),
+            &UPDATE_DECK.replace("{tags}", &tags_literal),
             params![
                 &self.subject_id,
                 &self.name,
@@ -164,7 +164,7 @@ impl Deck {
     }
 
     pub fn delete(&mut self, conn: &Connection, id: &str) -> Result<()> {
-        let result = conn.execute(queries::DELETE_DECK, [id]);
+        let result = conn.execute(DELETE_DECK, [id]);
         match result {
             Ok(_) => {
                 println!("Succesfully deleted deck"); 
@@ -178,7 +178,7 @@ impl Deck {
     }
 
     pub fn view(conn: &Connection, id: &str) -> Result<Deck> {
-        conn.query_row(queries::VIEW_DECK, &[&id], |row| {
+        conn.query_row(VIEW_DECK, &[&id], |row| {
             let tags_raw: String = row.get(3)?;
             Ok(Deck {
                 id: row.get(0)?,
@@ -196,7 +196,7 @@ impl Deck {
 
     pub fn search(conn: &Connection, search_term: &str) -> Result<Vec<Deck>> {
 
-        let mut stmt = conn.prepare(&queries::SEARCH_DECK)?;
+        let mut stmt = conn.prepare(&SEARCH_DECK)?;
 
         let decks: Result<Vec<Deck>> = stmt
             .query_map([search_term], |row| { 
@@ -296,7 +296,7 @@ impl Deck {
             .map_err(|_| duckdb::Error::InvalidPath(format_path.clone()))?; 
 
         // Extract all images associated with deck and put in images sub folder
-        let mut image_query_stmt = conn.prepare(queries::DECK_IMAGE_PATHS)?;
+        let mut image_query_stmt = conn.prepare(DECK_IMAGE_PATHS)?;
         let rows: Vec<String> = image_query_stmt
             .query_map(params![deck_id], |row| row.get::<_, String>(0))?
             .collect::<Result<Vec<String>>>()?;
@@ -327,7 +327,7 @@ impl Deck {
             .ok_or_else(|| duckdb::Error::InvalidPath(parquet_path.clone()))?
             .replace('\'', "''");
 
-        let parquet_sql = queries::EXPORT_DECK_PARQUET
+        let parquet_sql = EXPORT_DECK_PARQUET
             .replace("{deck_id}", &deck_id_parsed.to_string())
             .replace("{path}", &parquet_path_str); 
 

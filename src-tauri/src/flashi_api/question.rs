@@ -8,7 +8,7 @@ use uuid::Uuid;
 use serde::{Deserialize, Serialize};
 use duckdb::{params, Connection, Result}; 
 
-use crate::flashi_api::queries;
+use crate::flashi_api::queries::question::*;
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -47,7 +47,7 @@ impl Question {
 
     pub fn insert(&mut self, conn: &Connection) -> Result<i64> {
          
-        let result = conn.prepare(queries::INSERT_QUESTION)
+        let result = conn.prepare(INSERT_QUESTION)
           .and_then(|mut stmt| {
               stmt.query_row(
                   params![ 
@@ -79,7 +79,7 @@ impl Question {
 
     pub fn retrieve(conn: &Connection, deck_id: &str) -> Result<Vec<Question>> {
 
-        let mut stmt = conn.prepare(queries::VIEW_QUESTIONS)?;
+        let mut stmt = conn.prepare(VIEW_QUESTIONS)?;
 
         let questions: Result<Vec<Question>> = stmt
             .query_map([&deck_id], |row| {
@@ -105,7 +105,7 @@ impl Question {
       self.updated = chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
 
         let result = conn.execute(
-            queries::UPDATE_QUESTION,
+            UPDATE_QUESTION,
             params![
                 &self.raw,
                 &self.reviewed,
@@ -132,14 +132,14 @@ impl Question {
 
         // Images currently attached to this question
         let this_question_images: Vec<i64> = {
-            let mut stmt = conn.prepare(queries::RETRIEVE_QUESTION_IMAGE_IDS)?;
+            let mut stmt = conn.prepare(RETRIEVE_QUESTION_IMAGE_IDS)?;
             let rows = stmt.query_map([id], |row| row.get(0))?;
             rows.collect::<std::result::Result<Vec<i64>, _>>()?
         };
      
         for image_id in &this_question_images {
             if let Err(err) = conn.execute(
-                queries::DELETE_QUESTION_IMAGES,
+                DELETE_QUESTION_IMAGES,
                 duckdb::params![id, image_id],
             ) {
                 println!("[question::delete] Error removing question_image link for image {}: {:?}", image_id, err);
@@ -147,7 +147,7 @@ impl Question {
             } 
         }
     
-        match conn.execute(queries::DELETE_QUESTION, [id]) {
+        match conn.execute(DELETE_QUESTION, [id]) {
             Ok(_) => {
                 println!("Successfully deleted question");
                 Ok(())
@@ -161,7 +161,7 @@ impl Question {
 
     pub fn view(conn: &Connection, id: &str) -> Result<Question> {
         conn.query_row(
-            queries::VIEW_QUESTION,
+            VIEW_QUESTION,
             &[&id],
             |row| {
                 Ok(Question {
@@ -181,7 +181,7 @@ impl Question {
     }
 
     pub fn search(conn: &Connection, search_term: &str) -> Result<Vec<Question>> {
-        let mut stmt = conn.prepare(&queries::SEARCH_QUESTION)?;
+        let mut stmt = conn.prepare(&SEARCH_QUESTION)?;
 
         let questions: Result<Vec<Question>> = stmt
             .query_map([search_term], |row| {
@@ -205,7 +205,7 @@ impl Question {
     pub fn add_image_artifact_to_question(&mut self, conn: &Connection, image_id: &str) -> Result<String> {
 
         let result = conn.execute(
-            queries::ADD_QUESTION_IMAGE_ARTIFACT,
+            ADD_QUESTION_IMAGE_ARTIFACT,
             params![
                 &self.id,
                 image_id,
@@ -239,7 +239,7 @@ impl Question {
     pub fn remove_image_artifact_from_question(&mut self, conn: &Connection, image_id: &str) -> Result<String> {
         
         let result = conn.execute(
-            queries::REMOVE_QUESTION_IMAGE_ARTIFACT,
+            REMOVE_QUESTION_IMAGE_ARTIFACT,
             params![
                 &self.id,
                 image_id,

@@ -8,7 +8,7 @@ use uuid::Uuid;
 use serde::{Deserialize, Serialize};
 use duckdb::{params, Connection, Result}; 
 
-use crate::flashi_api::queries;
+use crate::flashi_api::queries::image_artifact::*;
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -35,7 +35,7 @@ impl ImageArtifact {
 
     pub fn insert(&mut self, conn: &Connection) -> Result<i64> {
         
-        let result = conn.prepare(queries::INSERT_IMAGE_ARTIFACT)
+        let result = conn.prepare(INSERT_IMAGE_ARTIFACT)
           .and_then(|mut stmt| {
               stmt.query_row(
                   params![&self.image_path, &self.created, &self.updated],
@@ -57,7 +57,7 @@ impl ImageArtifact {
 
     pub fn retrieve(conn: &Connection) -> Result<Vec<ImageArtifact>> {
         
-        let mut stmt = conn.prepare(queries::RETRIEVE_IMAGE_ARTIFACTS)?;
+        let mut stmt = conn.prepare(RETRIEVE_IMAGE_ARTIFACTS)?;
 
         let image_artifacts: Result<Vec<ImageArtifact>> = stmt
             .query_map([], |row| {
@@ -74,7 +74,7 @@ impl ImageArtifact {
 
     pub fn retrieve_question_image_artifacts(conn: &Connection, question_id: &str) -> Result<Vec<ImageArtifact>> {
 
-        let mut stmt = conn.prepare(queries::RETRIEVE_QUESTION_IMAGE_ARTIFACTS)?;
+        let mut stmt = conn.prepare(RETRIEVE_QUESTION_IMAGE_ARTIFACTS)?;
 
         let images: Result<Vec<ImageArtifact>> = stmt
             .query_map(params![question_id], |row| {
@@ -94,7 +94,7 @@ impl ImageArtifact {
         self.updated = chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
 
         let result = conn.execute(
-            queries::UPDATE_IMAGE_ARTIFACT,
+            UPDATE_IMAGE_ARTIFACT,
             params![
                 &self.image_path,
                 &self.updated,
@@ -115,7 +115,7 @@ impl ImageArtifact {
     }
 
     pub fn delete(&mut self, conn: &Connection, id: &str) -> Result<()> {
-        let result = conn.execute(queries::DELETE_IMAGE_ARTIFACT, [id]);
+        let result = conn.execute(DELETE_IMAGE_ARTIFACT, [id]);
         match result {
             Ok(_) => {
                 println!("Successfully deleted image artifact");
@@ -130,7 +130,7 @@ impl ImageArtifact {
 
     pub fn view(conn: &Connection, id: &str) -> Result<ImageArtifact> {
         conn.query_row(
-            queries::VIEW_IMAGE_ARTIFACT,
+            VIEW_IMAGE_ARTIFACT,
             &[&id],
             |row| {
                 Ok(ImageArtifact {
@@ -145,7 +145,7 @@ impl ImageArtifact {
 
     pub fn search(conn: &Connection, search_term: &str) -> Result<Vec<ImageArtifact>> {
 
-        let mut stmt = conn.prepare(&queries::SEARCH_IMAGE_ARTIFACT)?;
+        let mut stmt = conn.prepare(&SEARCH_IMAGE_ARTIFACT)?;
 
         let image_artifacts: Result<Vec<ImageArtifact>> = stmt
             .query_map([search_term], |row| {
