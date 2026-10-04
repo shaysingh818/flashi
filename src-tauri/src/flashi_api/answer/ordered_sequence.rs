@@ -2,6 +2,7 @@ use chrono;
 use serde::{Deserialize, Serialize};
 use duckdb::{params, Connection, Result}; 
 
+use crate::flashi_api::queries::answer::ordered_sequence::*;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OrderedSequenceAnswer {
@@ -45,17 +46,9 @@ impl OrderedSequenceAnswer {
                 .collect::<Vec<_>>()
                 .join(", ")
         );
-
-        let sql = format!(
-            "INSERT INTO ORDERED_SEQUENCE_ANSWER 
-                (SEQUENCE, EXPLANATION, CREATED, UPDATED)
-            VALUES ({}, ?1, ?2, ?3)
-            RETURNING ANSWER_ID, SEQUENCE::VARCHAR, EXPLANATION, CREATED::VARCHAR, UPDATED::VARCHAR",
-            sequence_literal
-        );
-        
+ 
         conn.query_row(
-            &sql,
+            &INSERT_ORDERED_SEQUENCE.replace("{sequence}", &sequence_literal),
             params![
                 &self.explanation,
                 &self.created,
@@ -77,7 +70,7 @@ impl OrderedSequenceAnswer {
 
     pub fn retrieve(conn: &Connection) -> Result<Vec<OrderedSequenceAnswer>> {
 
-        let mut stmt = conn.prepare("SELECT ANSWER_ID, SEQUENCE::VARCHAR, EXPLANATION, CREATED::VARCHAR, UPDATED::VARCHAR FROM ORDERED_SEQUENCE_ANSWER")?;
+        let mut stmt = conn.prepare(RETRIEVE_ORDERED_SEQUENCE)?;
 
         let ordered_sequence_answers: Result<Vec<OrderedSequenceAnswer>> = stmt
             .query_map([], |row| {
@@ -108,17 +101,8 @@ impl OrderedSequenceAnswer {
                 .join(", ")
         );
 
-        let sql = format!(
-            "UPDATE ORDERED_SEQUENCE_ANSWER
-                SET SEQUENCE={},
-                    EXPLANATION=?1,
-                    UPDATED=?2
-                WHERE ANSWER_ID=?3",
-            sequence_literal
-        );
-
         let result = conn.execute(
-            &sql,
+            &UPDATE_ORDERED_SEQUENCE.replace("{sequence}", &sequence_literal),
             params![
                 &self.explanation,
                 &self.updated,
@@ -140,7 +124,7 @@ impl OrderedSequenceAnswer {
 
 
     pub fn delete(&mut self, conn: &Connection, id: &str) -> Result<()> {
-        let result = conn.execute("DELETE FROM ORDERED_SEQUENCE_ANSWER WHERE ID=?", [id]);
+        let result = conn.execute(DELETE_ORDERED_SEQUENCE, [id]);
         match result {
             Ok(_) => {
                 println!("Succesfully deleted ordered sequence answer"); 
@@ -154,8 +138,7 @@ impl OrderedSequenceAnswer {
     }
 
     pub fn view(conn: &Connection, id: &str) -> Result<OrderedSequenceAnswer> {
-        let query = "SELECT ANSWER_ID, SEQUENCE::VARCHAR, EXPLANATION, CREATED::VARCHAR, UPDATED::VARCHAR FROM ORDERED_SEQUENCE_ANSWER WHERE ANSWER_ID = ?";
-        conn.query_row(query, &[&id], |row| {
+        conn.query_row(VIEW_ORDERED_SEQUENCE, &[&id], |row| {
             let sequence_raw: String = row.get(1)?;
             Ok(OrderedSequenceAnswer {
                 answer_id: row.get(0)?,
@@ -169,13 +152,10 @@ impl OrderedSequenceAnswer {
     
 
     pub fn search(conn: &Connection, search_term: &str) -> Result<Vec<OrderedSequenceAnswer>> {
-        let query = format!(
-            "SELECT ANSWER_ID, SEQUENCE::VARCHAR, EXPLANATION, CREATED::VARCHAR, UPDATED::VARCHAR FROM ORDERED_SEQUENCE_ANSWER WHERE EXPLANATION LIKE '%{}%'",
-            search_term
-        );
-        let mut stmt = conn.prepare(&query)?;
+        
+        let mut stmt = conn.prepare(&SEARCH_ORDERED_SEQUENCE)?;
         let ordered_sequence_answers: Result<Vec<OrderedSequenceAnswer>> = stmt
-            .query_map([], |row| {
+            .query_map([search_term], |row| {
                 let sequence_raw: String = row.get(1)?;
                 Ok(OrderedSequenceAnswer {
                     answer_id: row.get(0)?,
@@ -202,4 +182,163 @@ impl OrderedSequenceAnswer {
 
     }
 
+}
+
+
+#[tauri::command]
+pub fn create_ordered_sequence_answer(sequence: Vec<&str>, explanation: &str, db_path: &str) -> Result<OrderedSequenceAnswer, String> {
+
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => return Err(format!("Failed to open database: {}", e)),
+    };
+ 
+    let mut ordered_sequence: OrderedSequenceAnswer = OrderedSequenceAnswer::new(sequence, explanation);
+
+    match ordered_sequence.insert(&conn) {
+        Ok(answer) => {
+            let _ = conn.close();
+            return Ok(answer)
+        }
+        Err(e) => Err(format!("Failed to insert ordered sequence: {}", e)),
+    }
+}
+
+#[tauri::command]
+pub fn edit_ordered_sequence_answer(id: &str, sequence: Vec<String>, explanation: &str, db_path: &str) -> String {
+
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return e.to_string();
+        }
+    };
+
+    match OrderedSequenceAnswer::view(&conn, id) {
+        Ok(mut ordered_sequence) => {
+          
+            ordered_sequence.explanation = explanation.to_string();            
+            ordered_sequence.sequence = sequence;            
+            
+            match ordered_sequence.update(&conn, id) {
+                Ok(()) => {
+                    let _ = conn.close();
+                    return "Success".to_string();
+                }
+                Err(e) => format!("Failed to update ordered sequence: {}", e),
+            }
+        }
+        Err(e) => {
+            let msg = format!("Error updating ordered sequence: {:?}", e);
+            return msg.to_string();
+        }
+    }
+}
+
+#[tauri::command]
+pub fn view_ordered_sequence_answers(db_path: &str) -> Vec<OrderedSequenceAnswer> {
+  
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return Vec::new();
+        }
+    };
+
+    match OrderedSequenceAnswer::retrieve(&conn) {
+        Ok(ordered_sequences) => ordered_sequences,
+        Err(e) => {
+            println!("{:?}", e);
+            Vec::new()
+        }
+    }
+}
+
+#[tauri::command]
+pub fn view_ordered_sequence_answer(db_path: &str, id: &str) -> Result<OrderedSequenceAnswer, String> {
+
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            let err_msg = format!("Database connection error: {:?}", e);
+            return Err(err_msg.to_string());
+        }
+    };
+
+    match OrderedSequenceAnswer::view(&conn, id) {
+        Ok(ordered_sequence) => {
+            return Ok(ordered_sequence);
+        }
+        Err(e) => {
+            let err_msg = format!("Error retrieving ordered sequence with id: {:?} Cause: {:?}", id, e);
+            return Err(err_msg.to_string());
+        }
+    }
+}
+
+#[tauri::command]
+pub fn search_ordered_sequence_answers(db_path: &str, search_term: &str) -> Vec<OrderedSequenceAnswer> {
+
+  let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return Vec::new();
+        }
+    };
+
+    match OrderedSequenceAnswer::search(&conn, search_term) {
+        Ok(ordered_sequences) => ordered_sequences,
+        Err(e) => {
+            println!("Error searching ordered sequences: {:?}", e);
+            Vec::new()
+        }
+    }
+}
+
+#[tauri::command]
+pub fn delete_ordered_sequence_answer(db_path: &str, id: &str) -> String {
+  
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return format!("Database connection error: {:?}", e);
+        }
+    };
+
+    match OrderedSequenceAnswer::view(&conn, id) {
+        Ok(mut ordered_sequence) => {
+            let _ = ordered_sequence.delete(&conn, id);
+            return format!("Success");
+        }
+        Err(e) => {
+            return format!("Error retrieving ordered sequence with id: {:?} Cause: {:?}", id, e);
+        }
+    }
+}
+
+#[tauri::command]
+pub fn validate_ordered_sequence_answer(db_path: &str, id: &str, answer: Vec<String>) -> (bool, String) {
+
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return (false, e.to_string()); 
+        }
+    };
+
+    match OrderedSequenceAnswer::view(&conn, id) {
+        Ok(mut ordered_sequence) => {
+            return ordered_sequence.validate(answer);
+        }
+        Err(e) => {
+            let msg = format!("Error viewing ordered sequence answer for validation: {:?}", e);
+            (false, msg.to_string())
+        }
+    }
 }

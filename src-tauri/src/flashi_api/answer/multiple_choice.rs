@@ -3,6 +3,8 @@ use std::collections::HashSet;
 use serde::{Deserialize, Serialize};
 use duckdb::{params, Connection, Result}; 
 
+use crate::flashi_api::queries::answer::multiple_choice::*; 
+
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MultipleChoiceAnswer {
@@ -34,10 +36,7 @@ impl MultipleChoiceAnswer {
     
     pub fn insert(&mut self, conn: &Connection) -> Result<MultipleChoiceAnswer> {
         conn.query_row(
-            " INSERT INTO MULTIPLE_CHOICE_ANSWER 
-              (ANSWER_ID, IS_CORRECT, ANSWER, EXPLANATION, CREATED, UPDATED) 
-              VALUES (?1, ?2, ?3, ?4, ?5, ?6)
-            RETURNING ID, ANSWER_ID, IS_CORRECT, ANSWER, EXPLANATION, CREATED::VARCHAR, UPDATED::VARCHAR",
+            INSERT_MULTIPLE_CHOICE,
             params![
                 &self.answer_id,
                 &self.is_correct,
@@ -61,7 +60,7 @@ impl MultipleChoiceAnswer {
     }
 
     pub fn retrieve(answer_id: usize, conn: &Connection) -> Result<Vec<MultipleChoiceAnswer>> {
-        let mut stmt = conn.prepare("SELECT ID, ANSWER_ID, IS_CORRECT, ANSWER, EXPLANATION, CREATED::VARCHAR, UPDATED::VARCHAR FROM MULTIPLE_CHOICE_ANSWER WHERE ANSWER_ID = ?")?;
+        let mut stmt = conn.prepare(RETRIEVE_MULTIPLE_CHOICE_ANSWER)?;
 
         let multiple_choice_answers: Result<Vec<MultipleChoiceAnswer>> = stmt
             .query_map([&answer_id], |row| {
@@ -85,12 +84,7 @@ impl MultipleChoiceAnswer {
         self.updated = chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
 
         let result = conn.execute(
-            "UPDATE MULTIPLE_CHOICE_ANSWER
-                SET IS_CORRECT=?,
-                ANSWER=?,
-                EXPLANATION=?,
-                UPDATED=?
-                WHERE ID=?",
+            UPDATE_MULTIPLE_CHOICE_ANSWER, 
             params![
                 &self.is_correct,
                 &self.answer,
@@ -113,7 +107,7 @@ impl MultipleChoiceAnswer {
     }
 
     pub fn delete(&mut self, conn: &Connection, id: &str) -> Result<()> {
-        let result = conn.execute("DELETE FROM MULTIPLE_CHOICE_ANSWER WHERE ID=?", [id]);
+        let result = conn.execute(DELETE_MULTIPLE_CHOICE_ANSWER, [id]);
         match result {
             Ok(_) => {
                 println!("Succesfully deleted multiple choice answer"); 
@@ -127,8 +121,7 @@ impl MultipleChoiceAnswer {
     }
 
     pub fn view(conn: &Connection, id: &str) -> Result<MultipleChoiceAnswer> {
-        let query = "SELECT ID, ANSWER_ID, IS_CORRECT, ANSWER, EXPLANATION, CREATED::VARCHAR, UPDATED::VARCHAR FROM MULTIPLE_CHOICE_ANSWER WHERE ID = ?";
-        conn.query_row(query, &[&id], |row| {
+        conn.query_row(VIEW_MULTIPLE_CHOICE_ANSWER, &[&id], |row| {
             Ok(MultipleChoiceAnswer {
                 id: row.get(0)?,
                 answer_id: row.get(1)?,
@@ -167,10 +160,7 @@ impl MultipleChoice {
     
     pub fn insert(&mut self, conn: &Connection) -> Result<MultipleChoice> {
         conn.query_row(
-            "INSERT INTO MULTIPLE_CHOICE 
-              (CREATED, UPDATED) 
-              VALUES (?1, ?2)
-            RETURNING ANSWER_ID, CREATED::VARCHAR, UPDATED::VARCHAR",
+            INSERT_MULTIPLE_CHOICE,
             params![
                 &self.created,
                 &self.updated
@@ -186,7 +176,7 @@ impl MultipleChoice {
     }
 
     pub fn delete(&mut self, conn: &Connection, id: &str) -> Result<()> {
-        let result = conn.execute("DELETE FROM MULTIPLE_CHOICE WHERE ANSWER_ID=?", [id]);
+        let result = conn.execute(DELETE_MULTIPLE_CHOICE, [id]);
         match result {
             Ok(_) => {
                 println!("Succesfully deleted multiple choice"); 
@@ -200,8 +190,7 @@ impl MultipleChoice {
     }
 
     pub fn view(conn: &Connection, id: &str) -> Result<MultipleChoice> {
-        let query = "SELECT ANSWER_ID, CREATED::VARCHAR, UPDATED::VARCHAR FROM MULTIPLE_CHOICE_ANSWER WHERE ANSWER_ID = ?";
-        conn.query_row(query, &[&id], |row| {
+        conn.query_row(VIEW_MULTIPLE_CHOICE, &[&id], |row| {
             Ok(MultipleChoice {
                 answer_id: row.get(0)?,
                 created: row.get(1)?,
@@ -211,10 +200,8 @@ impl MultipleChoice {
     }
 
     pub fn validate(&mut self, conn: &Connection, selected_answers: Vec<String>) -> Result<(bool, String)> {
-
-        let query = "SELECT ID::VARCHAR FROM MULTIPLE_CHOICE_ANSWER WHERE ANSWER_ID = ? AND IS_CORRECT = TRUE";
-        
-        let mut stmt  = conn.prepare(query)?;
+ 
+        let mut stmt  = conn.prepare(VALIDATE_MULTIPLE_CHOICE)?;
         let correct_answers: Vec<String> = stmt
             .query_map(&[&self.answer_id], |row| row.get(0))?
             .filter_map(|r| r.ok())
@@ -231,4 +218,219 @@ impl MultipleChoice {
 
     }
   
+}
+
+
+#[tauri::command]
+pub fn create_multiple_choice(db_path: &str) -> Result<MultipleChoice, String> {
+
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => return Err(format!("Failed to open database: {}", e)),
+    };
+
+    let mut multiple_choice: MultipleChoice = MultipleChoice::new();
+
+    match multiple_choice.insert(&conn) {
+        Ok(answer) => {
+            let _ = conn.close();
+            Ok(answer)
+        }
+        Err(e) => Err(format!("Failed to insert multiple choice: {}", e)),
+    }
+}
+
+
+#[tauri::command]
+pub fn create_multiple_choice_answer(answer_id: &str, answer: &str, explanation: &str, is_correct: bool, db_path: &str) -> Result<MultipleChoiceAnswer, String> {
+
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => return Err(format!("Failed to open database: {}", e)),
+    };
+
+    let answer_id_usize: usize = answer_id.parse::<usize>().unwrap();
+    let mut multiple_choice: MultipleChoiceAnswer = MultipleChoiceAnswer::new(answer_id_usize, answer, explanation, is_correct);
+
+    match multiple_choice.insert(&conn) {
+        Ok(answer) => {
+            let _ = conn.close();
+            Ok(answer)
+        }
+        Err(e) => Err(format!("Failed to insert multiple choice: {}", e)),
+    }
+}
+
+#[tauri::command]
+pub fn edit_multiple_choice_answer(id: &str, answer_id: &str, answer: &str, explanation: &str, is_correct: bool, db_path: &str) -> String {
+
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return e.to_string();
+        }
+    };
+
+    let answer_id_usize: usize = answer_id.parse::<usize>().unwrap();
+
+    match MultipleChoiceAnswer::view(&conn, id) {
+        Ok(mut multiple_choice) => {
+
+            multiple_choice.answer_id = answer_id_usize;
+            multiple_choice.answer = answer.to_string();
+            multiple_choice.explanation = explanation.to_string();            
+            multiple_choice.is_correct = is_correct;            
+            
+            match multiple_choice.update(&conn, id) {
+                Ok(()) => {
+                    let _ = conn.close();
+                    return "Success".to_string();
+                }
+                Err(e) => format!("Failed to update multiple choice: {}", e),
+            }
+        }
+        Err(e) => {
+            let msg = format!("Error updating multiple choice: {:?}", e);
+            return msg.to_string();
+        }
+    }
+}
+
+#[tauri::command]
+pub fn view_multiple_choice_answers(answer_id: &str, db_path: &str) -> Vec<MultipleChoiceAnswer> {
+  
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return Vec::new();
+        }
+    };
+
+    let answer_id_usize: usize = answer_id.parse::<usize>().unwrap();
+
+    match MultipleChoiceAnswer::retrieve(answer_id_usize, &conn) {
+        Ok(multiple_choice_answers) => multiple_choice_answers,
+        Err(e) => {
+            println!("{:?}", e);
+            Vec::new()
+        }
+    }
+}
+
+
+#[tauri::command]
+pub fn view_multiple_choice(db_path: &str, id: &str) -> Result<MultipleChoice, String> {
+
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            let err_msg = format!("Database connection error: {:?}", e);
+            return Err(err_msg.to_string());
+        }
+    };
+
+    match MultipleChoice::view(&conn, id) {
+        Ok(multiple_choice) => {
+            return Ok(multiple_choice);
+        }
+        Err(e) => {
+            let err_msg = format!("Error retrieving multiple choice answer with id: {:?} Cause: {:?}", id, e);
+            return Err(err_msg.to_string());
+        }
+    }
+}
+
+#[tauri::command]
+pub fn view_multiple_choice_answer(db_path: &str, id: &str) -> Result<MultipleChoiceAnswer, String> {
+
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            let err_msg = format!("Database connection error: {:?}", e);
+            return Err(err_msg.to_string());
+        }
+    };
+
+    match MultipleChoiceAnswer::view(&conn, id) {
+        Ok(multiple_choice_answer) => {
+            return Ok(multiple_choice_answer);
+        }
+        Err(e) => {
+            let err_msg = format!("Error retrieving multiple choice answer with id: {:?} Cause: {:?}", id, e);
+            return Err(err_msg.to_string());
+        }
+    }
+}
+
+
+#[tauri::command]
+pub fn delete_multiple_choice(db_path: &str, id: &str) -> String {
+  
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return format!("Database connection error: {:?}", e);
+        }
+    };
+
+    match MultipleChoice::view(&conn, id) {
+        Ok(mut multiple_choice) => {
+            let _ = multiple_choice.delete(&conn, id);
+            return format!("Success");
+        }
+        Err(e) => {
+            return format!("Error retrieving multiple choice answer with id: {:?} Cause: {:?}", id, e);
+        }
+    }
+}
+
+
+#[tauri::command]
+pub fn delete_multiple_choice_answer(db_path: &str, id: &str) -> String {
+  
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return format!("Database connection error: {:?}", e);
+        }
+    };
+
+    match MultipleChoiceAnswer::view(&conn, id) {
+        Ok(mut multiple_choice_answer) => {
+            let _ = multiple_choice_answer.delete(&conn, id);
+            return format!("Success");
+        }
+        Err(e) => {
+            return format!("Error retrieving multiple choice answer with id: {:?} Cause: {:?}", id, e);
+        }
+    }
+}
+
+
+#[tauri::command]
+pub fn validate_multiple_choice_answer(db_path: &str, id: &str, answer: Vec<String>) -> (bool, String) {
+
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return (false, e.to_string()); 
+        }
+    };
+
+    match MultipleChoice::view(&conn, id) {
+        Ok(mut multiple_choice) => {
+            return multiple_choice.validate(&conn, answer).unwrap();
+        }
+        Err(e) => {
+            let msg = format!("Error viewing ordered sequence answer for validation: {:?}", e);
+            (false, msg.to_string())
+        }
+    }
 }

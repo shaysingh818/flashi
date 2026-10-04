@@ -2,6 +2,10 @@ use chrono;
 use duckdb::{params, Connection, OptionalExt, Result};
 use serde::{Deserialize, Serialize};
 
+use crate::flashi_api::queries::session_review::*;
+use crate::flashi_api::session_review_question::*;
+use crate::flashi_api::session_review_metrics::*; 
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SessionReview {
     pub id: usize,
@@ -35,10 +39,7 @@ impl SessionReview {
 
     pub fn insert(&mut self, conn: &Connection) -> Result<SessionReview> {
         conn.query_row(
-            "INSERT INTO SESSION_REVIEW
-                (SESSION_ID, COMPLETE, CYCLE, CURRENT_QUESTION, START_TIME, END_TIME, CREATED, UPDATED)
-            VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
-            RETURNING ID, SESSION_ID, COMPLETE, CYCLE, CURRENT_QUESTION, START_TIME::VARCHAR, END_TIME::VARCHAR, CREATED::VARCHAR, UPDATED::VARCHAR",
+            INSERT_SESSION_REVIEW,
             params![
                 &self.session_id,
                 &self.complete,
@@ -66,12 +67,8 @@ impl SessionReview {
     }
 
     pub fn session_review_active(conn: &Connection, session_id: &str) -> Result<i64> {
-        let query = "
-        SELECT
-            ID
-        FROM SESSION_REVIEW WHERE COMPLETE = FALSE AND SESSION_ID = ?";
 
-        let mut stmt = conn.prepare(query)?;
+        let mut stmt = conn.prepare(SESSION_REVIEW_ACTIVE)?;
         let session_id: Option<i64> = stmt
             .query_row(params![session_id], |row| row.get(0))
             .optional()?;
@@ -80,16 +77,8 @@ impl SessionReview {
     }
 
     pub fn session_review_complete(conn: &Connection, session_review_id: &str) -> Result<bool> {
-        let query = "
-            WITH ACTIVE_QUESTIONS AS (
-                SELECT
-                    *
-                FROM SESSION_REVIEW_QUESTION
-                WHERE SESSION_REVIEW_ID = ? AND ACTIVE = TRUE
-            )
-            SELECT COUNT(*) AS ACTIVE_QUESTIONS_COUNT FROM ACTIVE_QUESTIONS";
 
-        let mut stmt = conn.prepare(query)?;
+        let mut stmt = conn.prepare(SESSION_REVIEW_COMPLETE)?;
         let active_question_count: i64 =
             stmt.query_row(params![session_review_id], |row| row.get(0))?;
 
@@ -97,19 +86,7 @@ impl SessionReview {
     }
 
     pub fn retrieve(conn: &Connection, session_id: &str) -> Result<Vec<SessionReview>> {
-        let query = "
-            SELECT
-                ID,
-                SESSION_ID,
-                COMPLETE,
-                CYCLE,
-                CURRENT_QUESTION,
-                START_TIME::VARCHAR,
-                END_TIME::VARCHAR,
-                CREATED::VARCHAR,
-                UPDATED::VARCHAR
-            FROM SESSION_REVIEW WHERE SESSION_ID = ?";
-        let mut stmt = conn.prepare(query)?;
+        let mut stmt = conn.prepare(RETRIEVE_SESSION_REVIEW)?;
 
         let sessions: Result<Vec<SessionReview>> = stmt
             .query_map([session_id], |row| {
@@ -138,14 +115,7 @@ impl SessionReview {
             .to_string();
 
         let result = conn.execute(
-            "UPDATE SESSION_REVIEW
-                SET COMPLETE=?1,
-                    CYCLE=?2,
-                    CURRENT_QUESTION=?3,
-                    START_TIME=?4,
-                    END_TIME=?5,
-                    UPDATED=?6
-                WHERE ID=?7",
+            UPDATE_SESSION_REVIEW, 
             params![
                 &self.complete,
                 &self.cycle,
@@ -170,7 +140,7 @@ impl SessionReview {
     }
 
     pub fn delete(&mut self, conn: &Connection, id: &str) -> Result<()> {
-        let result = conn.execute("DELETE FROM SESSION_REVIEW WHERE ID=?", [id]);
+        let result = conn.execute(DELETE_SESSION_REVIEW, [id]);
         match result {
             Ok(_) => {
                 println!("Successfully deleted session review");
@@ -184,7 +154,7 @@ impl SessionReview {
     }
     
     pub fn delete_from_session(&mut self, conn: &Connection, session_id: &str) -> Result<()> {
-        let result = conn.execute("DELETE FROM SESSION_REVIEW WHERE SESSION_ID=?", [session_id]);
+        let result = conn.execute(REMOVE_SESSION_REVIEW_FROM_SESSION, [session_id]);
         match result {
             Ok(_) => {
                 println!("Successfully removed session review's from existing session");
@@ -202,16 +172,7 @@ impl SessionReview {
 
     pub fn view(conn: &Connection, id: &str) -> Result<SessionReview> {
         conn.query_row(
-            "SELECT
-                ID,
-                SESSION_ID,
-                COMPLETE,
-                CYCLE,
-                CURRENT_QUESTION,
-                START_TIME::VARCHAR,
-                END_TIME::VARCHAR,
-                CREATED::VARCHAR,
-                UPDATED::VARCHAR FROM SESSION_REVIEW WHERE ID = ?",
+            VIEW_SESSION_REVIEW,
             &[&id],
             |row| {
                 Ok(SessionReview {
@@ -230,30 +191,8 @@ impl SessionReview {
     }
 
     pub fn generate_questions(&mut self, conn: &Connection) -> Result<()> {
-        let query = "
-            WITH DECK_IDS AS (
-	            SELECT
-                    DECK_ID
-                FROM SESSION_DECK WHERE SESSION_ID = ?
-            ),
-            QUESTIONS AS (
-	            SELECT
-                    Q.ID,
-                    Q.DECK_ID,
-                    Q.CORRECT,
-                    Q.INCORRECT,
-                    Q.REVIEWED
-            FROM QUESTION Q
-            WHERE Q.DECK_ID IN (SELECT DECK_ID FROM DECK_IDS)
-            )
-            SELECT
-                Q.ID
-            FROM QUESTIONS AS Q
-            LEFT JOIN DECK_IDS AS DIDS
-            ON Q.DECK_ID = DIDS.DECK_ID
-            ORDER BY Q.CORRECT DESC";
 
-        let mut stmt = conn.prepare(query)?;
+        let mut stmt = conn.prepare(GENERATE_SESSION_REVIEW_QUESTIONS)?;
 
         let question_ids: Vec<usize> = stmt
             .query_map(&[&self.session_id], |row| row.get(0))?
@@ -269,478 +208,164 @@ impl SessionReview {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SessionReviewQuestion {
-    pub id: usize,
-    pub session_review_id: usize,
-    pub question_id: usize,
-    pub priority_index: usize,
-    pub incorrect_count: usize,
-    pub review_count: usize,
-    pub active: bool,
-    pub created: String,
-    pub updated: String,
-}
 
-impl SessionReviewQuestion {
-    pub fn new(
-        session_review_id: usize,
-        question_id: usize,
-        priority_index: usize,
-    ) -> SessionReviewQuestion {
-        let now = chrono::offset::Local::now()
-            .format("%Y-%m-%d %H:%M:%S")
-            .to_string();
-        SessionReviewQuestion {
-            id: 0,
-            session_review_id: session_review_id,
-            question_id: question_id,
-            priority_index: priority_index,
-            incorrect_count: 0,
-            review_count: 0,
-            active: true,
-            created: now.clone(),
-            updated: now,
+#[tauri::command]
+pub fn create_session_review(session_id: &str, db_path: &str) -> Result<SessionReview, String> {
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => return Err(format!("Failed to open database: {}", e)),
+    };
+
+    let session_id_usize: usize = session_id.parse::<usize>().unwrap();
+
+    let mut session_review: SessionReview = SessionReview::new(session_id_usize);
+
+    match session_review.insert(&conn) {
+        Ok(mut session_review_instance) => {
+            session_review_instance.generate_questions(&conn).unwrap();
+            Ok(session_review_instance)
         }
-    }
-
-    pub fn insert(&mut self, conn: &Connection) -> Result<()> {
-        let result = conn.execute(
-            "INSERT INTO SESSION_REVIEW_QUESTION
-                (
-                    SESSION_REVIEW_ID,
-                    QUESTION_ID,
-                    PRIORITY_INDEX,
-                    INCORRECT_COUNT,
-                    REVIEW_COUNT,
-                    ACTIVE,
-                    CREATED,
-                    UPDATED
-                )
-            VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
-            params![
-                &self.session_review_id,
-                &self.question_id,
-                &self.priority_index,
-                &self.incorrect_count,
-                &self.review_count,
-                &self.active,
-                &self.created,
-                &self.updated
-            ],
-        );
-
-        match result {
-            Ok(_) => {
-                println!("Successfully inserted session review question");
-                Ok(())
-            }
-            Err(err) => {
-                println!("[session_review_question::insert] duckdb error {:?}", err);
-                Err(err)
-            }
-        }
-    }
-
-    pub fn retrieve(conn: &Connection) -> Result<Vec<SessionReviewQuestion>> {
-        let mut stmt = conn.prepare("SELECT * FROM SESSION_REVIEW_QUESTION")?;
-
-        let sessions: Result<Vec<SessionReviewQuestion>> = stmt
-            .query_map([], |row| {
-                Ok(SessionReviewQuestion {
-                    id: row.get(0)?,
-                    session_review_id: row.get(1)?,
-                    question_id: row.get(2)?,
-                    priority_index: row.get(3)?,
-                    incorrect_count: row.get(4)?,
-                    review_count: row.get(5)?,
-                    active: row.get(6)?,
-                    created: row.get(7)?,
-                    updated: row.get(8)?,
-                })
-            })?
-            .collect();
-        sessions
-    }
-
-    pub fn retrieve_by_session_review_id(
-        conn: &Connection,
-        session_review_id: &str,
-    ) -> Result<Vec<SessionReviewQuestion>> {
-        let query = "
-        SELECT
-	          ID,
-            SESSION_REVIEW_ID,
-            QUESTION_ID,
-            PRIORITY_INDEX,
-            INCORRECT_COUNT,
-            REVIEW_COUNT,
-            ACTIVE,
-            UPDATED::VARCHAR,
-            CREATED::VARCHAR
-        FROM SESSION_REVIEW_QUESTION WHERE SESSION_REVIEW_ID = ? AND ACTIVE = TRUE ORDER BY PRIORITY_INDEX ASC";
-
-        let mut stmt = conn.prepare(query)?;
-
-        let sessions: Result<Vec<SessionReviewQuestion>> = stmt
-            .query_map([&session_review_id], |row| {
-                Ok(SessionReviewQuestion {
-                    id: row.get(0)?,
-                    session_review_id: row.get(1)?,
-                    question_id: row.get(2)?,
-                    priority_index: row.get(3)?,
-                    incorrect_count: row.get(4)?,
-                    review_count: row.get(5)?,
-                    active: row.get(6)?,
-                    created: row.get(7)?,
-                    updated: row.get(8)?,
-                })
-            })?
-            .collect();
-        sessions
-    }
-
-    pub fn retrieve_active_questions(
-        conn: &Connection,
-        session_id: &str,
-    ) -> Result<Vec<SessionReviewQuestion>> {
-        let query = "
-            WITH DECK_IDS AS (
-	            SELECT
-                    DECK_ID
-                FROM SESSION_DECK WHERE SESSION_ID = ?
-            ),
-            QUESTIONS AS (
-	            SELECT
-                    Q.ID,
-                    Q.DECK_ID,
-                    Q.CORRECT,
-                    Q.INCORRECT,
-                    Q.REVIEWED
-            FROM QUESTION Q
-            WHERE Q.DECK_ID IN (SELECT DECK_ID FROM DECK_IDS)
-            )
-            SELECT
-              SRQ.ID,
-              SRQ.SESSION_REVIEW_ID,
-              SRQ.QUESTION_ID,
-              SRQ.PRIORITY_INDEX,
-              SRQ.INCORRECT_COUNT,
-              SRQ.REVIEW_COUNT,
-              SRQ.ACTIVE,
-              SRQ.UPDATED::VARCHAR,
-              SRQ.CREATED::VARCHAR
-            FROM QUESTIONS AS Q
-            LEFT JOIN DECK_IDS AS DIDS
-            ON Q.DECK_ID = DIDS.DECK_ID
-            LEFT JOIN SESSION_REVIEW_QUESTION AS SRQ
-            ON Q.ID = SRQ.QUESTION_ID
-            WHERE SRQ.ACTIVE = TRUE
-            ORDER BY SRQ.INCORRECT_COUNT, SRQ.REVIEW_COUNT ASC";
-
-        let mut stmt = conn.prepare(query)?;
-        let sessions: Result<Vec<SessionReviewQuestion>> = stmt
-            .query_map([session_id], |row| {
-                Ok(SessionReviewQuestion {
-                    id: row.get(0)?,
-                    session_review_id: row.get(1)?,
-                    question_id: row.get(2)?,
-                    priority_index: row.get(3)?,
-                    incorrect_count: row.get(4)?,
-                    review_count: row.get(5)?,
-                    active: row.get(6)?,
-                    created: row.get(7)?,
-                    updated: row.get(8)?,
-                })
-            })?
-            .collect();
-
-        sessions
-    }
-
-    pub fn update(&mut self, conn: &Connection, id: &str) -> Result<()> {
-        self.updated = chrono::offset::Local::now()
-            .format("%Y-%m-%d %H:%M:%S")
-            .to_string();
-
-        let result = conn.execute(
-            "UPDATE SESSION_REVIEW_QUESTION
-                SET SESSION_REVIEW_ID=?1,
-                    QUESTION_ID=?2,
-                    PRIORITY_INDEX=?3,
-                    INCORRECT_COUNT=?4,
-                    REVIEW_COUNT=?5,
-                    ACTIVE=?6,
-                    UPDATED=?7,
-                WHERE ID=?8",
-            params![
-                &self.session_review_id,
-                &self.question_id,
-                &self.priority_index,
-                &self.incorrect_count,
-                &self.review_count,
-                &self.active,
-                &self.updated,
-                id,
-            ],
-        );
-
-        match result {
-            Ok(_) => {
-                println!("Successfully updated session review question");
-                Ok(())
-            }
-            Err(err) => {
-                println!("[session_review_question::update] duckdb error {:?}", err);
-                Err(err)
-            }
-        }
-    }
-
-    pub fn delete(&mut self, conn: &Connection, id: &str) -> Result<()> {
-        let result = conn.execute("DELETE FROM SESSION_REVIEW_QUESTION WHERE ID=?", [id]);
-        match result {
-            Ok(_) => {
-                println!("Successfully deleted session review question");
-                Ok(())
-            }
-            Err(err) => {
-                println!(
-                    "[session_review_question::delete] Error deleting session review question {:?}",
-                    err
-                );
-                Err(err)
-            }
-        }
-    }
-
-    pub fn view(conn: &Connection, id: &str) -> Result<SessionReviewQuestion> {
-        let query = "
-        SELECT
-	        ID,
-            SESSION_REVIEW_ID,
-            QUESTION_ID,
-            PRIORITY_INDEX,
-            INCORRECT_COUNT,
-            REVIEW_COUNT,
-            ACTIVE,
-            UPDATED::VARCHAR,
-            CREATED::VARCHAR
-        FROM SESSION_REVIEW_QUESTION WHERE ID = ?";
-
-        conn.query_row(query, &[&id], |row| {
-            Ok(SessionReviewQuestion {
-                id: row.get(0)?,
-                session_review_id: row.get(1)?,
-                question_id: row.get(2)?,
-                priority_index: row.get(3)?,
-                incorrect_count: row.get(4)?,
-                review_count: row.get(5)?,
-                active: row.get(6)?,
-                created: row.get(7)?,
-                updated: row.get(8)?,
-            })
-        })
+        Err(e) => Err(format!("Failed to insert session review: {}", e)),
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SessionReviewMetrics {
-    pub id: usize,
-    pub session_review_id: usize,
-    pub questions_correct: usize,
-    pub questions_incorrect: usize,
-    pub accuracy: f64,
-    pub total_review_count: usize,
-    pub number_of_cycles: usize,
-    pub review_time: f64,
-    pub created: String,
+#[tauri::command]
+pub fn edit_session_review(
+    session_review_id: &str,
+    complete: bool,
+    cycle: usize,
+    current_question: usize,
+    start_time: &str,
+    end_time: &str,
+    db_path: &str,
+) -> String {
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return e.to_string();
+        }
+    };
+
+    match SessionReview::view(&conn, session_review_id) {
+        Ok(mut session_review) => {
+            session_review.complete = complete;
+            session_review.cycle = cycle;
+            session_review.current_question = current_question;
+            session_review.start_time = start_time.to_string();
+            session_review.end_time = end_time.to_string();
+
+            match session_review.update(&conn, session_review_id) {
+                Ok(()) => {
+                    let _ = conn.close();
+                    return "Success".to_string();
+                }
+                Err(e) => format!("Failed to update session review: {}", e),
+            }
+        }
+        Err(e) => {
+            let msg = format!("Error updating session review: {:?}", e);
+            return msg.to_string();
+        }
+    }
 }
 
-impl SessionReviewMetrics {
-    pub fn new(session_review_id: usize, conn: &Connection) -> Result<SessionReviewMetrics> {
-        let now = chrono::offset::Local::now()
-            .format("%Y-%m-%d %H:%M:%S")
-            .to_string();
+#[tauri::command]
+pub fn view_session_reviews(db_path: &str, session_id: &str) -> Vec<SessionReview> {
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return Vec::new();
+        }
+    };
 
-        let query = "
-        WITH SRQ_METRICS AS (
-           	SELECT
-           	    SUM(CASE WHEN SRQ.INCORRECT_COUNT > 0 THEN 1 ELSE 0 END) AS TOTAL_INCORRECT_COUNT,
-           	    SUM(CASE WHEN SRQ.INCORRECT_COUNT = 0 THEN 1 ELSE 0 END) AS TOTAL_CORRECT_COUNT,
-           	    SUM(SRQ.REVIEW_COUNT) AS TOTAL_QUESTIONS_REVIEWED
-           	FROM SESSION_REVIEW_QUESTION AS SRQ
-           	WHERE SRQ.SESSION_REVIEW_ID = ?
-        ),
-        SR_CYCLE AS (
-           	SELECT
-           	ID,
-           	CYCLE,
-           	START_TIME,
-           	END_TIME
-           	FROM SESSION_REVIEW WHERE ID = ?
-        )
-        SELECT
-           	SR_CYCLE.ID,
-           	TOTAL_CORRECT_COUNT,
-           	TOTAL_INCORRECT_COUNT,
-            ROUND(
-                CAST(TOTAL_CORRECT_COUNT AS DOUBLE) / NULLIF(TOTAL_CORRECT_COUNT + TOTAL_INCORRECT_COUNT, 0) * 100,
-                2
-            ) AS ACCURACY,
-           	TOTAL_QUESTIONS_REVIEWED,
-           	SR_CYCLE.CYCLE,
-           	CAST(EPOCH(END_TIME) - EPOCH(START_TIME) AS DOUBLE) AS REVIEW_TIME
-            FROM SRQ_METRICS
-            CROSS JOIN SR_CYCLE
-        ";
-
-        conn.query_row(query, &[&session_review_id, &session_review_id], |row| {
-            Ok(SessionReviewMetrics {
-                id: 0,
-                session_review_id: row.get(0)?,
-                questions_correct: row.get(1)?,
-                questions_incorrect: row.get(2)?,
-                accuracy: row.get(3)?,
-                total_review_count: row.get(4)?,
-                number_of_cycles: row.get(5)?,
-                review_time: row.get(6)?,
-                created: now,
-            })
-        })
-    }
-
-    pub fn insert(&mut self, conn: &Connection) -> Result<()> {
-        let result = conn.execute(
-            "INSERT INTO SESSION_REVIEW_METRICS
-                (
-                    SESSION_REVIEW_ID,
-                    QUESTIONS_CORRECT,
-                    QUESTIONS_INCORRECT,
-                    ACCURACY,
-                    TOTAL_REVIEW_COUNT,
-                    NUMBER_OF_CYCLES,
-                    REVIEW_TIME,
-                    CREATED
-                )
-            VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
-            params![
-                &self.session_review_id,
-                &self.questions_correct,
-                &self.questions_incorrect,
-                &self.accuracy,
-                &self.total_review_count,
-                &self.number_of_cycles,
-                &self.review_time,
-                &self.created,
-            ],
-        );
-
-        match result {
-            Ok(_) => {
-                println!("Successfully inserted session review metrics");
-                Ok(())
-            }
-            Err(err) => {
-                println!("[session_review_metrics::insert] duckdb error {:?}", err);
-                Err(err)
-            }
+    match SessionReview::retrieve(&conn, session_id) {
+        Ok(session_reviews) => session_reviews,
+        Err(e) => {
+            println!("{:?}", e);
+            Vec::new()
         }
     }
+}
 
-    pub fn retrieve(conn: &Connection) -> Result<Vec<SessionReviewMetrics>> {
-        let mut stmt = conn.prepare("SELECT * FROM SESSION_REVIEW_METRICS")?;
+#[tauri::command]
+pub fn view_session_review(
+    db_path: &str,
+    session_review_id: &str,
+) -> Result<SessionReview, String> {
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            let err_msg = format!("Database connection error: {:?}", e);
+            return Err(err_msg.to_string());
+        }
+    };
 
-        let sessions: Result<Vec<SessionReviewMetrics>> = stmt
-            .query_map([], |row| {
-                Ok(SessionReviewMetrics {
-                    id: row.get(0)?,
-                    session_review_id: row.get(1)?,
-                    questions_correct: row.get(2)?,
-                    questions_incorrect: row.get(3)?,
-                    accuracy: row.get(4)?,
-                    total_review_count: row.get(5)?,
-                    number_of_cycles: row.get(6)?,
-                    review_time: row.get(7)?,
-                    created: row.get(8)?,
-                })
-            })?
-            .collect();
-        sessions
-    }
-    
-    pub fn session_metrics_history(conn: &Connection, session_id: &str) -> Result<Vec<SessionReviewMetrics>> {
-
-        let query = "
-            SELECT 
-                ID,
-                SESSION_REVIEW_ID,
-                QUESTIONS_CORRECT,
-                QUESTIONS_INCORRECT,
-                ACCURACY,
-                TOTAL_REVIEW_COUNT,
-                NUMBER_OF_CYCLES,
-                REVIEW_TIME,
-                CREATED::VARCHAR
-            FROM SESSION_REVIEW_METRICS
-            WHERE SESSION_REVIEW_ID IN (
-                SELECT ID FROM SESSION_REVIEW WHERE COMPLETE = TRUE AND SESSION_ID = ?
-            ) ORDER BY CREATED DESC
-        "; 
-        
-        let mut stmt = conn.prepare(query)?;
-        let sessions: Result<Vec<SessionReviewMetrics>> = stmt
-            .query_map([session_id], |row| {
-                Ok(SessionReviewMetrics {
-                    id: row.get(0)?,
-                    session_review_id: row.get(1)?,
-                    questions_correct: row.get(2)?,
-                    questions_incorrect: row.get(3)?,
-                    accuracy: row.get(4)?,
-                    total_review_count: row.get(5)?,
-                    number_of_cycles: row.get(6)?,
-                    review_time: row.get(7)?,
-                    created: row.get(8)?,
-                })
-            })?
-            .collect();
-        sessions
-    }
-
-    pub fn delete(&mut self, conn: &Connection, id: &str) -> Result<()> {
-        let result = conn.execute("DELETE FROM SESSION_REVIEW_QUESTION WHERE ID=?", [id]);
-        match result {
-            Ok(_) => {
-                println!("Successfully deleted session review question");
-                Ok(())
-            }
-            Err(err) => {
-                println!(
-                    "[session_review_metrics::delete] Error deleting session review metrics {:?}",
-                    err
-                );
-                Err(err)
-            }
+    match SessionReview::view(&conn, session_review_id) {
+        Ok(session_review) => {
+            return Ok(session_review);
+        }
+        Err(e) => {
+            let err_msg = format!(
+                "Error retrieving session review with id: {:?} Cause: {:?}",
+                session_review_id, e
+            );
+            return Err(err_msg.to_string());
         }
     }
-    
-    pub fn view(conn: &Connection, id: &str) -> Result<SessionReviewMetrics> {
-        conn.query_row(
-            "SELECT * FROM SESSION_REVIEW_METRICS WHERE ID = ?",
-            &[&id],
-            |row| {
-                Ok(SessionReviewMetrics {
-                    id: row.get(0)?,
-                    session_review_id: row.get(1)?,
-                    questions_correct: row.get(2)?,
-                    questions_incorrect: row.get(3)?,
-                    accuracy: row.get(4)?,
-                    total_review_count: row.get(5)?,
-                    number_of_cycles: row.get(6)?,
-                    review_time: row.get(7)?,
-                    created: row.get(8)?,
-                })
-            },
-        )
+}
+
+#[tauri::command]
+pub fn check_session_review_active(db_path: &str, session_id: &str) -> Result<i64, String> {
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            let err_msg = format!("Database connection error: {:?}", e);
+            return Err(err_msg.to_string());
+        }
+    };
+
+    match SessionReview::session_review_active(&conn, session_id) {
+        Ok(result) => {
+            return Ok(result);
+        }
+        Err(e) => {
+            let err_msg = format!(
+                "Error checking session review active: {:?} Cause: {:?}",
+                session_id, e
+            );
+            return Err(err_msg.to_string());
+        }
+    }
+}
+
+#[tauri::command]
+pub fn check_session_review_complete(
+    db_path: &str,
+    session_review_id: &str,
+) -> Result<bool, String> {
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            let err_msg = format!("Database connection error: {:?}", e);
+            return Err(err_msg.to_string());
+        }
+    };
+
+    match SessionReview::session_review_complete(&conn, session_review_id) {
+        Ok(result) => {
+            return Ok(result);
+        }
+        Err(e) => {
+            let err_msg = format!(
+                "Error checking session review complete: {:?} Cause: {:?}",
+                session_review_id, e
+            );
+            return Err(err_msg.to_string());
+        }
     }
 }

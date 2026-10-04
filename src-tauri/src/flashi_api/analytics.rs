@@ -1,19 +1,13 @@
 use chrono::{Duration, Utc};
 use serde::{Deserialize, Serialize};
-use duckdb::{params, Connection, Result}; 
+use duckdb::{params, Connection, Result};
 
+use crate::flashi_api::queries::analytics::*;
 
 pub fn general(conn: &Connection) -> Result<(usize, usize, usize)> {
-
-    let query = "
-        SELECT 
-            (SELECT COUNT(*) FROM SUBJECT) AS SUBJECT_COUNT,
-            (SELECT COUNT(*) FROM DECK) AS DECK_COUNT,
-            (SELECT COUNT(*) FROM SESSION) AS SESSION_COUNT
-    ";
-    
+ 
     conn.query_row(
-        query,
+        GENERAL_METRICS,
         [],
         |row| {
             let subject_count: Option<i64> = row.get(0)?; 
@@ -33,20 +27,8 @@ pub fn historical(conn: &Connection) -> Result<Vec<(String, usize, usize, f64)>>
 
     let cutoff = (Utc::now() - Duration::days(30)).date_naive();
     let cutoff_str = cutoff.to_string();
-    
-    let query = "
-        SELECT 
-            CAST(DATE_TRUNC('day', CREATED) AS VARCHAR) AS DAY_DATE,
-            SUM(QUESTIONS_CORRECT) AS TOTAL_CORRECT, 
-            SUM(QUESTIONS_INCORRECT) AS TOTAL_INCORRECT,
-            AVG(ACCURACY) AS AVG_ACCURACY
-        FROM SESSION_REVIEW_METRICS
-        WHERE CREATED >= ?
-        GROUP BY DATE_TRUNC('day', CREATED)
-        ORDER BY DATE_TRUNC('day', CREATED)
-    ";
-    
-    let mut stmt = conn.prepare(query)?; 
+ 
+    let mut stmt = conn.prepare(HISTORICAL_METRICS)?; 
     let rows = stmt.query_map(params![cutoff_str], |row| {
         let day_date: String = row.get(0)?;
         let total_correct: i64 = row.get(1)?;
@@ -61,40 +43,8 @@ pub fn historical(conn: &Connection) -> Result<Vec<(String, usize, usize, f64)>>
 
 pub fn review_time(conn: &Connection) -> Result<(f64, f64, f64)> {
 
-    let query = "
-        WITH DAILY_ENTRIES AS (
-           	SELECT 
-          		CAST(DATE_TRUNC('day', CREATED) AS VARCHAR) AS DAY_DATE,
-          		SUM(REVIEW_TIME) AS DAILY_REVIEW_TIME
-           	FROM SESSION_REVIEW_METRICS
-           	GROUP BY DATE_TRUNC('day', CREATED)
-           	ORDER BY DATE_TRUNC('day', CREATED)
-        ),
-        WEEKLY_ENTRIES AS (
-           	SELECT 
-          		CAST(DATE_TRUNC('week', CREATED) AS VARCHAR) AS WEEK_DATE,
-          		SUM(REVIEW_TIME) AS WEEKLY_REVIEW_TIME
-           	FROM SESSION_REVIEW_METRICS
-           	GROUP BY DATE_TRUNC('week', CREATED)
-           	ORDER BY DATE_TRUNC('week', CREATED)
-        ),
-        MONTHLY_ENTRIES AS (
-           	SELECT 
-          		CAST(DATE_TRUNC('month', CREATED) AS VARCHAR) AS MONTH_DATE,
-          		SUM(REVIEW_TIME) AS MONTHLY_REVIEW_TIME
-           	FROM SESSION_REVIEW_METRICS
-           	GROUP BY DATE_TRUNC('month', CREATED)
-           	ORDER BY DATE_TRUNC('month', CREATED)
-        )
-        SELECT 
-           	AVG(DAILY_ENTRIES.DAILY_REVIEW_TIME) AS AVG_DAILY_REVIEW_TIME,
-           	AVG(WEEKLY_ENTRIES.WEEKLY_REVIEW_TIME ) AS AVG_WEEKLY_REVIEW_TIME,
-           	AVG(MONTHLY_ENTRIES.MONTHLY_REVIEW_TIME ) AS AVG_MONTHLY_REVIEW_TIME
-        FROM DAILY_ENTRIES, WEEKLY_ENTRIES, MONTHLY_ENTRIES
-    "; 
-
     conn.query_row(
-        query,
+        REVIEW_TIME_METRICS,
         [],
         |row| {
             let avg_daily_review_time: Option<f64> = row.get(0)?; 
@@ -111,34 +61,8 @@ pub fn review_time(conn: &Connection) -> Result<(f64, f64, f64)> {
 
 pub fn question_review_time(conn: &Connection) -> Result<(usize, f64, f64)> {
 
-    let query = "
-        WITH ALL_QUESTIONS AS (
-           	SELECT
-          		SUM(REVIEWED) AS ALL_TIME_REVIEWED
-           	FROM QUESTION
-        ),
-        DAILY_QUESTIONS AS (
-           	SELECT
-          		CAST(DATE_TRUNC('day', CREATED) AS VARCHAR) AS DAY_DATE,
-          		SUM(REVIEWED) AS REVIEWED_PER_DAY
-           	FROM QUESTION
-           	GROUP BY DATE_TRUNC('day', CREATED)
-        ),
-        WEEKLY_QUESTIONS AS (
-           	SELECT
-          		CAST(DATE_TRUNC('week', CREATED) AS VARCHAR) AS WEEK_DATE,
-          		SUM(REVIEWED) AS REVIEWED_PER_WEEK
-           	FROM QUESTION
-           	GROUP BY DATE_TRUNC('week', CREATED)
-        )
-        SELECT
-        (SELECT ALL_TIME_REVIEWED FROM ALL_QUESTIONS) AS ALL_TIME_REVIEWED,
-        (SELECT AVG(REVIEWED_PER_DAY) FROM DAILY_QUESTIONS) AS AVG_QUESTIONS_REVIEWED_PER_DAY,
-        (SELECT AVG(REVIEWED_PER_WEEK) FROM WEEKLY_QUESTIONS) AS AVG_QUESTIONS_REVIEWED_PER_WEEK
-    "; 
-
     conn.query_row(
-        query,
+        QUESTION_REVIEW_TIME_METRICS,
         [],
         |row| {
             let all_time_reviewed: Option<i64> = row.get(0)?; 
@@ -151,4 +75,92 @@ pub fn question_review_time(conn: &Connection) -> Result<(usize, f64, f64)> {
             ))
         }
     )
+}
+
+
+#[tauri::command]
+pub fn general_metrics(db_path: &str) -> (usize, usize, usize) {
+  
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return (0, 0, 0); 
+        }
+    };
+
+    match general(&conn) {
+        Ok((subject_count, deck_count, session_count)) => {
+            (subject_count, deck_count, session_count)
+        }
+        Err(e) => {
+            println!("Error retrieving general metrics: {:?}", e);
+            return (0, 0, 0)
+        }
+    }
+}
+
+
+#[tauri::command]
+pub fn historical_metrics(db_path: &str) -> Result<Vec<(String, usize, usize, f64)>, String> {
+  
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return Err(e.to_string());
+        }
+    };
+
+    match historical(&conn) {
+        Ok(rows) => Ok(rows), 
+        Err(e) => {
+            println!("Error retrieving general metrics: {:?}", e);
+            return Err(e.to_string())
+        }
+    }
+}
+
+#[tauri::command]
+pub fn review_time_metrics(db_path: &str) -> (f64, f64, f64) {
+  
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return (0.0, 0.0, 0.0); 
+        }
+    };
+
+    match review_time(&conn) {
+        Ok((avg_daily_review_time, avg_weekly_review_time, avg_monthly_review_time)) => {
+            (avg_daily_review_time, avg_weekly_review_time, avg_monthly_review_time)
+        }
+        Err(e) => {
+            println!("Error retrieving general review time metrics: {:?}", e);
+            return (0.0, 0.0, 0.0)
+        }
+    }
+}
+
+#[tauri::command]
+pub fn question_review_time_metrics(db_path: &str) -> (usize, f64, f64) {
+  
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return (0, 0.0, 0.0); 
+        }
+    };
+
+    match question_review_time(&conn) {
+        Ok((all_time_review_time, avg_questions_reviewed_per_day, avg_questions_reviewed_per_week)) => {
+            (all_time_review_time, avg_questions_reviewed_per_day, avg_questions_reviewed_per_week)
+        }
+        Err(e) => {
+            println!("Error retrieving question review time metrics: {:?}", e);
+            return (0, 0.0, 0.0)
+        }
+    }
 }
