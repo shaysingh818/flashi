@@ -1,0 +1,82 @@
+
+pub const DECK_IMAGE_PATHS: &str = "
+SELECT 
+    IA.IMAGE_PATH 
+FROM QUESTION_IMAGE AS QI
+LEFT JOIN IMAGE_ARTIFACT AS IA ON IA.ID = QI.IMAGE_ID
+WHERE QUESTION_ID IN (SELECT ID FROM QUESTION WHERE DECK_ID = ?)
+";
+
+pub const EXPORT_DECK_PARQUET: &str = "COPY  (SELECT * FROM EXPORT_DECK({deck_id})) TO '{path}' (FORMAT PARQUET)";
+
+pub const SEARCH_DECK: &str = "
+SELECT 
+    ID, 
+    SUBJECT_ID, 
+    NAME, 
+    TAGS::VARCHAR, 
+    DESCRIPTION, 
+    REVIEWED, 
+    CREATED::VARCHAR, 
+    UPDATED::VARCHAR 
+FROM DECK WHERE NAME LIKE '%' || ? || '%'";
+
+pub const VIEW_DECK: &str = "
+SELECT 
+    ID, 
+    SUBJECT_ID, 
+    NAME, 
+    TAGS::VARCHAR, 
+    DESCRIPTION, 
+    REVIEWED, 
+    CREATED::VARCHAR, 
+    UPDATED::VARCHAR 
+FROM DECK WHERE ID = ?";
+
+
+pub const UPDATE_DECK: &str = "
+UPDATE DECK
+SET SUBJECT_ID=?1,
+    NAME=?2,
+    TAGS={tags},
+    DESCRIPTION=?3,
+    REVIEWED=?4,
+    UPDATED=?5
+WHERE ID=?6";
+
+pub const DECK_BY_SUBJECT: &str = "
+SELECT 
+    ID, 
+    SUBJECT_ID, 
+    NAME, 
+    TAGS::VARCHAR, 
+    DESCRIPTION, 
+    REVIEWED, 
+    CREATED::VARCHAR, 
+    UPDATED::VARCHAR 
+FROM DECK WHERE SUBJECT_ID = ?";
+
+pub const VIEW_DECKS: &str = "
+SELECT 
+    ID, 
+    SUBJECT_ID, 
+    NAME, 
+    TAGS::VARCHAR, 
+    DESCRIPTION, 
+    REVIEWED, 
+    CREATED::VARCHAR, 
+    UPDATED::VARCHAR 
+FROM DECK";
+
+pub const INSERT_DECK: &str = "
+INSERT INTO DECK (
+    SUBJECT_ID, 
+    NAME, 
+    TAGS, 
+    DESCRIPTION, 
+    REVIEWED, 
+    CREATED,
+    UPDATED  
+) VALUES (?1, ?2, {tags}, ?3, ?4, ?5, ?6)";
+
+pub const DELETE_DECK: &str = "DELETE FROM DECK WHERE ID=?";

@@ -6,7 +6,7 @@ use tauri::Manager;
 use serde::{Deserialize, Serialize};
 use duckdb::{params, Connection, Result}; 
 
-use crate::flashi_api::queries;
+use crate::queries::deck::*;
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -58,15 +58,8 @@ impl Deck {
                 .join(", ")
         );
 
-        let sql = format!(
-            "INSERT INTO DECK 
-                (SUBJECT_ID, NAME, TAGS, DESCRIPTION, REVIEWED, CREATED, UPDATED)
-            VALUES (?1, ?2, {}, ?3, ?4, ?5, ?6)",
-            tags_literal
-        );
-
         let result = conn.execute(
-            &sql, 
+            &INSERT_DECK.replace("{tags}", &tags_literal), 
             params![
                 &self.subject_id,
                 &self.name,
@@ -90,7 +83,8 @@ impl Deck {
     }
 
     pub fn retrieve(conn: &Connection) -> Result<Vec<Deck>> {
-        let mut stmt = conn.prepare("SELECT ID, SUBJECT_ID, NAME, TAGS::VARCHAR, DESCRIPTION, REVIEWED, CREATED::VARCHAR, UPDATED::VARCHAR FROM DECK")?;
+
+        let mut stmt = conn.prepare(VIEW_DECKS)?;
 
         let decks: Result<Vec<Deck>> = stmt
             .query_map([], |row| {
@@ -111,7 +105,7 @@ impl Deck {
     }
 
     pub fn retrieve_by_subject(conn: &Connection, subject_id: &str) -> Result<Vec<Deck>> {
-        let mut stmt = conn.prepare("SELECT ID, SUBJECT_ID, NAME, TAGS::VARCHAR, DESCRIPTION, REVIEWED, CREATED::VARCHAR, UPDATED::VARCHAR FROM DECK WHERE SUBJECT_ID = ?")?;
+        let mut stmt = conn.prepare(DECK_BY_SUBJECT)?;
 
         let decks: Result<Vec<Deck>> = stmt
             .query_map([&subject_id], |row| {
@@ -144,20 +138,8 @@ impl Deck {
                 .join(", ")
         );
 
-        let sql = format!(
-            "UPDATE DECK
-                SET SUBJECT_ID=?1,
-                    NAME=?2,
-                    TAGS={},
-                    DESCRIPTION=?3,
-                    REVIEWED=?4,
-                    UPDATED=?5
-                WHERE ID=?6",
-            tags_literal
-        );
-
         let result = conn.execute(
-            &sql,
+            &UPDATE_DECK.replace("{tags}", &tags_literal),
             params![
                 &self.subject_id,
                 &self.name,
@@ -182,7 +164,7 @@ impl Deck {
     }
 
     pub fn delete(&mut self, conn: &Connection, id: &str) -> Result<()> {
-        let result = conn.execute("DELETE FROM DECK WHERE ID=?", [id]);
+        let result = conn.execute(DELETE_DECK, [id]);
         match result {
             Ok(_) => {
                 println!("Succesfully deleted deck"); 
@@ -196,8 +178,7 @@ impl Deck {
     }
 
     pub fn view(conn: &Connection, id: &str) -> Result<Deck> {
-        let query = "SELECT ID, SUBJECT_ID, NAME, TAGS::VARCHAR, DESCRIPTION, REVIEWED, CREATED::VARCHAR, UPDATED::VARCHAR FROM DECK WHERE ID = ?";
-        conn.query_row(query, &[&id], |row| {
+        conn.query_row(VIEW_DECK, &[&id], |row| {
             let tags_raw: String = row.get(3)?;
             Ok(Deck {
                 id: row.get(0)?,
@@ -215,7 +196,7 @@ impl Deck {
 
     pub fn search(conn: &Connection, search_term: &str) -> Result<Vec<Deck>> {
 
-        let mut stmt = conn.prepare(&queries::SEARCH_DECK)?;
+        let mut stmt = conn.prepare(&SEARCH_DECK)?;
 
         let decks: Result<Vec<Deck>> = stmt
             .query_map([search_term], |row| { 
@@ -315,7 +296,7 @@ impl Deck {
             .map_err(|_| duckdb::Error::InvalidPath(format_path.clone()))?; 
 
         // Extract all images associated with deck and put in images sub folder
-        let mut image_query_stmt = conn.prepare(queries::DECK_IMAGE_PATHS)?;
+        let mut image_query_stmt = conn.prepare(DECK_IMAGE_PATHS)?;
         let rows: Vec<String> = image_query_stmt
             .query_map(params![deck_id], |row| row.get::<_, String>(0))?
             .collect::<Result<Vec<String>>>()?;
@@ -346,7 +327,7 @@ impl Deck {
             .ok_or_else(|| duckdb::Error::InvalidPath(parquet_path.clone()))?
             .replace('\'', "''");
 
-        let parquet_sql = queries::EXPORT_DECK_PARQUET
+        let parquet_sql = EXPORT_DECK_PARQUET
             .replace("{deck_id}", &deck_id_parsed.to_string())
             .replace("{path}", &parquet_path_str); 
 
@@ -364,3 +345,219 @@ impl Deck {
     }
 
 }
+
+
+#[tauri::command]
+pub fn create_deck(subject_id: &str, name: &str, tags: Vec<String>, description: &str, db_path: &str) -> String {
+
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => return format!("Failed to open database: {}", e),
+    };
+
+    let subject_id_usize: usize = subject_id.parse::<usize>().unwrap();
+
+    let mut deck: Deck = Deck::new(subject_id_usize, name, tags, description);
+
+    match deck.insert(&conn) {
+        Ok(()) => {
+            let _ = conn.close();
+            return "Success".to_string();
+        }
+        Err(e) => format!("Failed to insert deck: {}", e),
+    }
+}
+
+#[tauri::command]
+pub fn edit_deck(deck_id: &str, name: &str, description: &str, tags: Vec<String>, reviewed: usize, db_path: &str) -> String {
+
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return e.to_string();
+        }
+    };
+
+    match Deck::view(&conn, deck_id) {
+        Ok(mut deck) => {
+          
+            deck.name = name.to_string();            
+            deck.description = description.to_string();
+            deck.reviewed = reviewed;
+            deck.tags = tags;
+            
+            match deck.update(&conn, deck_id) {
+                Ok(()) => {
+                    let _ = conn.close();
+                    return "Success".to_string();
+                }
+                Err(e) => format!("Failed to update deck: {}", e),
+            }
+        }
+        Err(e) => {
+            let msg = format!("Error updating deck: {:?}", e);
+            return msg.to_string();
+        }
+    }
+}
+
+#[tauri::command]
+pub fn view_decks(db_path: &str) -> Vec<Deck> {
+  
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return Vec::new();
+        }
+    };
+
+    match Deck::retrieve(&conn) {
+        Ok(decks) => decks,
+        Err(e) => {
+            println!("{:?}", e);
+            Vec::new()
+        }
+    }
+}
+
+#[tauri::command]
+pub fn view_decks_by_subject(db_path: &str, subject_id: &str) -> Vec<Deck> {
+  
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return Vec::new();
+        }
+    };
+
+    match Deck::retrieve_by_subject(&conn, subject_id) {
+        Ok(decks) => decks,
+        Err(e) => {
+            println!("{:?}", e);
+            Vec::new()
+        }
+    }
+}
+
+#[tauri::command]
+pub fn view_deck(db_path: &str, deck_id: &str) -> Result<Deck, String> {
+
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            let err_msg = format!("Database connection error: {:?}", e);
+            return Err(err_msg.to_string());
+        }
+    };
+
+    match Deck::view(&conn, deck_id) {
+        Ok(deck) => {
+            return Ok(deck);
+        }
+        Err(e) => {
+            let err_msg = format!("Error retrieving deck with id: {:?} Cause: {:?}", deck_id, e);
+            return Err(err_msg.to_string());
+        }
+    }
+}
+
+#[tauri::command]
+pub fn search_decks(db_path: &str, search_term: &str) -> Vec<Deck> {
+
+  let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return Vec::new();
+        }
+    };
+
+    match Deck::search(&conn, search_term) {
+        Ok(decks) => decks,
+        Err(e) => {
+            println!("Error searching deck: {:?}", e);
+            Vec::new()
+        }
+    }
+}
+
+#[tauri::command]
+pub fn delete_deck(db_path: &str, deck_id: &str) -> String {
+  
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return format!("Database connection error: {:?}", e);
+        }
+    };
+
+    match Deck::view(&conn, deck_id) {
+        Ok(mut deck) => {
+            let _ = deck.delete(&conn, deck_id);
+            return format!("Success");
+        }
+        Err(e) => {
+            return format!("Error retrieving deck with id: {:?} Cause: {:?}", deck_id, e);
+        }
+    }
+}
+
+#[tauri::command]
+pub fn export_deck(app: tauri::AppHandle, db_path: &str, deck_id: &str, export_path: &str) -> String {
+  
+    let app_image_dir = match app.path().data_dir() {
+        Ok(dir) => dir.join("flashi").join("images"),
+        Err(e) => return format!("Could not resolve data dir: {e}"),
+    };
+
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return format!("Database connection error: {:?}", e);
+        }
+    };
+
+    match Deck::view(&conn, deck_id) {
+        Ok(mut deck) => {
+            let _ = deck.export(&conn, deck_id, export_path, &app_image_dir);
+            return format!("Success");
+        }
+        Err(e) => {
+            return format!("Error retrieving deck with id: {:?} Cause: {:?}", deck_id, e);
+        }
+    }
+}
+
+#[tauri::command]
+pub fn import_deck(app: tauri::AppHandle, db_path: &str, subject_id: &str, path: &str) -> String {
+ 
+    let app_image_dir = match app.path().data_dir() {
+        Ok(dir) => dir.join("flashi").join("images"),
+        Err(e) => return format!("Could not resolve data dir: {e}"),
+    };
+
+    let mut conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return format!("Database connection error: {:?}", e);
+        }
+    };
+
+    match Deck::import(&mut conn, subject_id, path, &app_image_dir) {
+        Ok(_) => {
+            return format!("Success");
+        }
+        Err(e) => {
+            return format!("Error importing deck with subject id: {:?} Cause: {:?}", subject_id, e);
+        }
+    }
+}
+
+
