@@ -36,6 +36,18 @@
         @gn-dblclick="removeKeyword(index)"
       />
     </div>
+
+    <GnFormTextField
+        v-model="explanation"
+        @gn-update="emitQuestionExplanation"
+        backgroundColor="var(--app-color-surface)" 
+        borderColor="transparent" 
+        :disabled="false" 
+        placeholder="Write explanation for question answer…" 
+        :rows="4"        
+        label="Enter question explanation"
+        textColor="var(--app-color-accent)" />
+
   </div>
 
 </template>
@@ -53,7 +65,8 @@ import {
 const text = ref(''); 
 const newKeyword = ref('');
 const keywords = ref([]);
-const emit = defineEmits(['update:text', 'update:keywords']); 
+const explanation = ref('');
+const emit = defineEmits(['update:text', 'update:keywords', 'update:explanation']); 
 
 function addKeyword() {
   keywords.value.push(newKeyword.value); 
@@ -72,6 +85,10 @@ function emitKeywords() {
 
 function emitQuestionText() {
   emit('update:text', text.value);
+}
+
+function emitQuestionExplanation() {
+  emit('update:explanation', explanation.value);
 }
 
 </script>

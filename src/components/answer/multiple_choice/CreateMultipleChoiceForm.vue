@@ -31,6 +31,18 @@
         @remove="removeItem(index)"
       />
     </div>
+
+    <GnFormTextField
+        v-model="text"
+        @gn-update="emitExplanation"
+        backgroundColor="var(--app-color-surface)" 
+        borderColor="transparent" 
+        :disabled="false" 
+        placeholder="Write explanation of answer…" 
+        :rows="4"        
+        label="Enter explanation for multiple choice selection"
+        textColor="var(--app-color-accent)" />
+
   </div>
 </template>
 
@@ -41,7 +53,7 @@ import SettingsToggle from "../../../components/shared/SettingsToggle.vue";
 
 const items = ref([]); 
 const newItem = ref('');
-const emit = defineEmits(['update:items']);
+const emit = defineEmits(['update:items', 'update:explanation']);
 
 function addItem() {
   if (newItem.value.trim()) {
@@ -52,6 +64,10 @@ function addItem() {
 
 function emitItems() {
   emit('update:items', items.value);
+}
+
+function emitExplanation() {
+  emit('update:explanation', text.value);
 }
 
 function removeItem(index) {

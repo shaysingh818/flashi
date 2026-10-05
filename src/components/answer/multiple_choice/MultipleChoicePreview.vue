@@ -26,7 +26,8 @@
       :isSelected="item.is_correct"
       @update:text="newItem = $event; updateAnswer(index)"
       @update:selected="selectedItem = $event; updateAnswer(index)"
-      @update:delete="deleteIndex = $event; deleteAnswer()" />
+      @update:delete="deleteIndex = $event; deleteAnswer()" 
+      @update:explanation="explanation = $event; updateExplanation()" />
     
     <MultipleChoicePreviewItem
       v-if="props.visible === false"
@@ -60,6 +61,7 @@ const newItem = ref('');
 const selectedItem = ref(null); 
 const selectedItems  = ref([]);
 const deleteIndex = ref(null);
+const explanation = ref('');
 
 watch(() => props.items, () => {
   selectedItem.value = null;
@@ -98,6 +100,7 @@ function updateAnswer(index) {
 
   const isSelectedItem = selectedItem.value != null; 
   const isNewText = newItem.value != '';
+  const isNewExplanation = explanation.value != '';
   const existingAnswer = localProps[index].answer;
 
   if(isSelectedItem && isNewText) {
