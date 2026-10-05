@@ -1,7 +1,16 @@
-pub mod flashi_api;
-pub mod handlers;
+pub mod answer; 
+pub mod deck; 
+pub mod question; 
+pub mod image_artifact;
+pub mod session;
+pub mod session_review;
+pub mod session_review_question; 
+pub mod session_review_metrics; 
+pub mod subject;
+pub mod analytics;
+pub mod queries;
 
-use crate::flashi_api::session::{
+use crate::session::{
     create_session,
     delete_session,
     edit_session,
@@ -18,7 +27,7 @@ use crate::flashi_api::session::{
     session_daily_accuracy_history
 };
 
-use crate::flashi_api::session_review::{
+use crate::session_review::{
     create_session_review,
     edit_session_review,
     view_session_review,
@@ -27,58 +36,58 @@ use crate::flashi_api::session_review::{
     check_session_review_complete
 };
 
-use crate::flashi_api::session_review_question::{
+use crate::session_review_question::{
     view_session_review_questions,
     view_active_session_review_questions,
     view_session_review_question,
     edit_session_review_question,
 };
 
-use crate::flashi_api::session_review_metrics::{ 
+use crate::session_review_metrics::{ 
     retrieve_session_metrics_history, 
     generate_session_review_metrics
 }; 
 
-use crate::handlers::subject::{
+use crate::subject::{
     create_subject, delete_subject, edit_subject, search_subjects, view_subject, view_subjects, subject_metrics
 };
 
-use crate::flashi_api::deck::{
+use crate::deck::{
     create_deck, delete_deck, edit_deck, search_decks, view_deck, view_decks, view_decks_by_subject, import_deck, export_deck
 };
 
-use crate::flashi_api::question::{
+use crate::question::{
     create_question, delete_question, edit_question, search_questions, view_question, view_questions, add_question_image_artifact, remove_question_image_artifact
 };
 
-use crate::flashi_api::image_artifact::{
+use crate::image_artifact::{
     create_image_artifact, edit_image_artifact, delete_image_artifact, view_question_image_artifacts
 };
 
-use crate::flashi_api::answer::answer_type::{
+use crate::answer::answer_type::{
     create_answer_type, delete_answer_type, edit_answer_type, search_answer_types,
     view_answer_type, view_answer_types,
 };
 
-use crate::flashi_api::answer::multiple_choice::{
+use crate::answer::multiple_choice::{
     create_multiple_choice, create_multiple_choice_answer, delete_multiple_choice,
     delete_multiple_choice_answer, edit_multiple_choice_answer, validate_multiple_choice_answer,
     view_multiple_choice, view_multiple_choice_answer, view_multiple_choice_answers,
 };
 
-use crate::flashi_api::answer::open_ended::{
+use crate::answer::open_ended::{
     create_open_ended_answer, delete_open_ended_answer, edit_open_ended_answer,
     search_open_ended_answers, validate_open_ended_answer, view_open_ended_answer,
     view_open_ended_answers,
 };
 
-use crate::flashi_api::answer::ordered_sequence::{
+use crate::answer::ordered_sequence::{
     create_ordered_sequence_answer, delete_ordered_sequence_answer, edit_ordered_sequence_answer,
     search_ordered_sequence_answers, validate_ordered_sequence_answer,
     view_ordered_sequence_answer, view_ordered_sequence_answers,
 };
 
-use crate::flashi_api::analytics:: {
+use crate::analytics:: {
     general_metrics, review_time_metrics, question_review_time_metrics, historical_metrics
 };
 

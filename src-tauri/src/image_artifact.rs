@@ -8,7 +8,7 @@ use uuid::Uuid;
 use serde::{Deserialize, Serialize};
 use duckdb::{params, Connection, Result}; 
 
-use crate::flashi_api::queries::image_artifact::*;
+use crate::queries::image_artifact::*;
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -2,7 +2,7 @@ use chrono::{Duration, Utc};
 use serde::{Deserialize, Serialize};
 use duckdb::{params, Connection, Result};
 
-use crate::flashi_api::queries::analytics::*;
+use crate::queries::analytics::*;
 
 pub fn general(conn: &Connection) -> Result<(usize, usize, usize)> {
  

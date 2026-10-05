@@ -2,9 +2,9 @@ use chrono;
 use duckdb::{params, Connection, OptionalExt, Result};
 use serde::{Deserialize, Serialize};
 
-use crate::flashi_api::queries::session_review::*;
-use crate::flashi_api::session_review_question::*;
-use crate::flashi_api::session_review_metrics::*; 
+use crate::queries::session_review::*;
+use crate::session_review_question::*;
+use crate::session_review_metrics::*; 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SessionReview {

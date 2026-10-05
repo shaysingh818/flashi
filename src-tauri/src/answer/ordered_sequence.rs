@@ -2,7 +2,7 @@ use chrono;
 use serde::{Deserialize, Serialize};
 use duckdb::{params, Connection, Result}; 
 
-use crate::flashi_api::queries::answer::ordered_sequence::*;
+use crate::queries::answer::ordered_sequence::*;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OrderedSequenceAnswer {

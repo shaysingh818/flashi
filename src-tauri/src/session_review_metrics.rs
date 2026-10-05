@@ -2,7 +2,7 @@ use chrono;
 use duckdb::{params, Connection, OptionalExt, Result};
 use serde::{Deserialize, Serialize};
 
-use crate::flashi_api::queries::session_review_metrics::*;
+use crate::queries::session_review_metrics::*;
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

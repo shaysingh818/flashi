@@ -1,0 +1,41 @@
+
+pub const INSERT_ANSWER_TYPE: &str ="
+INSERT INTO ANSWER_TYPE 
+(
+    NAME, 
+    CREATED, 
+    UPDATED
+) 
+VALUES (?1, ?2, ?3)"; 
+
+pub const VIEW_ANSWER_TYPES: &str = "
+SELECT 
+    ID, 
+    NAME, 
+    CREATED::VARCHAR, 
+    UPDATED::VARCHAR 
+FROM ANSWER_TYPE";
+
+pub const UPDATE_ANSWER_TYPE: &str = "
+UPDATE ANSWER_TYPE
+    SET NAME=?, 
+    UPDATED=?
+    WHERE ID=?";
+
+pub const DELETE_ANSWER_TYPE: &str = "DELETE FROM ANSWER_TYPE WHERE ID=?";
+
+pub const VIEW_ANSWER_TYPE: &str = "
+SELECT 
+    ID, 
+    NAME, 
+    CREATED::VARCHAR, 
+    UPDATED::VARCHAR 
+FROM ANSWER_TYPE WHERE ID = ?";
+
+pub const SEARCH_ANSWER_TYPE: &str = "
+SELECT 
+    ID, 
+    NAME, 
+    CREATED::VARCHAR, 
+    UPDATED::VARCHAR 
+FROM ANSWER_TYPE WHERE NAME LIKE '%' || ? || '%'";

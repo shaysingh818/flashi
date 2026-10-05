@@ -2,6 +2,7 @@ use chrono;
 use serde::{Deserialize, Serialize};
 use duckdb::{params, Connection, Result}; 
 
+use crate::queries::answer::answer_type::*;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AnswerType {
@@ -28,9 +29,7 @@ impl AnswerType {
 
     pub fn insert(&mut self, conn: &Connection) -> Result<()> {
         let result = conn.execute(
-            "INSERT INTO ANSWER_TYPE 
-                (NAME, CREATED, UPDATED) 
-                VALUES (?1, ?2, ?3)",
+            INSERT_ANSWER_TYPE,
             params![
                 &self.name,
                 &self.created,
@@ -51,7 +50,7 @@ impl AnswerType {
     }
 
     pub fn retrieve(conn: &Connection) -> Result<Vec<AnswerType>> {
-        let mut stmt = conn.prepare("SELECT ID, NAME, CREATED::VARCHAR, UPDATED::VARCHAR FROM ANSWER_TYPE")?;
+        let mut stmt = conn.prepare(VIEW_ANSWER_TYPES)?;
 
         let answer_types: Result<Vec<AnswerType>> = stmt
             .query_map([], |row| {
@@ -72,10 +71,7 @@ impl AnswerType {
         self.updated = chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
         
         let result = conn.execute(
-            "UPDATE ANSWER_TYPE
-                SET NAME=?, 
-                UPDATED=?
-                WHERE ID=?",
+            UPDATE_ANSWER_TYPE,
             [
                 &self.name,
                 &self.updated,
@@ -97,7 +93,7 @@ impl AnswerType {
 
 
     pub fn delete(&mut self, conn: &Connection, id: &str) -> Result<()> {
-        let result = conn.execute("DELETE FROM ANSWER_TYPE WHERE ID=?", [id]);
+        let result = conn.execute(DELETE_ANSWER_TYPE, [id]);
         match result {
             Ok(_) => {
                 println!("Succesfully deleted answer type"); 
@@ -111,8 +107,7 @@ impl AnswerType {
     }
 
     pub fn view(conn: &Connection, id: &str) -> Result<AnswerType> {
-        let query = "SELECT ID, NAME, CREATED::VARCHAR, UPDATED::VARCHAR FROM ANSWER_TYPE WHERE ID = ?";
-        conn.query_row(query, &[&id], |row| {
+        conn.query_row(VIEW_ANSWER_TYPE, &[&id], |row| {
             Ok(AnswerType {
                 answer_type_id: row.get(0)?,
                 name: row.get(1)?,
@@ -124,13 +119,9 @@ impl AnswerType {
     
 
     pub fn search(conn: &Connection, search_term: &str) -> Result<Vec<AnswerType>> {
-        let query = format!(
-            "SELECT ID, NAME, CREATED::VARCHAR, UPDATED::VARCHAR FROM ANSWER_TYPE WHERE NAME LIKE '%{}%'",
-            search_term
-        );
-        let mut stmt = conn.prepare(&query)?;
+        let mut stmt = conn.prepare(&SEARCH_ANSWER_TYPE)?;
         let answer_types: Result<Vec<AnswerType>> = stmt
-            .query_map([], |row| {
+            .query_map([search_term], |row| {
                 Ok(AnswerType {
                     answer_type_id: row.get(0)?,
                     name: row.get(1)?,

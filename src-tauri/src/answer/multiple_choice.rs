@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use serde::{Deserialize, Serialize};
 use duckdb::{params, Connection, Result}; 
 
-use crate::flashi_api::queries::answer::multiple_choice::*; 
+use crate::queries::answer::multiple_choice::*; 
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

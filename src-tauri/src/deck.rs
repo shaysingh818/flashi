@@ -6,7 +6,7 @@ use tauri::Manager;
 use serde::{Deserialize, Serialize};
 use duckdb::{params, Connection, Result}; 
 
-use crate::flashi_api::queries::deck::*;
+use crate::queries::deck::*;
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
