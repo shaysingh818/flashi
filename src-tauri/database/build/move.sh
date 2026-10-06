@@ -1,1 +1,1 @@
-cp flashi.db /home/shay/.local/share/flashi/metadata/
+cp flashi.db /home/shay-gaming/.local/share/flashi/metadata/

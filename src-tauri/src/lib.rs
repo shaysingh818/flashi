@@ -70,7 +70,7 @@ use crate::answer::answer_type::{
 };
 
 use crate::answer::multiple_choice::{
-    create_multiple_choice, create_multiple_choice_answer, delete_multiple_choice,
+    create_multiple_choice, edit_multiple_choice, create_multiple_choice_answer, delete_multiple_choice,
     delete_multiple_choice_answer, edit_multiple_choice_answer, validate_multiple_choice_answer,
     view_multiple_choice, view_multiple_choice_answer, view_multiple_choice_answers,
 };
@@ -167,11 +167,12 @@ pub fn run() {
             view_answer_types,
             /* Multiple choice  */
             create_multiple_choice,
-            create_multiple_choice_answer,
+            edit_multiple_choice,
             delete_multiple_choice,
+            view_multiple_choice,
+            create_multiple_choice_answer,
             delete_multiple_choice_answer,
             edit_multiple_choice_answer,
-            view_multiple_choice,
             view_multiple_choice_answer,
             view_multiple_choice_answers,
             validate_multiple_choice_answer,
