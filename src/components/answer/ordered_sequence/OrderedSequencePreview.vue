@@ -38,6 +38,18 @@
       text=""
       @update:text="newItem = $event; newIndex = index; emitSubmittedItem()"
     />
+
+    <GnFormTextField
+        v-if="props.visible === true"
+        :model-value="props.explanation"
+        @update:model-value="emit('update:explanation', $event)"
+        backgroundColor="var(--app-color-surface)" 
+        borderColor="transparent" 
+        :disabled="false" 
+        placeholder="Write explanation for question answer…" 
+        :rows="4"        
+        label="Question explanation"
+        textColor="var(--app-color-accent)" />
   </div>
 </template>
 
@@ -54,6 +66,10 @@ const props = defineProps({
     type: Array,
     required: true,
   },
+  explanation: {
+    type: String,
+    default: '',
+  },
 });
 
 
@@ -67,7 +83,8 @@ const emit = defineEmits([
   "update:index", 
   "update:items", 
   "update:delete", 
-  "update:add"
+  "update:add",
+  "update:explanation"
 ]);
 
 

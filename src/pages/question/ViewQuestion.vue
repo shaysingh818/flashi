@@ -47,6 +47,8 @@
         v-if="answerType === 'Ordered Sequence'" 
         :visible="true"
         :items="orderedSequences"
+        :explanation="explanation"
+        @update:explanation="explanation = $event"
         @update:items="updatedOrderedSequences = $event;"
         @update:delete="updatedOrderedSequences = $event; editAnswer()"
         @update:add="updatedOrderedSequences = $event; editAnswer()"
@@ -56,6 +58,8 @@
         v-if="answerType === 'Multiple Choice'"
         :visible="true"
         :items="multipleChoiceAnswers"
+        :explanation="explanation"
+        @update:explanation="explanation = $event"
         @update:item="updatedMultipleChoiceAnswer = $event; appendChoice()"
         @update:add="multipleChoiceAnswer = $event; editAnswer()"
         @update:delete="multipleChoiceDeleteIndex = $event; editAnswer()"
@@ -66,6 +70,8 @@
         :visible="true"
         :placeholderText="openEndedAnswer"
         :keywords="openEndedAnswerKeywords"
+        :explanation="explanation"
+        @update:explanation="explanation = $event"
         @update:keywords="openEndedAnswerKeywords = $event"
         @update:text="openEndedAnswer = $event"
       />
@@ -105,6 +111,7 @@ import {
   answerTypeStore,
   openEndedStore,
   orderedSequenceStore,
+  multipleChoiceStore,
   multipleChoiceAnswerStore
 } from "../../api";
 
@@ -126,6 +133,8 @@ const openEndedAnswerKeywords = ref([]);
 const orderedSequences = ref([]); 
 const multipleChoiceAnswers = ref([]); 
 const newMultipleChoiceAnswers = ref([]);
+const explanation = ref('');
+const savedExplanation = ref('');
 
 /* updated answers */
 const updatedOrderedSequences = ref([]);
@@ -293,6 +302,7 @@ async function loadData(id) {
       `${question.value.answer_id}`
     );
     orderedSequences.value = answer.sequence; 
+    explanation.value = answer.explanation ?? '';
   }
   
   if (answerType.value === 'Multiple Choice') {
@@ -300,6 +310,10 @@ async function loadData(id) {
       `${question.value.answer_id}`
     );
     multipleChoiceAnswers.value = multipleChoiceAnswerStore.multipleChoiceAnswers; 
+    const multipleChoice = await multipleChoiceStore.viewMultipleChoice(
+      `${question.value.answer_id}`
+    );
+    explanation.value = multipleChoice.explanation ?? '';
   }
   
   if (answerType.value === 'Open Ended') {
@@ -308,7 +322,10 @@ async function loadData(id) {
     );
     openEndedAnswer.value = answer.answer;
     openEndedAnswerKeywords.value = answer.keywords;
+    explanation.value = answer.explanation ?? '';
   }
+
+  savedExplanation.value = explanation.value;
 }
 
 
@@ -319,7 +336,7 @@ async function editAnswer() {
     const editResult = await openEndedStore.editOpenEndedAnswer(
         `${question.value.answer_id}`,
         openEndedAnswer.value, 
-        '',
+        explanation.value,
         openEndedAnswerKeywords.value 
     );
     loadData(question.value.id);
@@ -328,16 +345,20 @@ async function editAnswer() {
   if (answerType.value === 'Ordered Sequence') {
 
 
-    if (updatedOrderedSequences.value.length > 0) { 
+    const sequences = updatedOrderedSequences.value.length > 0
+      ? updatedOrderedSequences.value
+      : orderedSequences.value;
+
+    if (sequences.length > 0) { 
       const preservedAnswerOrder = [];
-      for (const [index, item] of updatedOrderedSequences.value.entries()) {
+      for (const [index, item] of sequences.entries()) {
         preservedAnswerOrder.push(item);
       }
   
       const editResult = await orderedSequenceStore.editOrderedSequenceAnswer(
         `${question.value.answer_id}`,
         preservedAnswerOrder,
-        '',
+        explanation.value,
       );
       loadData(question.value.id);
     } else { 
@@ -348,11 +369,18 @@ async function editAnswer() {
 
   if (answerType.value === 'Multiple Choice') {
 
+    if(explanation.value !== savedExplanation.value) {
+      await multipleChoiceStore.editMultipleChoice(
+        `${question.value.answer_id}`,
+        explanation.value
+      );
+      savedExplanation.value = explanation.value;
+    }
+
     if(multipleChoiceAnswer.value != '') {
       await multipleChoiceAnswerStore.createMultipleChoiceAnswer( 
         `${question.value.answer_id}`,
         multipleChoiceAnswer.value,
-        '',
         false
       );
       loadData(question.value.id);
@@ -376,7 +404,6 @@ async function editAnswer() {
           `${item.id}`,
           `${item.answer_id}`,
           item.answer, 
-          '',
           item.is_correct
         );
       }

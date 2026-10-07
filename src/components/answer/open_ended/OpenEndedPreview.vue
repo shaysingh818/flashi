@@ -47,6 +47,18 @@
         @gn-dblclick="removeKeyword(index)"
     />
   </div>
+
+  <GnFormTextField
+      v-if="props.visible === true"
+      :model-value="props.explanation"
+      @update:model-value="emit('update:explanation', $event)"
+      backgroundColor="var(--app-color-surface)" 
+      borderColor="transparent" 
+      :disabled="false" 
+      placeholder="Write explanation for question answer…" 
+      :rows="4"        
+      label="Question explanation"
+      textColor="var(--app-color-accent)" />
 </div>
 
 
@@ -68,12 +80,16 @@ const props = defineProps({
   keywords: {
     type: Array,
     required: true,
-  }
+  },
+  explanation: {
+    type: String,
+    default: '',
+  },
 });
 
 const newKeyword = ref('');
 const newText = ref('');
-const emit = defineEmits(["update:keywords", "update:text"]);
+const emit = defineEmits(["update:keywords", "update:text", "update:explanation"]);
 
 function removeKeyword(index) {
   props.keywords.splice(index, 1);

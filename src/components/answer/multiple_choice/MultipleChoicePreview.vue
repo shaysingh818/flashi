@@ -26,8 +26,7 @@
       :isSelected="item.is_correct"
       @update:text="newItem = $event; updateAnswer(index)"
       @update:selected="selectedItem = $event; updateAnswer(index)"
-      @update:delete="deleteIndex = $event; deleteAnswer()" 
-      @update:explanation="explanation = $event; updateExplanation()" />
+      @update:delete="deleteIndex = $event; deleteAnswer()" />
     
     <MultipleChoicePreviewItem
       v-if="props.visible === false"
@@ -38,6 +37,18 @@
       :text="item.answer"
       :isSelected="selectedItems.some(s => s.id === item.id)"
       @update:selected="selectedItem = $event; selectAnswer(index)" />
+
+    <GnFormTextField
+        v-if="props.visible === true"
+        :model-value="props.explanation"
+        @update:model-value="emit('update:explanation', $event)"
+        backgroundColor="var(--app-color-surface)" 
+        borderColor="transparent" 
+        :disabled="false" 
+        placeholder="Write explanation for question answer…" 
+        :rows="4"        
+        label="Question explanation"
+        textColor="var(--app-color-accent)" />
   </div> 
 
 </template>
@@ -55,13 +66,16 @@ const props = defineProps({
     type: Array,
     required: true,
   },
+  explanation: {
+    type: String,
+    default: '',
+  },
 });
 
 const newItem = ref('');
 const selectedItem = ref(null); 
 const selectedItems  = ref([]);
 const deleteIndex = ref(null);
-const explanation = ref('');
 
 watch(() => props.items, () => {
   selectedItem.value = null;
@@ -74,7 +88,8 @@ const emit = defineEmits([
   "select:clear",
   "update:item", 
   "update:add", 
-  "update:delete"
+  "update:delete",
+  "update:explanation"
 ]); 
 
 
@@ -100,7 +115,6 @@ function updateAnswer(index) {
 
   const isSelectedItem = selectedItem.value != null; 
   const isNewText = newItem.value != '';
-  const isNewExplanation = explanation.value != '';
   const existingAnswer = localProps[index].answer;
 
   if(isSelectedItem && isNewText) {

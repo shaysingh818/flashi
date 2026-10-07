@@ -26,6 +26,18 @@
         @remove="removeSequence"
       />
     </div>
+
+    <GnFormTextField
+        v-model="explanation"
+        @gn-update="emitQuestionExplanation"
+        backgroundColor="var(--app-color-surface)" 
+        borderColor="transparent" 
+        :disabled="false" 
+        placeholder="Write explanation for question answer…" 
+        :rows="4"        
+        label="Enter question explanation"
+        textColor="var(--app-color-accent)" />
+
   </div>
 </template>
 
@@ -34,8 +46,9 @@ import { ref } from "vue";
 import OrderedSequenceFormItem from "./OrderedSequenceFormItem.vue";
 
 const newSequence = ref(''); 
-const sequences = ref([]); 
-const emit = defineEmits(['update:sequence'])
+const sequences = ref([]);
+const explanation = ref(''); 
+const emit = defineEmits(['update:sequence', 'update:explanation'])
 
 function addSequence() {
   sequences.value.push(newSequence.value); 
@@ -44,6 +57,10 @@ function addSequence() {
 
 function emitSequence() {
   emit('update:sequence', sequences.value); 
+}
+
+function emitQuestionExplanation() {
+  emit('update:explanation', explanation.value);
 }
 
 function removeSequence(index) {

@@ -32,7 +32,7 @@
     </div>
 
     <GnFormTextField
-        v-model="exlanation"
+        v-model="explanation"
         @gn-update="emitExplanation"
         backgroundColor="var(--app-color-surface)" 
         borderColor="transparent" 
