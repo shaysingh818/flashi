@@ -1,4 +1,15 @@
 <template>
+
+    <QuestionAnswerDialog :open="answerDialog" width="40rem" height="30rem" @close="answerDialog = false">
+      <div class="flex flex-col items-center justify-center" style="background-color: black;">
+        <div class="flex flex-row items-center justify-center gap-2 p-6">
+
+          <font-awesome-icon icon="fa-solid fa-check" style="color: green; font-size: 25px; " />
+          <h1 style="color: white; font-size: 26px; font-weight: bold;">Testing</h1>
+        </div>
+      </div>
+    </QuestionAnswerDialog>
+
   <div class="flex flex-col">
 
     <GnBackBar 
@@ -87,6 +98,7 @@ import OrderedSequencePreview from "../../components/answer/ordered_sequence/Ord
 import MultipleChoicePreview from "../../components/answer/multiple_choice/MultipleChoicePreview.vue";
 import OpenEndedPreview from "../../components/answer/open_ended/OpenEndedPreview.vue";
 import SessionActionsBar from "../../components/session/SessionActionsBar.vue";
+import QuestionAnswerDialog from "../../components/question/QuestionAnswerDialog.vue";
 import {
   deckStore,
   questionStore,
@@ -113,6 +125,7 @@ const questionImageArtifacts = ref([]);
 const questionImageUrls = reactive({});
 const deck = ref(null); 
 const answerType = ref('');
+const answerDialog = ref(true);
 
 /* answers */
 const openEndedAnswer = ref(''); 

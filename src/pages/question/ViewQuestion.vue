@@ -1,4 +1,6 @@
 <template>
+
+
   <div class="flex flex-col">
 
     <GnBackBar 
@@ -17,6 +19,7 @@
           </GnIconButton>
         </template>
     </GnBackBar>
+
       
     <div class="flex items-center justify-center">
       <QuestionTextPreview
