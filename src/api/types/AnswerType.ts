@@ -135,7 +135,7 @@ export class MultipleChoice {
     updated: string;
   }) {
     this.answer_id = answer_id;
-    this.explanation = string;
+    this.explanation = explanation;
     this.created = created;
     this.updated = updated;
   }
