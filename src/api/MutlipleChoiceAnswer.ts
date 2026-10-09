@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { dataDir} from '@tauri-apps/api/path';
 import { reactive } from 'vue';
-import { MultipleChoiceAnswer } from './types';
+import { MultipleChoice, MultipleChoiceAnswer } from './types';
 
 export const multipleChoiceAnswerStore = reactive({
 
@@ -28,14 +28,14 @@ export const multipleChoiceAnswerStore = reactive({
     return await invoke("view_multiple_choice_answer", { dbPath, id });
   },
 
-  async createMultipleChoiceAnswer(answerId: string, answer: string, explanation: string, isCorrect: boolean): Promise<MultipleChoiceAnswer> {
+  async createMultipleChoiceAnswer(answerId: string, answer: string, isCorrect: boolean): Promise<MultipleChoiceAnswer> {
     const dbPath = await this.getDbPath();
-    return await invoke("create_multiple_choice_answer", { answerId, answer, explanation, isCorrect, dbPath });
+    return await invoke("create_multiple_choice_answer", { answerId, answer, isCorrect, dbPath });
   },
 
-  async editMultipleChoiceAnswer(id: string, answerId: string, answer: string, explanation: string, isCorrect: boolean): Promise<string> {        
+  async editMultipleChoiceAnswer(id: string, answerId: string, answer: string, isCorrect: boolean): Promise<string> {        
     const dbPath = await this.getDbPath();
-    return await invoke("edit_multiple_choice_answer", { id, answerId, answer, explanation, isCorrect, dbPath });  
+    return await invoke("edit_multiple_choice_answer", { id, answerId, answer, isCorrect, dbPath });  
   },
 
   async deleteMultipleChoiceAnswer(id: string): Promise<string> {    
@@ -44,34 +44,6 @@ export const multipleChoiceAnswerStore = reactive({
   },
  
 })
-
-
-export interface MultipleChoice {
-  answer_id: number;
-  created: string; 
-  updated: string;
-}
-
-export class MultipleChoice {
-  answer_id: number;
-  created: string; 
-  updated: string;
-
-  constructor({
-    answer_id,
-    created,
-    updated
-  }: {
-    answer_id: number;
-    created: string; 
-    updated: string;
-  }) {
-    this.answer_id = answer_id;
-    this.created = created;
-    this.updated = updated;
-  }
-}
-
 
 export const multipleChoiceStore = reactive({
 
@@ -88,9 +60,14 @@ export const multipleChoiceStore = reactive({
     return await invoke("view_multiple_choice", { dbPath, id });
   },
 
-  async createMultipleChoice(): Promise<MultipleChoiceAnswer> {
+  async createMultipleChoice(explanation: string): Promise<MultipleChoiceAnswer> {
     const dbPath = await this.getDbPath();
-    return await invoke("create_multiple_choice", { dbPath });
+    return await invoke("create_multiple_choice", { dbPath, explanation });
+  },
+
+  async editMultipleChoice(id: string, explanation: string): Promise<string> {
+    const dbPath = await this.getDbPath();
+    return await invoke("edit_multiple_choice", { id, explanation, dbPath });
   },
 
   async deleteMultipleChoice(id: string): Promise<string> {    

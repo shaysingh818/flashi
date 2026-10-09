@@ -36,17 +36,20 @@
     <CreateMultipleChoiceForm 
       v-if="selectedOption == 'multiple-choice'" 
       @update:items="multipleChoiceAnswers = $event"
+      @update:explanation="multipleChoiceExplanation = $event"
     />
 
     <CreateOpenEndedForm 
       v-if="selectedOption == 'open-ended'" 
       @update:text="openEndedText = $event" 
       @update:keywords="openEndedKeywords = $event"
+      @update:explanation="openEndedExplanation = $event"
     />
 
     <CreateOrderedSequenceForm 
       v-if="selectedOption == 'ordered-sequence'"
-      @update:sequence="orderedSequences = $event" 
+      @update:sequence="orderedSequences = $event"
+      @update:explanation="orderedSequenceExplanation = $event"
     />
 
     <br />
@@ -98,9 +101,12 @@ const text = ref('');
 const selectedPaths = ref([]);
 const selectedOption = ref('');
 const orderedSequences = ref([]);
+const orderedSequenceExplanation = ref('');
 const openEndedText = ref(''); 
+const openEndedExplanation = ref('');
 const openEndedKeywords = ref([]); 
 const multipleChoiceAnswers = ref([]); 
+const multipleChoiceExplanation = ref('');
 const answerTypeNames = ref([]);
 
 onMounted(async () => {
@@ -168,9 +174,8 @@ async function submitQuestionImages(selectedImagePaths) {
 }
 
 async function submitMultipleChoice(multipleChoiceAnswers) { 
-  const answer = await multipleChoiceStore.createMultipleChoice();
+  const answer = await multipleChoiceStore.createMultipleChoice(multipleChoiceExplanation.value);
   const answerId = answer.answer_id; 
-  console.log(multipleChoiceAnswers); 
   if (multipleChoiceAnswers.length === 0) {
     return -1;
   }
@@ -179,7 +184,6 @@ async function submitMultipleChoice(multipleChoiceAnswers) {
     await multipleChoiceAnswerStore.createMultipleChoiceAnswer(
       `${answerId}`,
       item.text,
-      '',
       item.selected
     );
   }
@@ -247,7 +251,7 @@ async function submitQuestion() {
     const answerTypeId = retrieveAnswerTypeId('Open Ended');
     const answerId = await submitOpenEnded(
       openEndedText.value,
-      '',
+      openEndedExplanation.value,
       openEndedKeywords.value
     );
     if (answerId !== -1) { 
@@ -279,7 +283,7 @@ async function submitQuestion() {
     const answerTypeId = retrieveAnswerTypeId('Ordered Sequence');
     const answerId = await submitOrderedSequence(
       orderedSequences.value,
-      ''
+      orderedSequenceExplanation.value
     );
     if (answerId !== -1) { 
       [questionInsertId, questionInsertResult] = await questionStore.createQuestion(
@@ -325,7 +329,6 @@ async function submitQuestion() {
       }
     }
   }
-  
 }
 
 </script>

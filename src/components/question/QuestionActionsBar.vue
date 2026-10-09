@@ -2,7 +2,6 @@
   <div class="bottom-actions-bar">
     <SecondaryButton @click="showDropdown" text="Skip" />
     <PrimaryButton @click="props.submitHandler" text="Testing" />
-
   </div>
 </template>
 

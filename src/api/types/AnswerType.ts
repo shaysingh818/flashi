@@ -112,25 +112,30 @@ export class OrderedSequenceAnswer {
 
 export interface MultipleChoice {
   answer_id: number;
+  explanation: string;
   created: string; 
   updated: string;
 }
 
 export class MultipleChoice {
   answer_id: number;
+  explanation: string;
   created: string; 
   updated: string;
 
   constructor({
     answer_id,
+    explanation,
     created,
     updated
   }: {
     answer_id: number;
+    explanation: string;
     created: string; 
     updated: string;
   }) {
     this.answer_id = answer_id;
+    this.explanation = explanation;
     this.created = created;
     this.updated = updated;
   }
@@ -141,7 +146,6 @@ export interface MultipleChoiceAnswer {
   answer_id: number;
   is_correct: boolean;
   answer: string;
-  explanation: string;
   created: string; 
   updated: string;
 }
@@ -150,7 +154,6 @@ export class MultipleChoiceAnswer {
   answer_id: number;
   is_correct: boolean;
   answer: string;
-  explanation: string;
   created: string; 
   updated: string;
 
@@ -158,21 +161,18 @@ export class MultipleChoiceAnswer {
     answer_id,
     is_correct,
     answer,
-    explanation,
     created,
     updated
   }: {
     answer_id: number;
     is_correct: boolean;
     answer: string;
-    explanation: string;
     created: string; 
     updated: string;
   }) {
     this.answer_id = answer_id;
     this.is_correct = is_correct;
     this.answer = answer;
-    this.explanation = explanation;
     this.created = created;
     this.updated = updated;
   }

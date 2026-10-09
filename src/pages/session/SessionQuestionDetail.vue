@@ -1,4 +1,17 @@
 <template>
+
+    <QuestionAnswerDialog 
+      :open="answerDialog" 
+      width="40rem" 
+      :height="answerCorrect ? 'auto' : '25rem'"
+      :icon="answerCorrect ? 'fa-solid fa-check' : 'fa-solid fa-xmark'"
+      :iconColor="answerCorrect ? 'green' : 'var(--app-color-danger)'"
+      :dialogMessage="answerCorrect ? 'Correct' : 'Incorrect'"
+      :explanation="explanation"
+      :showExplanation="!answerCorrect"
+      @close="closeAnswerDialog">
+    </QuestionAnswerDialog>
+
   <div class="flex flex-col">
 
     <GnBackBar 
@@ -87,6 +100,7 @@ import OrderedSequencePreview from "../../components/answer/ordered_sequence/Ord
 import MultipleChoicePreview from "../../components/answer/multiple_choice/MultipleChoicePreview.vue";
 import OpenEndedPreview from "../../components/answer/open_ended/OpenEndedPreview.vue";
 import SessionActionsBar from "../../components/session/SessionActionsBar.vue";
+import QuestionAnswerDialog from "../../components/question/QuestionAnswerDialog.vue";
 import {
   deckStore,
   questionStore,
@@ -97,6 +111,7 @@ import {
   answerTypeStore,
   openEndedStore,
   orderedSequenceStore,
+  multipleChoiceStore,
   multipleChoiceAnswerStore
 } from "../../api";
 
@@ -113,6 +128,9 @@ const questionImageArtifacts = ref([]);
 const questionImageUrls = reactive({});
 const deck = ref(null); 
 const answerType = ref('');
+const answerDialog = ref(false);
+const answerCorrect = ref(false);
+const explanation = ref('');
 
 /* answers */
 const openEndedAnswer = ref(''); 
@@ -180,12 +198,14 @@ async function loadData() {
   const answerTypeText = await answerTypeStore.viewAnswerType(`${question.value.answer_type_id}`);
   answerType.value = answerTypeText.name;
   deck.value = await deckStore.viewDeck(`${question.value.deck_id}`); 
+  explanation.value = '';
   
   if (answerType.value === 'Ordered Sequence') {
     const answer = await orderedSequenceStore.viewOrderedSequenceAnswer(
       `${question.value.answer_id}`
     );
     orderedSequences.value = answer.sequence; 
+    explanation.value = answer.explanation ?? '';
   }
   
   if (answerType.value === 'Multiple Choice') {
@@ -194,6 +214,10 @@ async function loadData() {
       `${question.value.answer_id}`
     );
     multipleChoiceAnswers.value = multipleChoiceAnswerStore.multipleChoiceAnswers; 
+    const multipleChoice = await multipleChoiceStore.viewMultipleChoice(
+      `${question.value.answer_id}`
+    );
+    explanation.value = multipleChoice.explanation ?? '';
   }
   
   if (answerType.value === 'Open Ended') {
@@ -201,6 +225,7 @@ async function loadData() {
       `${question.value.answer_id}`
     );
     openEndedAnswer.value = answer.answer;
+    explanation.value = answer.explanation ?? '';
   }
   
 }
@@ -208,8 +233,10 @@ async function loadData() {
 
 async function validateAnswer() {
 
+  let result = false;
+
   if (answerType.value === 'Open Ended') { 
-    const [result, msg] = await sessionReviewStore.completeAnswerMetadata(
+    [result] = await sessionReviewStore.completeAnswerMetadata(
       `${question.value.answer_id}`,
       sessionQuestion.value,
       openEndedAnswer.value
@@ -217,7 +244,7 @@ async function validateAnswer() {
   }
 
   if (answerType.value === 'Ordered Sequence') {
-    const [result, msg] = await sessionReviewStore.completeAnswerMetadata(
+    [result] = await sessionReviewStore.completeAnswerMetadata(
       `${question.value.answer_id}`,
       sessionQuestion.value,
       undefined,      
@@ -227,7 +254,7 @@ async function validateAnswer() {
   }
 
   if (answerType.value === 'Multiple Choice') {
-    const [result, msg] = await sessionReviewStore.completeAnswerMetadata(
+    [result] = await sessionReviewStore.completeAnswerMetadata(
       `${question.value.answer_id}`,
       sessionQuestion.value,
       undefined,
@@ -235,6 +262,18 @@ async function validateAnswer() {
       undefined
     );  
   }
+
+  answerCorrect.value = result === true;
+  answerDialog.value = true;
+}
+
+async function closeAnswerDialog() {
+  if (!answerDialog.value) return;
+  answerDialog.value = false;
+  await advanceQuestion();
+}
+
+async function advanceQuestion() {
 
   const nextId = await sessionReviewStore.nextQuestion(`${sessionId.value}`, sessionReview.value);
   try {

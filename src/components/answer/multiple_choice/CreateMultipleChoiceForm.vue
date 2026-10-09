@@ -5,7 +5,6 @@
       <SettingsToggle text="Allow random generation of multiple choice answers. This will add multiple choice items that come from other answers to other questions in the deck." />
     </div>
     
-
     <div class="flex flex-row items-end gap-2">
         <GnFormInputField
             class="flex-1"
@@ -31,6 +30,18 @@
         @remove="removeItem(index)"
       />
     </div>
+
+    <GnFormTextField
+        v-model="explanation"
+        @gn-update="emitExplanation"
+        backgroundColor="var(--app-color-surface)" 
+        borderColor="transparent" 
+        :disabled="false" 
+        placeholder="Write explanation of answer…" 
+        :rows="4"        
+        label="Enter explanation for multiple choice selection"
+        textColor="var(--app-color-accent)" />
+
   </div>
 </template>
 
@@ -41,7 +52,8 @@ import SettingsToggle from "../../../components/shared/SettingsToggle.vue";
 
 const items = ref([]); 
 const newItem = ref('');
-const emit = defineEmits(['update:items']);
+const explanation = ref('');
+const emit = defineEmits(['update:items', 'update:explanation']);
 
 function addItem() {
   if (newItem.value.trim()) {
@@ -54,10 +66,13 @@ function emitItems() {
   emit('update:items', items.value);
 }
 
+function emitExplanation() {
+  emit('update:explanation', explanation.value);
+}
+
 function removeItem(index) {
   items.value.splice(index, 1);
   emitSelected();
 }
 
 </script>
-

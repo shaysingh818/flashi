@@ -12,14 +12,13 @@ pub struct MultipleChoiceAnswer {
     pub answer_id: usize,
     pub is_correct: bool,
     pub answer: String,
-    pub explanation: String,
     pub created: String,
     pub updated: String
 }
 
 impl MultipleChoiceAnswer {
     
-    pub fn new(answer_id: usize, answer: &str, explanation: &str, is_correct: bool) -> MultipleChoiceAnswer {
+    pub fn new(answer_id: usize, answer: &str, is_correct: bool) -> MultipleChoiceAnswer {
 
       let now = chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
 
@@ -28,7 +27,6 @@ impl MultipleChoiceAnswer {
             answer_id: answer_id,
             is_correct: is_correct,
             answer: answer.to_string(),
-            explanation: explanation.to_string(),
             created: now.clone(),
             updated: now,
         }       
@@ -36,12 +34,11 @@ impl MultipleChoiceAnswer {
     
     pub fn insert(&mut self, conn: &Connection) -> Result<MultipleChoiceAnswer> {
         conn.query_row(
-            INSERT_MULTIPLE_CHOICE,
+            INSERT_MULTIPLE_CHOICE_ANSWER,
             params![
                 &self.answer_id,
                 &self.is_correct,
                 &self.answer,
-                &self.explanation,
                 &self.created,
                 &self.updated
             ],
@@ -51,9 +48,8 @@ impl MultipleChoiceAnswer {
                     answer_id: row.get(1)?,
                     is_correct: row.get(2)?,
                     answer: row.get(3)?,
-                    explanation: row.get(4)?,
-                    created: row.get(5)?,
-                    updated: row.get(6)?,
+                    created: row.get(4)?,
+                    updated: row.get(5)?,
                 })
             },
         )
@@ -69,9 +65,8 @@ impl MultipleChoiceAnswer {
                     answer_id: row.get(1)?,
                     is_correct: row.get(2)?,
                     answer: row.get(3)?,
-                    explanation: row.get(4)?,
-                    created: row.get(5)?,
-                    updated: row.get(6)?,
+                    created: row.get(4)?,
+                    updated: row.get(5)?,
                 })
             })?
             .collect();
@@ -88,7 +83,6 @@ impl MultipleChoiceAnswer {
             params![
                 &self.is_correct,
                 &self.answer,
-                &self.explanation,
                 &self.updated,
                 id,
             ],
@@ -127,32 +121,32 @@ impl MultipleChoiceAnswer {
                 answer_id: row.get(1)?,
                 is_correct: row.get(2)?,
                 answer: row.get(3)?,
-                explanation: row.get(4)?,
-                created: row.get(5)?,
-                updated: row.get(6)?,
+                created: row.get(4)?,
+                updated: row.get(5)?,
             })
         })
     }
     
-
 }
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MultipleChoice {
     pub answer_id: usize,
+    pub explanation: String,
     pub created: String,
     pub updated: String
 }
 
 impl MultipleChoice {
     
-    pub fn new() -> MultipleChoice {
+    pub fn new(explanation: &str) -> MultipleChoice {
 
       let now = chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
 
       MultipleChoice {
             answer_id: 0,
+            explanation: explanation.to_string(),
             created: now.clone(),
             updated: now,
         }       
@@ -162,17 +156,44 @@ impl MultipleChoice {
         conn.query_row(
             INSERT_MULTIPLE_CHOICE,
             params![
+                &self.explanation,
                 &self.created,
                 &self.updated
             ],
             |row| {
                 Ok(MultipleChoice {
                     answer_id: row.get(0)?,
-                    created: row.get(1)?,
-                    updated: row.get(2)?,
+                    explanation: row.get(1)?, 
+                    created: row.get(2)?,
+                    updated: row.get(3)?,
                 })
             },
         )
+    }
+
+    pub fn update(&mut self, conn: &Connection, id: &str) -> Result<()> {
+        
+        self.updated = chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+
+        let result = conn.execute(
+            UPDATE_MULTIPLE_CHOICE, 
+            params![
+                &self.explanation,
+                &self.updated,
+                id,
+            ],
+        );
+
+        match result {
+            Ok(_) => {
+                println!("Successfully updated multiple choice answer");
+                return Ok(())
+            },
+            Err(err) => {
+                println!("[multiple_choice::update] duckdb error {:?}", err);
+                return Err(err)
+            }
+        }
     }
 
     pub fn delete(&mut self, conn: &Connection, id: &str) -> Result<()> {
@@ -193,8 +214,9 @@ impl MultipleChoice {
         conn.query_row(VIEW_MULTIPLE_CHOICE, &[&id], |row| {
             Ok(MultipleChoice {
                 answer_id: row.get(0)?,
-                created: row.get(1)?,
-                updated: row.get(2)?,
+                explanation: row.get(1)?,
+                created: row.get(2)?,
+                updated: row.get(3)?,
             })
         })
     }
@@ -222,14 +244,14 @@ impl MultipleChoice {
 
 
 #[tauri::command]
-pub fn create_multiple_choice(db_path: &str) -> Result<MultipleChoice, String> {
+pub fn create_multiple_choice(db_path: &str, explanation: &str) -> Result<MultipleChoice, String> {
 
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => return Err(format!("Failed to open database: {}", e)),
     };
 
-    let mut multiple_choice: MultipleChoice = MultipleChoice::new();
+    let mut multiple_choice: MultipleChoice = MultipleChoice::new(explanation);
 
     match multiple_choice.insert(&conn) {
         Ok(answer) => {
@@ -242,7 +264,7 @@ pub fn create_multiple_choice(db_path: &str) -> Result<MultipleChoice, String> {
 
 
 #[tauri::command]
-pub fn create_multiple_choice_answer(answer_id: &str, answer: &str, explanation: &str, is_correct: bool, db_path: &str) -> Result<MultipleChoiceAnswer, String> {
+pub fn create_multiple_choice_answer(answer_id: &str, answer: &str, is_correct: bool, db_path: &str) -> Result<MultipleChoiceAnswer, String> {
 
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
@@ -250,7 +272,7 @@ pub fn create_multiple_choice_answer(answer_id: &str, answer: &str, explanation:
     };
 
     let answer_id_usize: usize = answer_id.parse::<usize>().unwrap();
-    let mut multiple_choice: MultipleChoiceAnswer = MultipleChoiceAnswer::new(answer_id_usize, answer, explanation, is_correct);
+    let mut multiple_choice: MultipleChoiceAnswer = MultipleChoiceAnswer::new(answer_id_usize, answer, is_correct);
 
     match multiple_choice.insert(&conn) {
         Ok(answer) => {
@@ -262,7 +284,38 @@ pub fn create_multiple_choice_answer(answer_id: &str, answer: &str, explanation:
 }
 
 #[tauri::command]
-pub fn edit_multiple_choice_answer(id: &str, answer_id: &str, answer: &str, explanation: &str, is_correct: bool, db_path: &str) -> String {
+pub fn edit_multiple_choice(id: &str, explanation: &str, db_path: &str) -> String {
+
+    let conn = match Connection::open(db_path) {
+        Ok(connection) => connection,
+        Err(e) => {
+            println!("{:?}", e);
+            return e.to_string();
+        }
+    };
+
+    match MultipleChoice::view(&conn, id) {
+        Ok(mut multiple_choice) => {
+
+            multiple_choice.explanation = explanation.to_string();            
+            
+            match multiple_choice.update(&conn, id) {
+                Ok(()) => {
+                    let _ = conn.close();
+                    return "Success".to_string();
+                }
+                Err(e) => format!("Failed to update multiple choice: {}", e),
+            }
+        }
+        Err(e) => {
+            let msg = format!("Error updating multiple choice: {:?}", e);
+            return msg.to_string();
+        }
+    }
+}
+
+#[tauri::command]
+pub fn edit_multiple_choice_answer(id: &str, answer_id: &str, answer: &str, is_correct: bool, db_path: &str) -> String {
 
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
@@ -279,7 +332,6 @@ pub fn edit_multiple_choice_answer(id: &str, answer_id: &str, answer: &str, expl
 
             multiple_choice.answer_id = answer_id_usize;
             multiple_choice.answer = answer.to_string();
-            multiple_choice.explanation = explanation.to_string();            
             multiple_choice.is_correct = is_correct;            
             
             match multiple_choice.update(&conn, id) {

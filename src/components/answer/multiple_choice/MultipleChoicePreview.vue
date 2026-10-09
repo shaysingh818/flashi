@@ -37,6 +37,18 @@
       :text="item.answer"
       :isSelected="selectedItems.some(s => s.id === item.id)"
       @update:selected="selectedItem = $event; selectAnswer(index)" />
+
+    <GnFormTextField
+        v-if="props.visible === true"
+        :model-value="props.explanation"
+        @update:model-value="emit('update:explanation', $event)"
+        backgroundColor="var(--app-color-surface)" 
+        borderColor="transparent" 
+        :disabled="false" 
+        placeholder="Write explanation for question answer…" 
+        :rows="4"        
+        label="Question explanation"
+        textColor="var(--app-color-accent)" />
   </div> 
 
 </template>
@@ -53,6 +65,10 @@ const props = defineProps({
   items: {
     type: Array,
     required: true,
+  },
+  explanation: {
+    type: String,
+    default: '',
   },
 });
 
@@ -72,7 +88,8 @@ const emit = defineEmits([
   "select:clear",
   "update:item", 
   "update:add", 
-  "update:delete"
+  "update:delete",
+  "update:explanation"
 ]); 
 
 
