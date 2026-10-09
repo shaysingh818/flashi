@@ -64,6 +64,11 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  actionType: {
+    type: String,
+    required: false,
+    default: "view",
+  },
 });
 
 const router = useRouter();

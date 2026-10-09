@@ -1,12 +1,13 @@
 <template>
 <div class="p-6"> 
-    <div class="flex flex-col" v-for="(item, index) in subjectStore.subjects" :key="index">
-      <p v-if="subjectStore.subjects.length === 0">No subjects found.</p>
+    <div class="flex flex-col" v-for="(item, index) in props.subjects" :key="index">
+      <p v-if="props.subjects.length === 0">No subjects found.</p>
       <SubjectListItem
         :id="`${item.id}`"
         :title="item.name"
         :description="item.description"
         :dateUpdated="item.updated"
+        :actionType="props.actionType"
       />
     </div>
 </div>
@@ -17,10 +18,21 @@ import SubjectListItem from './SubjectListItem.vue';
 import { subjectStore } from '../../api/Subject';
 import { onMounted } from 'vue';
 
-onMounted(async () => {
-  console.log(subjectStore.subjects);
-  await subjectStore.loadSubjects();
+const props = defineProps({
+  subjects: {
+    type: Array,
+    default: () => [],
+  },
+  actionType: {
+    type: String,
+    default: () => "view",
+  }, 
+  sessionId: {
+    type: String,
+    required: false,
+  },
 });
+
 </script>
 
 <style>
