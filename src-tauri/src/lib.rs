@@ -9,6 +9,7 @@ pub mod session_review_metrics;
 pub mod subject;
 pub mod analytics;
 pub mod queries;
+pub mod setup; 
 
 use crate::session::{
     create_session,
