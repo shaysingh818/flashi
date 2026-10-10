@@ -21,7 +21,7 @@
       <h2 style="color: white;">Subjects </h2> 
     </div>
 
-    <SubjectListView />
+    <SubjectListView :subjects="subjectStore.subjects" />
     <HoverButton icon="fa-solid fa-plus" @click="createSubject" />
   </div>
   
@@ -29,7 +29,7 @@
 
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { GnSearchFormField } from '@graphyne/web-components';
 import HoverButton from '../../components/shared/buttons/HoverButton.vue';
@@ -38,6 +38,10 @@ import { subjectStore } from '../../api/Subject';
 
 const router = useRouter();
 const searchTerm = ref('');
+
+onMounted(async () => {
+  await subjectStore.loadSubjects();
+});
 
 async function search(searchTerm) {
   await subjectStore.searchSubjects(searchTerm);

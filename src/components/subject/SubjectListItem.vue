@@ -6,7 +6,7 @@
     borderColor="var(--app-color-background)"
     textColor="var(--app-color-text)"
     descriptionColor="var(--app-color-text-muted)"
-    @gn-click="subjectDetail">
+    @gn-click="handleClick">
         
     <template #leading>
         <font-awesome-icon icon="fa-regular fa-calendar" />
@@ -64,6 +64,15 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  actionType: {
+    type: String,
+    required: false,
+    default: "view",
+  },
+  sessionId: {
+    type: String,
+    required: false,
+  },
 });
 
 const router = useRouter();
@@ -96,6 +105,18 @@ function editSubject() {
 
 function subjectDetail() {
   router.push({ path: `/subjects/detail/${props.id}` });
+}
+
+function deckAddDetail() {
+  router.push({ path: `/sessions/deck/add/${props.sessionId}` });
+}
+
+function handleClick() {
+  if (props.actionType === "add") {
+    deckAddDetail();
+  } else {
+    subjectDetail();
+  }
 }
 </script>
 
