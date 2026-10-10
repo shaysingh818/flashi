@@ -8,6 +8,7 @@
         :description="item.description"
         :dateUpdated="item.updated"
         :actionType="props.actionType"
+        :sessionId="props.sessionId"
       />
     </div>
 </div>

@@ -15,7 +15,6 @@
           @gn-search="search"
         />
     </div>
-    <br/>
 
     <DeckListView 
       :decks="decks" 
@@ -56,13 +55,12 @@ async function handleUpdate() {
 }
 
 async function addDeckToSession() {
-  router.push({ path: `/sessions/deck/add/${props.sessionId}` });
+  router.push({ path: `/sessions/subject/add/${props.sessionId}` });
 }
 
 async function search() {
 
 }
-
 
 onMounted(loadData); 
 </script>

@@ -30,7 +30,7 @@
     <SubjectListView
         :subjects="subjectStore.subjects"
         :sessionId="sessionId"
-        :actionType="add"
+        actionType="add"
     />
 
   </div>
@@ -42,7 +42,6 @@ import { useRoute } from "vue-router";
 import { useRouter } from "vue-router";
 import { subjectStore } from "../../api";
 import SubjectListView from '../../components/subject/SubjectListView.vue';
-
 
 const router = useRouter(); 
 const route = useRoute(); 
