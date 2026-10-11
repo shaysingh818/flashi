@@ -3,3 +3,4 @@ export * from './Deck';
 export * from './Question';
 export * from './Subject';
 export * from './Session'; 
+export * from './Settings';

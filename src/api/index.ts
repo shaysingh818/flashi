@@ -7,3 +7,4 @@ export * from './Question';
 export * from './Subject';
 export * from './Session'; 
 export * from './Analytics'; 
+export * from './Settings';

@@ -9,6 +9,7 @@ pub mod session_review_metrics;
 pub mod subject;
 pub mod analytics;
 pub mod queries;
+pub mod settings;
 pub mod setup; 
 
 use crate::session::{
@@ -87,6 +88,10 @@ use crate::answer::ordered_sequence::{
     search_ordered_sequence_answers, validate_ordered_sequence_answer,
     view_ordered_sequence_answer, view_ordered_sequence_answers,
 };
+
+use crate::setup::setup;
+
+use crate::settings::{read_settings_file, write_settings_file};
 
 use crate::analytics:: {
     general_metrics, review_time_metrics, question_review_time_metrics, historical_metrics
@@ -198,6 +203,11 @@ pub fn run() {
             historical_metrics,
             review_time_metrics,
             question_review_time_metrics,
+            /* setup  */
+            setup,
+            /* settings  */
+            read_settings_file,
+            write_settings_file,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
