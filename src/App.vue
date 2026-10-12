@@ -4,6 +4,24 @@ import {
   GnNavigationItem,
   GnNavigationHeader
 } from "@graphyne/web-components";
+import { invoke } from "@tauri-apps/api/core";
+import { onMounted, ref } from "vue";
+
+const ready = ref(false);
+const setupError = ref('');
+
+async function runSetup() {
+  setupError.value = '';
+  try {
+    await invoke('setup');
+    ready.value = true;
+  } catch (error) {
+    console.error("Error running setup: ", error);
+    setupError.value = String(error);
+  }
+}
+
+onMounted(runSetup);
 
 </script>
 
@@ -52,7 +70,14 @@ import {
     </GnNavigationBar>
 
     <main class="content">
-        <RouterView />
+        <RouterView v-if="ready" />
+        <div v-else-if="setupError" class="setup-status">
+            <p>Setup failed: {{ setupError }}</p>
+            <button @click="runSetup">Retry</button>
+        </div>
+        <div v-else class="setup-status">
+            <p>Setting up Flashi...</p>
+        </div>
     </main>
   </div>
 </template>
@@ -69,5 +94,23 @@ main {
     flex: 1;
     min-width: 0;
     overflow-y: auto;
+}
+
+.setup-status {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    height: 100%;
+    color: var(--app-color-text-muted);
+}
+
+.setup-status button {
+    padding: 6px 16px;
+    border-radius: 6px;
+    background-color: var(--app-color-accent);
+    color: var(--app-color-text);
+    cursor: pointer;
 }
 </style>

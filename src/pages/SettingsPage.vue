@@ -18,20 +18,13 @@
           :disabled="false" 
           textColor="var(--app-color-accent)" />
 
-      <div class="flex flex-row items-end gap-2">
-          <GnFormInputField
-              class="flex-1"
-              :model-value="exportPath"
-              backgroundColor="var(--app-color-surface)" 
-              borderColor="transparent" 
-              :disabled="false" 
-              placeholder="Current path" 
-              label="Current storage path for exported decks"
-              textColor="var(--app-color-accent)" />
-          <GnIconButton label="Add tag" variant="ghost" @gn-click="addTag">
-              <font-awesome-icon icon="fa-solid fa-plus" />
-          </GnIconButton>
-      </div> 
+        <GnFormInputField
+            :model-value="exportPath"
+            backgroundColor="var(--app-color-surface)" 
+            borderColor="transparent" 
+            :disabled="false" 
+            label="Current storage path for exported decks"
+            textColor="var(--app-color-accent)" />
 
     </div> 
     
@@ -61,6 +54,8 @@ async function selectFolder() {
 
   if(result === null) return [];
   exportPath.value = result;
+  settingsStore.settings.export_path = result; 
+  await settingsStore.saveSettings(settingsStore.settings);
 
   return [{
     name: result.split(/[\\/]/).pop() ?? result,

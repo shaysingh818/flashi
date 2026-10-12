@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { dataDir} from '@tauri-apps/api/path';
 import { reactive } from 'vue';
+import { settingsStore } from  './Settings'; 
 import { Deck } from './types';
 
 
@@ -65,8 +66,9 @@ export const deckStore = reactive({
   }, 
 
   async exportDeck(deckId: string): Promise<string> {    
-    const dbPath = await this.getDbPath();   
-    const exportPath = "/home/shay-gaming/Documents/projects/desktop_applications";
+    const dbPath = await this.getDbPath(); 
+    await settingsStore.loadSettings(); 
+    const exportPath = settingsStore.settings.export_path;
     return await invoke("export_deck", { dbPath, deckId, exportPath });  
   },
 
