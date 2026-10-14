@@ -41,7 +41,7 @@ impl Subject {
 
         match result {
             Ok(_) => {
-                println!("Successfully inserted subject");
+                println!("[subject::insert] Successfully inserted subject");
                 Ok(())
             },
             Err(err) => {
@@ -84,7 +84,7 @@ impl Subject {
 
         match result {
             Ok(_) => {
-                println!("Successfully updated subject");
+                println!("[subject::update] Successfully updated subject");
                 Ok(())
             },
             Err(err) => {
@@ -98,7 +98,7 @@ impl Subject {
         let result = conn.execute(DELETE_SUBJECT, [id]);
         match result {
             Ok(_) => {
-                println!("Successfully deleted subject");
+                println!("[subject::delete] Successfully deleted subject");
                 Ok(())
             },
             Err(err) => {
@@ -185,7 +185,7 @@ pub fn edit_subject(subject_id: &str, name: &str, description: &str, db_path: &s
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[subject::edit_subject] error {:?}", e);
             return e.to_string();
         }
     };
@@ -217,7 +217,7 @@ pub fn view_subjects(db_path: &str) -> Vec<Subject> {
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[subject::view_subjects] error {:?}", e);
             return Vec::new();
         }
     };
@@ -225,7 +225,7 @@ pub fn view_subjects(db_path: &str) -> Vec<Subject> {
     match Subject::retrieve(&conn) {
         Ok(subjects) => subjects,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[subject::view_subjects] error {:?}", e);
             Vec::new()
         }
     }
@@ -237,7 +237,7 @@ pub fn view_subject(db_path: &str, subject_id: &str) -> Result<Subject, String> 
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[subject::view_subject] error {:?}", e);
             let err_msg = format!("Database connection error: {:?}", e);
             return Err(err_msg.to_string());
         }
@@ -260,7 +260,7 @@ pub fn search_subjects(db_path: &str, search_term: &str) -> Vec<Subject> {
   let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[subject::search_subjects] error {:?}", e);
             return Vec::new();
         }
     };
@@ -268,7 +268,7 @@ pub fn search_subjects(db_path: &str, search_term: &str) -> Vec<Subject> {
     match Subject::search(&conn, search_term) {
         Ok(subjects) => subjects,
         Err(e) => {
-            println!("Error searching subjects: {:?}", e);
+            println!("[subject::search_subjects] Error searching subjects: {:?}", e);
             Vec::new()
         }
     }
@@ -280,7 +280,7 @@ pub fn delete_subject(db_path: &str, subject_id: &str) -> String {
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[subject::delete_subject] error {:?}", e);
             return format!("Database connection error: {:?}", e);
         }
     };
@@ -302,7 +302,7 @@ pub fn subject_metrics(db_path: &str, subject_id: &str) -> (usize, usize, f64) {
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[subject::subject_metrics] error {:?}", e);
             return (0, 0, 0.0); 
         }
     };
@@ -312,7 +312,7 @@ pub fn subject_metrics(db_path: &str, subject_id: &str) -> (usize, usize, f64) {
             (question_count, total_reviewed, total_accuracy)
         }
         Err(e) => {
-            println!("Error retrieving subject with id: {:?} Cause: {:?}", subject_id, e);
+            println!("[subject::subject_metrics] Error retrieving subject with id: {:?} Cause: {:?}", subject_id, e);
             return (0, 0, 0.0)
         }
     }

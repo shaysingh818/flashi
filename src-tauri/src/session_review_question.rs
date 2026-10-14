@@ -58,7 +58,7 @@ impl SessionReviewQuestion {
 
         match result {
             Ok(_) => {
-                println!("Successfully inserted session review question");
+                println!("[session_review_question::insert] Successfully inserted session review question");
                 Ok(())
             }
             Err(err) => {
@@ -161,7 +161,7 @@ impl SessionReviewQuestion {
 
         match result {
             Ok(_) => {
-                println!("Successfully updated session review question");
+                println!("[session_review_question::update] Successfully updated session review question");
                 Ok(())
             }
             Err(err) => {
@@ -175,7 +175,7 @@ impl SessionReviewQuestion {
         let result = conn.execute("DELETE FROM SESSION_REVIEW_QUESTION WHERE ID=?", [id]);
         match result {
             Ok(_) => {
-                println!("Successfully deleted session review question");
+                println!("[session_review_question::delete] Successfully deleted session review question");
                 Ok(())
             }
             Err(err) => {
@@ -215,7 +215,7 @@ pub fn view_session_review_questions(
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[session_review_question::view_session_review_questions] error {:?}", e);
             return Vec::new();
         }
     };
@@ -223,7 +223,7 @@ pub fn view_session_review_questions(
     match SessionReviewQuestion::retrieve_by_session_review_id(&conn, session_review_id) {
         Ok(session_questions) => session_questions,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[session_review_question::view_session_review_questions] error {:?}", e);
             Vec::new()
         }
     }
@@ -237,7 +237,7 @@ pub fn view_session_review_question(
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[session_review_question::view_session_review_question] error {:?}", e);
             let err_msg = format!("Database connection error: {:?}", e);
             return Err(err_msg.to_string());
         }
@@ -265,7 +265,7 @@ pub fn view_active_session_review_questions(
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[session_review_question::view_active_session_review_questions] error {:?}", e);
             return Vec::new();
         }
     };
@@ -273,7 +273,7 @@ pub fn view_active_session_review_questions(
     match SessionReviewQuestion::retrieve_active_questions(&conn, session_id) {
         Ok(session_questions) => session_questions,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[session_review_question::view_active_session_review_questions] error {:?}", e);
             Vec::new()
         }
     }
@@ -291,7 +291,7 @@ pub fn edit_session_review_question(
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[session_review_question::edit_session_review_question] error {:?}", e);
             let err_msg = format!("Database connection error: {:?}", e);
             return err_msg.to_string();
         }

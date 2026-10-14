@@ -72,7 +72,7 @@ impl Deck {
 
         match result {
             Ok(_) => {
-                println!("Successfully inserted deck");
+                println!("[deck::insert] Successfully inserted deck");
                 return Ok(())
             },
             Err(err) => {
@@ -152,7 +152,7 @@ impl Deck {
 
         match result {
             Ok(_) => {
-                println!("Successfully updated deck");
+                println!("[deck::update] Successfully updated deck");
                 return Ok(())
             },
             Err(err) => {
@@ -167,7 +167,7 @@ impl Deck {
         let result = conn.execute(DELETE_DECK, [id]);
         match result {
             Ok(_) => {
-                println!("Succesfully deleted deck"); 
+                println!("[deck::delete] Successfully deleted deck"); 
                 return Ok(());
             },
             Err(err) => {
@@ -333,7 +333,7 @@ impl Deck {
 
         match conn.execute_batch(&parquet_sql) {
             Ok(_) => {
-                println!("Succesfully exported deck"); 
+                println!("[deck::export] Successfully exported deck"); 
                 return Ok(());
             },
             Err(err) => {
@@ -374,7 +374,7 @@ pub fn edit_deck(deck_id: &str, name: &str, description: &str, tags: Vec<String>
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[deck::edit_deck] error {:?}", e);
             return e.to_string();
         }
     };
@@ -408,7 +408,7 @@ pub fn view_decks(db_path: &str) -> Vec<Deck> {
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[deck::view_decks] error {:?}", e);
             return Vec::new();
         }
     };
@@ -416,7 +416,7 @@ pub fn view_decks(db_path: &str) -> Vec<Deck> {
     match Deck::retrieve(&conn) {
         Ok(decks) => decks,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[deck::view_decks] error {:?}", e);
             Vec::new()
         }
     }
@@ -428,7 +428,7 @@ pub fn view_decks_by_subject(db_path: &str, subject_id: &str) -> Vec<Deck> {
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[deck::view_decks_by_subject] error {:?}", e);
             return Vec::new();
         }
     };
@@ -436,7 +436,7 @@ pub fn view_decks_by_subject(db_path: &str, subject_id: &str) -> Vec<Deck> {
     match Deck::retrieve_by_subject(&conn, subject_id) {
         Ok(decks) => decks,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[deck::view_decks_by_subject] error {:?}", e);
             Vec::new()
         }
     }
@@ -448,7 +448,7 @@ pub fn view_deck(db_path: &str, deck_id: &str) -> Result<Deck, String> {
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[deck::view_deck] error {:?}", e);
             let err_msg = format!("Database connection error: {:?}", e);
             return Err(err_msg.to_string());
         }
@@ -471,7 +471,7 @@ pub fn search_decks(db_path: &str, search_term: &str) -> Vec<Deck> {
   let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[deck::search_decks] error {:?}", e);
             return Vec::new();
         }
     };
@@ -479,7 +479,7 @@ pub fn search_decks(db_path: &str, search_term: &str) -> Vec<Deck> {
     match Deck::search(&conn, search_term) {
         Ok(decks) => decks,
         Err(e) => {
-            println!("Error searching deck: {:?}", e);
+            println!("[deck::search_decks] Error searching deck: {:?}", e);
             Vec::new()
         }
     }
@@ -491,7 +491,7 @@ pub fn delete_deck(db_path: &str, deck_id: &str) -> String {
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[deck::delete_deck] error {:?}", e);
             return format!("Database connection error: {:?}", e);
         }
     };
@@ -518,7 +518,7 @@ pub fn export_deck(app: tauri::AppHandle, db_path: &str, deck_id: &str, export_p
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[deck::export_deck] error {:?}", e);
             return format!("Database connection error: {:?}", e);
         }
     };
@@ -545,7 +545,7 @@ pub fn import_deck(app: tauri::AppHandle, db_path: &str, subject_id: &str, path:
     let mut conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[deck::import_deck] error {:?}", e);
             return format!("Database connection error: {:?}", e);
         }
     };

@@ -57,7 +57,7 @@ impl SessionReviewMetrics {
 
         match result {
             Ok(_) => {
-                println!("Successfully inserted session review metrics");
+                println!("[session_review_metrics::insert] Successfully inserted session review metrics");
                 Ok(())
             }
             Err(err) => {
@@ -115,7 +115,7 @@ impl SessionReviewMetrics {
         let result = conn.execute(DELETE_SESSION_REVIEW_METRICS, [id]);
         match result {
             Ok(_) => {
-                println!("Successfully deleted session review question");
+                println!("[session_review_metrics::delete] Successfully deleted session review metrics");
                 Ok(())
             }
             Err(err) => {
@@ -156,7 +156,7 @@ pub fn retrieve_session_metrics_history(db_path: &str, session_id: &str) -> Vec<
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[session_review_metrics::retrieve_session_metrics_history] error {:?}", e);
             return Vec::new();
         }
     };
@@ -164,7 +164,7 @@ pub fn retrieve_session_metrics_history(db_path: &str, session_id: &str) -> Vec<
     match SessionReviewMetrics::session_metrics_history(&conn, session_id) {
         Ok(session_metrics) => session_metrics,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[session_review_metrics::retrieve_session_metrics_history] error {:?}", e);
             Vec::new()
         }
     }

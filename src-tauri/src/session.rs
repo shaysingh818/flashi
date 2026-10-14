@@ -60,7 +60,7 @@ impl Session {
 
         match result {
             Ok(_) => {
-                println!("Successfully inserted session");
+                println!("[session::insert] Successfully inserted session");
                 Ok(())
             },
             Err(err) => {
@@ -126,7 +126,7 @@ impl Session {
 
         match result {
             Ok(_) => {
-                println!("Successfully updated session");
+                println!("[session::update] Successfully updated session");
                 Ok(())
             },
             Err(err) => {
@@ -151,10 +151,10 @@ impl Session {
         let session_metrics = self.delete_session_review_metrics(conn, id);
         match session_metrics {
             Ok(_) => {                
-                println!("[session::delete] Successfully deleted session review questions as part of delete session routine");
+                println!("[session::delete] Successfully deleted session review metrics as part of delete session routine");
             }
             Err(err) => {                
-                println!("[session::delete] Error deleting session review questions as part of the delete session routine {:?}", err);
+                println!("[session::delete] Error deleting session review metrics as part of the delete session routine {:?}", err);
             }
         }
         
@@ -291,13 +291,13 @@ impl Session {
 
         match result {
             Ok(_) => {
-                println!("Successfully added deck to session");
+                println!("[session::add_deck_to_session] Successfully added deck to session");
                 Ok(("Success").to_string())
             },
             Err(duckdb::Error::DuckDBFailure(err, msg)) => {
                 let msg_str = msg.as_deref().unwrap_or("");
                 if msg_str.contains("violates unique constraint") {
-                    println!("Deck already associated with session, skipping");
+                    println!("[session::add_deck_to_session] Deck already associated with session, skipping");
                     Ok("Duplicate".to_string())
                 } else {
                     println!("[session::add_deck_to_session] duckdb error {:?}", msg_str);
@@ -323,7 +323,7 @@ impl Session {
 
         match result {
             Ok(_) => {
-                println!("Successfully removed deck from session");
+                println!("[session::remove_deck_from_session] Successfully removed deck from session");
                 Ok(("Success").to_string())
             },
             Err(err) => {
@@ -473,7 +473,7 @@ pub fn edit_session(session_id: &str, name: &str, description: &str, db_path: &s
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[session::edit_session] error {:?}", e);
             return e.to_string();
         }
     };
@@ -505,7 +505,7 @@ pub fn view_sessions(db_path: &str) -> Vec<Session> {
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[session::view_sessions] error {:?}", e);
             return Vec::new();
         }
     };
@@ -513,7 +513,7 @@ pub fn view_sessions(db_path: &str) -> Vec<Session> {
     match Session::retrieve(&conn) {
         Ok(sessions) => sessions,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[session::view_sessions] error {:?}", e);
             Vec::new()
         }
     }
@@ -525,7 +525,7 @@ pub fn view_session(db_path: &str, session_id: &str) -> Result<Session, String> 
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[session::view_session] error {:?}", e);
             let err_msg = format!("Database connection error: {:?}", e);
             return Err(err_msg.to_string());
         }
@@ -548,7 +548,7 @@ pub fn search_sessions(db_path: &str, search_term: &str) -> Vec<Session> {
   let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[session::search_sessions] error {:?}", e);
             return Vec::new();
         }
     };
@@ -556,7 +556,7 @@ pub fn search_sessions(db_path: &str, search_term: &str) -> Vec<Session> {
     match Session::search(&conn, search_term) {
         Ok(sessions) => sessions,
         Err(e) => {
-            println!("Error searching sessions: {:?}", e);
+            println!("[session::search_sessions] Error searching sessions: {:?}", e);
             Vec::new()
         }
     }
@@ -568,7 +568,7 @@ pub fn delete_session(db_path: &str, session_id: &str) -> String {
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[session::delete_session] error {:?}", e);
             return format!("Database connection error: {:?}", e);
         }
     };
@@ -591,7 +591,7 @@ pub fn view_session_decks(db_path: &str, session_id: &str) -> Vec<Deck> {
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[session::view_session_decks] error {:?}", e);
             return Vec::new();
         }
     };
@@ -601,7 +601,7 @@ pub fn view_session_decks(db_path: &str, session_id: &str) -> Vec<Deck> {
     match Session::retrieve_session_decks(&conn, session_id_usize) {
         Ok(decks) => decks,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[session::view_session_decks] error {:?}", e);
             Vec::new()
         }
     }
@@ -614,7 +614,7 @@ pub fn add_deck_to_session(db_path: &str, session_id: &str, deck_id: &str) -> St
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[session::add_deck_to_session] error {:?}", e);
             return format!("Database connection error: {:?}", e);
         }
     };
@@ -637,7 +637,7 @@ pub fn remove_deck_from_session(db_path: &str, session_id: &str, deck_id: &str) 
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[session::remove_deck_from_session] error {:?}", e);
             return format!("Database connection error: {:?}", e);
         }
     };
@@ -660,7 +660,7 @@ pub fn session_progress_status(db_path: &str, session_id: &str) -> (usize, usize
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[session::session_progress_status] error {:?}", e);
             return (0, 0);
         }
     };
@@ -670,7 +670,7 @@ pub fn session_progress_status(db_path: &str, session_id: &str) -> (usize, usize
             return (completed, total);
         }
         Err(e) => {
-            println!("Error retrieving session progress status: {:?} Cause: {:?}", session_id, e);
+            println!("[session::session_progress_status] Error retrieving session progress status: {:?} Cause: {:?}", session_id, e);
             return (0, 0); 
         }
     }
@@ -682,7 +682,7 @@ pub fn session_metrics(db_path: &str, session_id: &str) -> Result<(f64, usize, u
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[session::session_metrics] error {:?}", e);
             return Err(e.to_string());
         }
     };
@@ -692,7 +692,7 @@ pub fn session_metrics(db_path: &str, session_id: &str) -> Result<(f64, usize, u
             Ok((avg_accuracy, total_reviewed, total_review_time, total_correct, total_incorrect))
         }
         Err(e) => {
-            println!("Error retrieving session progress status: {:?} Cause: {:?}", session_id, e);
+            println!("[session::session_metrics] Error retrieving session progress status: {:?} Cause: {:?}", session_id, e);
             Err(e.to_string())
         }
     }
@@ -704,7 +704,7 @@ pub fn session_question_breakdown(db_path: &str, session_id: &str) -> Result<Vec
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[session::session_question_breakdown] error {:?}", e);
             return Err(e.to_string()); 
         }
     };
@@ -712,7 +712,7 @@ pub fn session_question_breakdown(db_path: &str, session_id: &str) -> Result<Vec
     match Session::question_breakdown(&conn, session_id) {
         Ok(rows) => Ok(rows), 
         Err(e) => {
-            println!("Error retrieving session progress status: {:?} Cause: {:?}", session_id, e);
+            println!("[session::session_question_breakdown] Error retrieving session progress status: {:?} Cause: {:?}", session_id, e);
             return Err(e.to_string()) 
         }
     }
@@ -724,7 +724,7 @@ pub fn session_daily_accuracy_history(db_path: &str, session_id: &str) -> Result
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[session::session_daily_accuracy_history] error {:?}", e);
             return Err(e.to_string()); 
         }
     };
@@ -732,7 +732,7 @@ pub fn session_daily_accuracy_history(db_path: &str, session_id: &str) -> Result
     match Session::daily_accuracy_history(&conn, session_id) {
         Ok(rows) => Ok(rows), 
         Err(e) => {
-            println!("Error retrieving session daily accuracy history: {:?} Cause: {:?}", session_id, e);
+            println!("[session::session_daily_accuracy_history] Error retrieving session daily accuracy history: {:?} Cause: {:?}", session_id, e);
             return Err(e.to_string()) 
         }
     }
@@ -744,7 +744,7 @@ pub fn session_correct_incorrect_questions(db_path: &str, session_id: &str) -> R
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[session::session_correct_incorrect_questions] error {:?}", e);
             return Err(e.to_string()); 
         }
     };
@@ -752,7 +752,7 @@ pub fn session_correct_incorrect_questions(db_path: &str, session_id: &str) -> R
     match Session::correct_incorrect_questions(&conn, session_id) {
         Ok((correct_questions, incorrect_questions)) => Ok((correct_questions, incorrect_questions)), 
         Err(e) => {
-            println!("Error retrieving session correct and incorrect questions: {:?} Cause: {:?}", session_id, e);
+            println!("[session::session_correct_incorrect_questions] Error retrieving session correct and incorrect questions: {:?} Cause: {:?}", session_id, e);
             return Err(e.to_string()) 
         }
     }

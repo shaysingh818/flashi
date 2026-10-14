@@ -84,7 +84,7 @@ pub fn general_metrics(db_path: &str) -> (usize, usize, usize) {
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[analytics::general_metrics] error {:?}", e);
             return (0, 0, 0); 
         }
     };
@@ -94,7 +94,7 @@ pub fn general_metrics(db_path: &str) -> (usize, usize, usize) {
             (subject_count, deck_count, session_count)
         }
         Err(e) => {
-            println!("Error retrieving general metrics: {:?}", e);
+            println!("[analytics::general_metrics] Error retrieving general metrics: {:?}", e);
             return (0, 0, 0)
         }
     }
@@ -107,7 +107,7 @@ pub fn historical_metrics(db_path: &str) -> Result<Vec<(String, usize, usize, f6
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[analytics::historical_metrics] error {:?}", e);
             return Err(e.to_string());
         }
     };
@@ -115,7 +115,7 @@ pub fn historical_metrics(db_path: &str) -> Result<Vec<(String, usize, usize, f6
     match historical(&conn) {
         Ok(rows) => Ok(rows), 
         Err(e) => {
-            println!("Error retrieving general metrics: {:?}", e);
+            println!("[analytics::historical_metrics] Error retrieving general metrics: {:?}", e);
             return Err(e.to_string())
         }
     }
@@ -127,7 +127,7 @@ pub fn review_time_metrics(db_path: &str) -> (f64, f64, f64) {
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[analytics::review_time_metrics] error {:?}", e);
             return (0.0, 0.0, 0.0); 
         }
     };
@@ -137,7 +137,7 @@ pub fn review_time_metrics(db_path: &str) -> (f64, f64, f64) {
             (avg_daily_review_time, avg_weekly_review_time, avg_monthly_review_time)
         }
         Err(e) => {
-            println!("Error retrieving general review time metrics: {:?}", e);
+            println!("[analytics::review_time_metrics] Error retrieving general review time metrics: {:?}", e);
             return (0.0, 0.0, 0.0)
         }
     }
@@ -149,7 +149,7 @@ pub fn question_review_time_metrics(db_path: &str) -> (usize, f64, f64) {
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[analytics::question_review_time_metrics] error {:?}", e);
             return (0, 0.0, 0.0); 
         }
     };
@@ -159,7 +159,7 @@ pub fn question_review_time_metrics(db_path: &str) -> (usize, f64, f64) {
             (all_time_review_time, avg_questions_reviewed_per_day, avg_questions_reviewed_per_week)
         }
         Err(e) => {
-            println!("Error retrieving question review time metrics: {:?}", e);
+            println!("[analytics::question_review_time_metrics] Error retrieving question review time metrics: {:?}", e);
             return (0, 0.0, 0.0)
         }
     }
