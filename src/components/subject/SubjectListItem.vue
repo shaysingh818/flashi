@@ -108,7 +108,7 @@ function subjectDetail() {
 }
 
 function deckAddDetail() {
-  router.push({ path: `/sessions/deck/add/${props.sessionId}` });
+  router.push({ path: `/sessions/deck/add/${props.sessionId}`, query: { subjectId: props.id } });
 }
 
 function handleClick() {

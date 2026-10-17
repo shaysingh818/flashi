@@ -101,6 +101,7 @@ import { open } from "@tauri-apps/plugin-dialog";
 import { readFile, BaseDirectory } from '@tauri-apps/plugin-fs';
 import { onMounted, ref, watch, reactive, onBeforeUnmount } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { message } from '@tauri-apps/plugin-dialog';
 import QuestionTextPreview from "../../components/question/QuestionTextPreview.vue";
 import OrderedSequencePreview from "../../components/answer/ordered_sequence/OrderedSequencePreview.vue";
 import MultipleChoicePreview from "../../components/answer/multiple_choice/MultipleChoicePreview.vue";
@@ -255,15 +256,11 @@ async function onImagesSelected(items) {
 }
 
 async function onImageRemoved(item) {
-  const imageId = imageIdMap.value[item.path]; 
-  console.log("IMAGE ID TO REMOVE: ", imageId);
 
+  const imageId = imageIdMap.value[item.path]; 
   const deleteQuestionImageResult = await questionStore.removeImageArtifactFromQuestion(question.value.id.toString(), imageId.toString());
-  console.log("DELETE QUESTION IMAGE RESULT: ", deleteQuestionImageResult); 
   
-  const deleteImageResult = await imageArtifactStore.deleteImageArtifact(imageId.toString(), item.path);
-  console.log("DELETE IMAGE RESULT: ", deleteImageResult); 
-  
+  const deleteImageResult = await imageArtifactStore.deleteImageArtifact(imageId.toString(), item.path);  
   knownImagePaths.value.delete(item.path);
 
   const url = imageUrls[item.path];
@@ -320,12 +317,12 @@ async function loadData(id) {
   }
   
   if (answerType.value === 'Open Ended') {
-    const answer = await openEndedStore.viewOpenEndedAnswer(
+    const editOpenEndedAnswer = await openEndedStore.viewOpenEndedAnswer(
       `${question.value.answer_id}`
     );
-    openEndedAnswer.value = answer.answer;
-    openEndedAnswerKeywords.value = answer.keywords;
-    explanation.value = answer.explanation ?? '';
+    openEndedAnswer.value = editOpenEndedAnswer.answer;
+    openEndedAnswerKeywords.value = editOpenEndedAnswer.keywords;
+    explanation.value = editOpenEndedAnswer.explanation ?? '';
   }
 
   savedExplanation.value = explanation.value;
@@ -342,6 +339,19 @@ async function editAnswer() {
         explanation.value,
         openEndedAnswerKeywords.value 
     );
+
+    if (editResult === "Success") {    
+      await message(
+        'Updated open ended answer successfully',
+        { title: 'Recalli', kind: 'info' }
+      );
+    } else {    
+      await message(
+        `There was an error updating this open ended answer ${editResult}`,
+        { title: 'Recalli', kind: 'info' }
+      );
+    }
+
     loadData(question.value.id);
   }
 
@@ -363,6 +373,19 @@ async function editAnswer() {
         preservedAnswerOrder,
         explanation.value,
       );
+
+      if (editResult === "Success") {    
+        await message(
+          'Updated ordered sequence answer successfully',
+          { title: 'Recalli', kind: 'info' }
+        );
+      } else {    
+        await message(
+          `There was an error updating this ordered sequence answer ${editResult}`,
+          { title: 'Recalli', kind: 'info' }
+        );
+      }
+
       loadData(question.value.id);
     } else { 
       console.log("No updates made to ordered sequences"); 
@@ -373,10 +396,23 @@ async function editAnswer() {
   if (answerType.value === 'Multiple Choice') {
 
     if(explanation.value !== savedExplanation.value) {
-      await multipleChoiceStore.editMultipleChoice(
+      const editMultipleChoice = await multipleChoiceStore.editMultipleChoice(
         `${question.value.answer_id}`,
         explanation.value
       );
+
+      if (editMultipleChoice === "Success") {    
+        await message(
+          'Updated multiple choice answer successfully',
+          { title: 'Recalli', kind: 'info' }
+        );
+      } else {    
+        await message(
+          `There was an error updating this multiple choice answer ${editMultipleChoice}`,
+          { title: 'Recalli', kind: 'info' }
+        );
+      }
+
       savedExplanation.value = explanation.value;
     }
 
@@ -403,12 +439,24 @@ async function editAnswer() {
 
     if (updatedMultipleChoiceAnswers.value.length > 0) {
       for(const item of updatedMultipleChoiceAnswers.value) {  
-        await multipleChoiceAnswerStore.editMultipleChoiceAnswer(
+        const editMultipleChoice = await multipleChoiceAnswerStore.editMultipleChoiceAnswer(
           `${item.id}`,
           `${item.answer_id}`,
           item.answer, 
           item.is_correct
         );
+        if (editMultipleChoice === "Success") {    
+          await message(
+            'Updated multiple choice answer successfully',
+            { title: 'Recalli', kind: 'info' }
+          );
+        } else {    
+          await message(
+            `There was an error updating this multiple choice answer ${editMultipleChoice}`,
+            { title: 'Recalli', kind: 'info' }
+          );
+        }
+
       }
       loadData(question.value.id);
       updatedMultipleChoiceAnswers.value = [];

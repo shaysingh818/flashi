@@ -38,6 +38,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { subjectStore } from '../../api/Subject';
+import { message } from '@tauri-apps/plugin-dialog';
 
 const props = defineProps({
   subjectId: {
@@ -64,6 +65,16 @@ function goBack() {
 
 async function submitForm() {
   const editSubject = await subjectStore.editSubject(`${props.subjectId}`, name.value, description.value);
-  console.log(editSubject); 
+  if (editSubject === "Success") {    
+    await message(
+      'Updated subject successfully',
+      { title: 'Recalli', kind: 'info' }
+    );
+  } else {    
+    await message(
+      `There was an error updating this subject ${editSubject}`,
+      { title: 'Recalli', kind: 'info' }
+    );
+  }
 }
 </script>
