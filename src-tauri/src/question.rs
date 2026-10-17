@@ -67,7 +67,7 @@ impl Question {
 
         match result {
             Ok(id) => {
-                println!("Successfully inserted question with id: {:?}", id);
+                println!("[question::insert] Successfully inserted question with id: {:?}", id);
                 Ok(id)
             },
             Err(err) => {
@@ -118,7 +118,7 @@ impl Question {
 
         match result {
             Ok(_) => {
-                println!("Successfully updated question");
+                println!("[question::update] Successfully updated question");
                 Ok(())
             },
             Err(err) => {
@@ -149,7 +149,7 @@ impl Question {
     
         match conn.execute(DELETE_QUESTION, [id]) {
             Ok(_) => {
-                println!("Successfully deleted question");
+                println!("[question::delete] Successfully deleted question");
                 Ok(())
             }
             Err(err) => {
@@ -216,13 +216,13 @@ impl Question {
 
         match result {
             Ok(_) => {
-                println!("Successfully added image artifact to question");
+                println!("[question::add_image_artifact_to_question] Successfully added image artifact to question");
                 Ok(("Success").to_string())
             },
             Err(duckdb::Error::DuckDBFailure(err, msg)) => {
                 let msg_str = msg.as_deref().unwrap_or("");
                 if msg_str.contains("violates unique constraint") {
-                    println!("Image artifact already associated with question, skipping");
+                    println!("[question::add_image_artifact_to_question] Image artifact already associated with question, skipping");
                     Ok("Duplicate".to_string())
                 } else {
                     println!("[question::add_image_artifact_to_question] duckdb error {:?}", msg_str);
@@ -248,11 +248,11 @@ impl Question {
 
         match result {
             Ok(_) => {
-                println!("Successfully removed deck from session");
+                println!("[question::remove_image_artifact_from_question] Successfully removed image artifact from question");
                 Ok(("Success").to_string())
             },
             Err(err) => {
-                println!("[session::remove_deck_from_session] duckdb error {:?}", err);
+                println!("[question::remove_image_artifact_from_question] duckdb error {:?}", err);
                 Err(err)
             }
         }
@@ -290,7 +290,7 @@ pub fn edit_question(id: &str, raw: &str, reviewed: usize, correct: usize, incor
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[question::edit_question] error {:?}", e);
             return e.to_string();
         }
     };
@@ -324,7 +324,7 @@ pub fn view_questions(db_path: &str, deck_id: &str) -> Vec<Question> {
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[question::view_questions] error {:?}", e);
             return Vec::new();
         }
     };
@@ -332,7 +332,7 @@ pub fn view_questions(db_path: &str, deck_id: &str) -> Vec<Question> {
     match Question::retrieve(&conn, deck_id) {
         Ok(questions) => questions,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[question::view_questions] error {:?}", e);
             Vec::new()
         }
     }
@@ -344,7 +344,7 @@ pub fn view_question(db_path: &str, question_id: &str) -> Result<Question, Strin
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[question::view_question] error {:?}", e);
             let err_msg = format!("Database connection error: {:?}", e);
             return Err(err_msg.to_string());
         }
@@ -368,7 +368,7 @@ pub fn add_question_image_artifact(db_path: &str, question_id: &str, image_id: &
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[question::add_question_image_artifact] error {:?}", e);
             return format!("Database connection error: {:?}", e);
         }
     };
@@ -391,7 +391,7 @@ pub fn remove_question_image_artifact(db_path: &str, question_id: &str, image_id
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[question::remove_question_image_artifact] error {:?}", e);
             return format!("Database connection error: {:?}", e);
         }
     };
@@ -413,7 +413,7 @@ pub fn search_questions(db_path: &str, search_term: &str) -> Vec<Question> {
   let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[question::search_questions] error {:?}", e);
             return Vec::new();
         }
     };
@@ -421,7 +421,7 @@ pub fn search_questions(db_path: &str, search_term: &str) -> Vec<Question> {
     match Question::search(&conn, search_term) {
         Ok(questions) => questions,
         Err(e) => {
-            println!("Error searching deck: {:?}", e);
+            println!("[question::search_questions] Error searching questions: {:?}", e);
             Vec::new()
         }
     }
@@ -433,7 +433,7 @@ pub fn delete_question(db_path: &str, question_id: &str) -> String {
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[question::delete_question] error {:?}", e);
             return format!("Database connection error: {:?}", e);
         }
     };

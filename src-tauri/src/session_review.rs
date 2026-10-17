@@ -129,7 +129,7 @@ impl SessionReview {
 
         match result {
             Ok(_) => {
-                println!("Successfully updated session review");
+                println!("[session_review::update] Successfully updated session review");
                 Ok(())
             }
             Err(err) => {
@@ -143,7 +143,7 @@ impl SessionReview {
         let result = conn.execute(DELETE_SESSION_REVIEW, [id]);
         match result {
             Ok(_) => {
-                println!("Successfully deleted session review");
+                println!("[session_review::delete] Successfully deleted session review");
                 Ok(())
             }
             Err(err) => {
@@ -157,7 +157,7 @@ impl SessionReview {
         let result = conn.execute(REMOVE_SESSION_REVIEW_FROM_SESSION, [session_id]);
         match result {
             Ok(_) => {
-                println!("Successfully removed session review's from existing session");
+                println!("[session_review::delete_from_session] Successfully removed session review's from existing session");
                 Ok(())
             }
             Err(err) => {
@@ -242,7 +242,7 @@ pub fn edit_session_review(
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[session_review::edit_session_review] error {:?}", e);
             return e.to_string();
         }
     };
@@ -275,7 +275,7 @@ pub fn view_session_reviews(db_path: &str, session_id: &str) -> Vec<SessionRevie
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[session_review::view_session_reviews] error {:?}", e);
             return Vec::new();
         }
     };
@@ -283,7 +283,7 @@ pub fn view_session_reviews(db_path: &str, session_id: &str) -> Vec<SessionRevie
     match SessionReview::retrieve(&conn, session_id) {
         Ok(session_reviews) => session_reviews,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[session_review::view_session_reviews] error {:?}", e);
             Vec::new()
         }
     }
@@ -297,7 +297,7 @@ pub fn view_session_review(
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[session_review::view_session_review] error {:?}", e);
             let err_msg = format!("Database connection error: {:?}", e);
             return Err(err_msg.to_string());
         }
@@ -322,7 +322,7 @@ pub fn check_session_review_active(db_path: &str, session_id: &str) -> Result<i6
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[session_review::check_session_review_active] error {:?}", e);
             let err_msg = format!("Database connection error: {:?}", e);
             return Err(err_msg.to_string());
         }
@@ -350,7 +350,7 @@ pub fn check_session_review_complete(
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[session_review::check_session_review_complete] error {:?}", e);
             let err_msg = format!("Database connection error: {:?}", e);
             return Err(err_msg.to_string());
         }

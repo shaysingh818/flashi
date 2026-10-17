@@ -90,7 +90,7 @@ impl MultipleChoiceAnswer {
 
         match result {
             Ok(_) => {
-                println!("Successfully updated multiple choice answer");
+                println!("[multiple_choice_answer::update] Successfully updated multiple choice answer");
                 return Ok(())
             },
             Err(err) => {
@@ -104,7 +104,7 @@ impl MultipleChoiceAnswer {
         let result = conn.execute(DELETE_MULTIPLE_CHOICE_ANSWER, [id]);
         match result {
             Ok(_) => {
-                println!("Succesfully deleted multiple choice answer"); 
+                println!("[multiple_choice_answer::delete] Successfully deleted multiple choice answer"); 
                 return Ok(());
             },
             Err(err) => {
@@ -186,7 +186,7 @@ impl MultipleChoice {
 
         match result {
             Ok(_) => {
-                println!("Successfully updated multiple choice answer");
+                println!("[multiple_choice::update] Successfully updated multiple choice answer");
                 return Ok(())
             },
             Err(err) => {
@@ -200,7 +200,7 @@ impl MultipleChoice {
         let result = conn.execute(DELETE_MULTIPLE_CHOICE, [id]);
         match result {
             Ok(_) => {
-                println!("Succesfully deleted multiple choice"); 
+                println!("[multiple_choice::delete] Successfully deleted multiple choice"); 
                 return Ok(());
             },
             Err(err) => {
@@ -289,7 +289,7 @@ pub fn edit_multiple_choice(id: &str, explanation: &str, db_path: &str) -> Strin
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[multiple_choice::edit_multiple_choice] error {:?}", e);
             return e.to_string();
         }
     };
@@ -320,7 +320,7 @@ pub fn edit_multiple_choice_answer(id: &str, answer_id: &str, answer: &str, is_c
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[multiple_choice::edit_multiple_choice_answer] error {:?}", e);
             return e.to_string();
         }
     };
@@ -355,7 +355,7 @@ pub fn view_multiple_choice_answers(answer_id: &str, db_path: &str) -> Vec<Multi
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[multiple_choice::view_multiple_choice_answers] error {:?}", e);
             return Vec::new();
         }
     };
@@ -365,7 +365,7 @@ pub fn view_multiple_choice_answers(answer_id: &str, db_path: &str) -> Vec<Multi
     match MultipleChoiceAnswer::retrieve(answer_id_usize, &conn) {
         Ok(multiple_choice_answers) => multiple_choice_answers,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[multiple_choice::view_multiple_choice_answers] error {:?}", e);
             Vec::new()
         }
     }
@@ -378,7 +378,7 @@ pub fn view_multiple_choice(db_path: &str, id: &str) -> Result<MultipleChoice, S
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[multiple_choice::view_multiple_choice] error {:?}", e);
             let err_msg = format!("Database connection error: {:?}", e);
             return Err(err_msg.to_string());
         }
@@ -401,7 +401,7 @@ pub fn view_multiple_choice_answer(db_path: &str, id: &str) -> Result<MultipleCh
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[multiple_choice::view_multiple_choice_answer] error {:?}", e);
             let err_msg = format!("Database connection error: {:?}", e);
             return Err(err_msg.to_string());
         }
@@ -425,7 +425,7 @@ pub fn delete_multiple_choice(db_path: &str, id: &str) -> String {
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[multiple_choice::delete_multiple_choice] error {:?}", e);
             return format!("Database connection error: {:?}", e);
         }
     };
@@ -448,7 +448,7 @@ pub fn delete_multiple_choice_answer(db_path: &str, id: &str) -> String {
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[multiple_choice::delete_multiple_choice_answer] error {:?}", e);
             return format!("Database connection error: {:?}", e);
         }
     };
@@ -471,7 +471,7 @@ pub fn validate_multiple_choice_answer(db_path: &str, id: &str, answer: Vec<Stri
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[multiple_choice::validate_multiple_choice_answer] error {:?}", e);
             return (false, e.to_string()); 
         }
     };

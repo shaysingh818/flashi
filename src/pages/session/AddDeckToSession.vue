@@ -46,13 +46,15 @@ import DeckListView from '../../components/deck/DeckListView.vue';
 const router = useRouter(); 
 const route = useRoute(); 
 const sessionId = route.params.id;
+const subjectId = route.query.subjectId;
 
 onMounted(async () => {
-  await deckStore.loadDecks();
+  await deckStore.loadDecksBySubject(`${subjectId}`);
 });
 
 async function search(searchTerm) {
   await deckStore.searchDecks(searchTerm);
+  deckStore.decks = deckStore.decks.filter((deck) => `${deck.subject_id}` === `${subjectId}`);
 }
 
 function goBack() {

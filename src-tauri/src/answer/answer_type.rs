@@ -39,7 +39,7 @@ impl AnswerType {
 
         match result {
             Ok(_) => {
-                println!("Successfully inserted answer type");
+                println!("[answer_type::insert] Success");
                 return Ok(())
             },
             Err(err) => {
@@ -81,7 +81,7 @@ impl AnswerType {
 
         match result {
             Ok(_) => {
-                println!("Successfully updated answer type");
+                println!("[answer_type::update] Success");
                 return Ok(())
             },
             Err(err) => {
@@ -96,11 +96,11 @@ impl AnswerType {
         let result = conn.execute(DELETE_ANSWER_TYPE, [id]);
         match result {
             Ok(_) => {
-                println!("Succesfully deleted answer type"); 
+                println!("[answer_type::delete] Success"); 
                 return Ok(());
             },
             Err(err) => {
-                println!("[answer_type::delete] Error deleting answer type {:?}", err); 
+                println!("[answer_type::delete] error {:?}", err); 
                 return Err(err);
             }
         }
@@ -161,7 +161,7 @@ pub fn edit_answer_type(id: &str, name: &str, db_path: &str) -> String {
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[answer_type::edit_answer_type] error {:?}", e);
             return e.to_string();
         }
     };
@@ -192,7 +192,7 @@ pub fn view_answer_types(db_path: &str) -> Vec<AnswerType> {
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[answer_type::view_answer_types] error {:?}", e);
             return Vec::new();
         }
     };
@@ -200,7 +200,7 @@ pub fn view_answer_types(db_path: &str) -> Vec<AnswerType> {
     match AnswerType::retrieve(&conn) {
         Ok(answer_types) => answer_types,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[answer_type::view_answer_types] error {:?}", e);
             Vec::new()
         }
     }
@@ -212,7 +212,7 @@ pub fn view_answer_type(db_path: &str, answer_type_id: &str) -> Result<AnswerTyp
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[answer_type::view_answer_type] error {:?}", e);
             let err_msg = format!("Database connection error: {:?}", e);
             return Err(err_msg.to_string());
         }
@@ -235,7 +235,7 @@ pub fn search_answer_types(db_path: &str, search_term: &str) -> Vec<AnswerType> 
   let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[answer_type::search_answer_types] error {:?}", e);
             return Vec::new();
         }
     };
@@ -243,7 +243,7 @@ pub fn search_answer_types(db_path: &str, search_term: &str) -> Vec<AnswerType> 
     match AnswerType::search(&conn, search_term) {
         Ok(answer_types) => answer_types,
         Err(e) => {
-            println!("Error searching answer types: {:?}", e);
+            println!("[answer_type::search_answer_types] Error searching answer types: {:?}", e);
             Vec::new()
         }
     }
@@ -255,7 +255,7 @@ pub fn delete_answer_type(db_path: &str, answer_type_id: &str) -> String {
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[answer_type::delete_answer_type] error {:?}", e);
             return format!("Database connection error: {:?}", e);
         }
     };

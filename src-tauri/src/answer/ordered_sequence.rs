@@ -28,13 +28,14 @@ impl OrderedSequenceAnswer {
         }       
     }
 
+    // Queries return the sequence as JSON (to_json) so items containing
+    // commas or quotes round-trip intact
     pub fn parse_sequence(raw: String) -> Vec<String> {
-        raw.trim_matches(|c| c == '[' || c == ']')
-            .split(", ")
-            .filter(|s| !s.is_empty())
-            .map(|s| s.trim_matches('\'').to_string())
-            .collect()
-    }   
+        serde_json::from_str::<Option<Vec<String>>>(&raw)
+            .ok()
+            .flatten()
+            .unwrap_or_default()
+    }
 
     pub fn insert(&mut self, conn: &Connection) -> Result<OrderedSequenceAnswer> {
 
@@ -112,7 +113,7 @@ impl OrderedSequenceAnswer {
 
         match result {
             Ok(_) => {
-                println!("Successfully updated open ended answer");
+                println!("[ordered_sequence_answer::update] Successfully updated ordered sequence answer");
                 return Ok(())
             },
             Err(err) => {
@@ -127,11 +128,11 @@ impl OrderedSequenceAnswer {
         let result = conn.execute(DELETE_ORDERED_SEQUENCE, [id]);
         match result {
             Ok(_) => {
-                println!("Succesfully deleted ordered sequence answer"); 
+                println!("[ordered_sequence_answer::delete] Successfully deleted ordered sequence answer"); 
                 return Ok(());
             },
             Err(err) => {
-                println!("[ordered_sequence_answer::delete] Error deleting open ended answer {:?}", err); 
+                println!("[ordered_sequence_answer::delete] Error deleting ordered sequence answer {:?}", err); 
                 return Err(err);
             }
         }
@@ -210,7 +211,7 @@ pub fn edit_ordered_sequence_answer(id: &str, sequence: Vec<String>, explanation
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[ordered_sequence::edit_ordered_sequence_answer] error {:?}", e);
             return e.to_string();
         }
     };
@@ -242,7 +243,7 @@ pub fn view_ordered_sequence_answers(db_path: &str) -> Vec<OrderedSequenceAnswer
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[ordered_sequence::view_ordered_sequence_answers] error {:?}", e);
             return Vec::new();
         }
     };
@@ -250,7 +251,7 @@ pub fn view_ordered_sequence_answers(db_path: &str) -> Vec<OrderedSequenceAnswer
     match OrderedSequenceAnswer::retrieve(&conn) {
         Ok(ordered_sequences) => ordered_sequences,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[ordered_sequence::view_ordered_sequence_answers] error {:?}", e);
             Vec::new()
         }
     }
@@ -262,7 +263,7 @@ pub fn view_ordered_sequence_answer(db_path: &str, id: &str) -> Result<OrderedSe
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[ordered_sequence::view_ordered_sequence_answer] error {:?}", e);
             let err_msg = format!("Database connection error: {:?}", e);
             return Err(err_msg.to_string());
         }
@@ -285,7 +286,7 @@ pub fn search_ordered_sequence_answers(db_path: &str, search_term: &str) -> Vec<
   let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[ordered_sequence::search_ordered_sequence_answers] error {:?}", e);
             return Vec::new();
         }
     };
@@ -293,7 +294,7 @@ pub fn search_ordered_sequence_answers(db_path: &str, search_term: &str) -> Vec<
     match OrderedSequenceAnswer::search(&conn, search_term) {
         Ok(ordered_sequences) => ordered_sequences,
         Err(e) => {
-            println!("Error searching ordered sequences: {:?}", e);
+            println!("[ordered_sequence::search_ordered_sequence_answers] Error searching ordered sequences: {:?}", e);
             Vec::new()
         }
     }
@@ -305,7 +306,7 @@ pub fn delete_ordered_sequence_answer(db_path: &str, id: &str) -> String {
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[ordered_sequence::delete_ordered_sequence_answer] error {:?}", e);
             return format!("Database connection error: {:?}", e);
         }
     };
@@ -327,7 +328,7 @@ pub fn validate_ordered_sequence_answer(db_path: &str, id: &str, answer: Vec<Str
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[ordered_sequence::validate_ordered_sequence_answer] error {:?}", e);
             return (false, e.to_string()); 
         }
     };
@@ -340,5 +341,29 @@ pub fn validate_ordered_sequence_answer(db_path: &str, id: &str, answer: Vec<Str
             let msg = format!("Error viewing ordered sequence answer for validation: {:?}", e);
             (false, msg.to_string())
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn sequence_items_with_commas_and_quotes_round_trip() {
+        let conn = Connection::open_in_memory().unwrap();
+        conn.execute_batch(include_str!("../../database/sql/TABLES/R__0103_ORDERED_SEQUENCE_ANSWER.sql")).unwrap();
+
+        let items = vec!["First, then second", "It's done", "a/b\\c", "plain"];
+        let mut answer = OrderedSequenceAnswer::new(items.clone(), "explanation");
+        let inserted = answer.insert(&conn).unwrap();
+        assert_eq!(inserted.sequence, items);
+
+        let id = inserted.answer_id.to_string();
+        let mut viewed = OrderedSequenceAnswer::view(&conn, &id).unwrap();
+        assert_eq!(viewed.sequence, items);
+
+        // Saving an edit and reading it back must not split or escape items
+        viewed.update(&conn, &id).unwrap();
+        assert_eq!(OrderedSequenceAnswer::view(&conn, &id).unwrap().sequence, items);
     }
 }

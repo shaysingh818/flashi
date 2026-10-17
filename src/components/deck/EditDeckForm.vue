@@ -63,6 +63,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { deckStore } from "../../api/Deck";
+import { message } from '@tauri-apps/plugin-dialog';
 
 const props = defineProps({   
   deckId: {
@@ -89,6 +90,10 @@ const newTag = ref('');
 const name = ref(props.deckName);
 const description = ref(props.deckDescription);
 
+function goBack() {
+  router.go(-1);
+}
+
 function addTag() {  
   tags.value.push(newTag.value);
   newTag.value = "";
@@ -96,13 +101,25 @@ function addTag() {
 
 async function submitForm() {  
   const currDeck = await deckStore.viewDeck(props.deckId);
-  const editDeckResult = await deckStore.editDeck(`${props.deckId}`, name.value, description.value, tags.value, currDeck.reviewed);
-  console.log(editDeckResult); 
+  const editDeckResult = await deckStore.editDeck(
+    `${props.deckId}`, 
+    name.value, 
+    description.value, 
+    tags.value, 
+    currDeck.reviewed
+  );
+
+  if (editDeckResult === "Success") {    
+    await message(
+      'Updated deck successfully',
+      { title: 'Recalli', kind: 'info' }
+    );
+  } else {    
+    await message(
+      `There was an error updating this deck ${editDeckResult}`,
+      { title: 'Recalli', kind: 'info' }
+    );
+  }
 }
 </script>
 
-<style scoped>
-svg {
-  color: #f97316;
-}
-</style>

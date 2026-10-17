@@ -117,7 +117,7 @@ impl OpenEndedAnswer {
 
         match result {
             Ok(_) => {
-                println!("Successfully updated open ended answer");
+                println!("[open_ended_answer::update] Successfully updated open ended answer");
                 return Ok(())
             },
             Err(err) => {
@@ -132,7 +132,7 @@ impl OpenEndedAnswer {
         let result = conn.execute(DELETE_OPEN_ENDED_ANSWER, [id]);
         match result {
             Ok(_) => {
-                println!("Succesfully deleted open ended answer"); 
+                println!("[open_ended_answer::delete] Successfully deleted open ended answer"); 
                 return Ok(());
             },
             Err(err) => {
@@ -230,7 +230,7 @@ pub fn edit_open_ended_answer(id: &str, answer: &str, explanation: &str, keyword
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[open_ended::edit_open_ended_answer] error {:?}", e);
             return e.to_string();
         }
     };
@@ -263,7 +263,7 @@ pub fn view_open_ended_answers(db_path: &str) -> Vec<OpenEndedAnswer> {
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[open_ended::view_open_ended_answers] error {:?}", e);
             return Vec::new();
         }
     };
@@ -271,7 +271,7 @@ pub fn view_open_ended_answers(db_path: &str) -> Vec<OpenEndedAnswer> {
     match OpenEndedAnswer::retrieve(&conn) {
         Ok(open_ended_answers) => open_ended_answers,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[open_ended::view_open_ended_answers] error {:?}", e);
             Vec::new()
         }
     }
@@ -283,7 +283,7 @@ pub fn view_open_ended_answer(db_path: &str, id: &str) -> Result<OpenEndedAnswer
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[open_ended::view_open_ended_answer] error {:?}", e);
             let err_msg = format!("Database connection error: {:?}", e);
             return Err(err_msg.to_string());
         }
@@ -306,7 +306,7 @@ pub fn search_open_ended_answers(db_path: &str, search_term: &str) -> Vec<OpenEn
   let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[open_ended::search_open_ended_answers] error {:?}", e);
             return Vec::new();
         }
     };
@@ -314,7 +314,7 @@ pub fn search_open_ended_answers(db_path: &str, search_term: &str) -> Vec<OpenEn
     match OpenEndedAnswer::search(&conn, search_term) {
         Ok(open_ended_answer) => open_ended_answer,
         Err(e) => {
-            println!("Error searching open ended answer: {:?}", e);
+            println!("[open_ended::search_open_ended_answers] Error searching open ended answer: {:?}", e);
             Vec::new()
         }
     }
@@ -326,7 +326,7 @@ pub fn delete_open_ended_answer(db_path: &str, id: &str) -> String {
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[open_ended::delete_open_ended_answer] error {:?}", e);
             return format!("Database connection error: {:?}", e);
         }
     };
@@ -348,7 +348,7 @@ pub fn validate_open_ended_answer(id: &str, answer: &str, db_path: &str) -> (boo
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[open_ended::validate_open_ended_answer] error {:?}", e);
             return (false, e.to_string()); 
         }
     };

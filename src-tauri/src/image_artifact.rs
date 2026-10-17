@@ -45,7 +45,7 @@ impl ImageArtifact {
         
         match result {
             Ok(id) => {
-                println!("Successfully inserted image artifact with id: {:?}", id);
+                println!("[image_artifact::insert] Successfully inserted image artifact with id: {:?}", id);
                 Ok(id)
             },
             Err(err) => {
@@ -104,7 +104,7 @@ impl ImageArtifact {
 
         match result {
             Ok(_) => {
-                println!("Successfully updated image artifact");
+                println!("[image_artifact::update] Successfully updated image artifact");
                 Ok(())
             },
             Err(err) => {
@@ -118,7 +118,7 @@ impl ImageArtifact {
         let result = conn.execute(DELETE_IMAGE_ARTIFACT, [id]);
         match result {
             Ok(_) => {
-                println!("Successfully deleted image artifact");
+                println!("[image_artifact::delete] Successfully deleted image artifact");
                 Ok(())
             },
             Err(err) => {
@@ -251,7 +251,7 @@ pub fn upload_image(
         }
     })?;
 
-    println!("Successfully copied thumbnail with {bytes} bytes ({dest_path})");
+    println!("[image_artifact::upload_image] Successfully copied thumbnail with {bytes} bytes ({dest_path})");
 
     Ok(image_file_name_final)
 }
@@ -267,7 +267,7 @@ pub fn remove_image(
         path: image_delete_path.clone(),
     })?;
 
-    println!("Successfully removed thumbnail {}", image_delete_path);
+    println!("[image_artifact::remove_image] Successfully removed thumbnail {}", image_delete_path);
     Ok(image_file_name.to_string())
 }
 
@@ -310,7 +310,7 @@ pub fn view_question_image_artifacts(db_path: &str, question_id: &str) -> Vec<Im
     let conn = match Connection::open(db_path) {
         Ok(connection) => connection,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[image_artifact::view_question_image_artifacts] error {:?}", e);
             return Vec::new();
         }
     };
@@ -318,7 +318,7 @@ pub fn view_question_image_artifacts(db_path: &str, question_id: &str) -> Vec<Im
     match ImageArtifact::retrieve_question_image_artifacts(&conn, question_id) {
         Ok(images) => images,
         Err(e) => {
-            println!("{:?}", e);
+            println!("[image_artifact::view_question_image_artifacts] error {:?}", e);
             Vec::new()
         }
     }
@@ -357,7 +357,7 @@ pub fn edit_image_artifact(
                           image_file_name,
                           user_image_path,
                       ) {
-                          Ok(name) => println!("removed image file name: {:?} ", name),
+                          Ok(name) => println!("[image_artifact::edit_image_artifact] removed image file name: {:?} ", name),
                           Err(e) => return format!("Failed to remove image: {}", e),
                       };
                     
@@ -395,7 +395,7 @@ pub fn delete_image_artifact(
                 Ok(_) => {
 
                     match remove_image(image_file_name, app_image_path) {
-                          Ok(name) => println!("Removed image file name: {:?}", name),
+                          Ok(name) => println!("[image_artifact::delete_image_artifact] Removed image file name: {:?}", name),
                           Err(e) => return format!("Failed to remove image: {}", e),
                       };
                     
