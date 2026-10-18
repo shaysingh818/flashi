@@ -26,9 +26,13 @@ lists the Tauri bundles attached to the latest release, grouped by platform:
 Publishing a new GitHub release with these assets updates the site automatically, with no rebuild needed.
 The repo and URLs live in `src/config.ts`.
 
-## Deploying under a sub-path
+## Deploying to GitHub Pages
 
-Set `SITE_BASE` when building if the site is not served from the domain root, e.g. GitHub Pages:
+`.github/workflows/deploy-site.yml` builds and deploys the site whenever changes under `site/` are pushed to
+`main`. You can also run it by hand from the Actions tab. To turn it on, go to **Settings → Pages** in the repo
+and set **Source** to **GitHub Actions**. The site is then served at `https://shaysingh818.github.io/flashi/`.
+
+The workflow sets the base path for you. To build for a sub-path locally, set `SITE_BASE`:
 
 ```sh
 SITE_BASE=/flashi/ npm run build
