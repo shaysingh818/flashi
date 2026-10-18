@@ -68,7 +68,7 @@ impl SessionReviewMetrics {
     }
 
     pub fn retrieve(conn: &Connection) -> Result<Vec<SessionReviewMetrics>> {
-        let mut stmt = conn.prepare("SELECT * FROM SESSION_REVIEW_METRICS")?;
+        let mut stmt = conn.prepare(RETRIEVE_SESSION_REVIEW_METRICS)?;
 
         let sessions: Result<Vec<SessionReviewMetrics>> = stmt
             .query_map([], |row| {

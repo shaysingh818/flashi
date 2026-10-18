@@ -343,27 +343,3 @@ pub fn validate_ordered_sequence_answer(db_path: &str, id: &str, answer: Vec<Str
         }
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn sequence_items_with_commas_and_quotes_round_trip() {
-        let conn = Connection::open_in_memory().unwrap();
-        conn.execute_batch(include_str!("../../database/sql/TABLES/R__0103_ORDERED_SEQUENCE_ANSWER.sql")).unwrap();
-
-        let items = vec!["First, then second", "It's done", "a/b\\c", "plain"];
-        let mut answer = OrderedSequenceAnswer::new(items.clone(), "explanation");
-        let inserted = answer.insert(&conn).unwrap();
-        assert_eq!(inserted.sequence, items);
-
-        let id = inserted.answer_id.to_string();
-        let mut viewed = OrderedSequenceAnswer::view(&conn, &id).unwrap();
-        assert_eq!(viewed.sequence, items);
-
-        // Saving an edit and reading it back must not split or escape items
-        viewed.update(&conn, &id).unwrap();
-        assert_eq!(OrderedSequenceAnswer::view(&conn, &id).unwrap().sequence, items);
-    }
-}

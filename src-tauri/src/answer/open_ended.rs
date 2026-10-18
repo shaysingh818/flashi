@@ -30,12 +30,13 @@ impl OpenEndedAnswer {
         }       
     }
 
+    // Queries return the keywords as JSON (to_json) so keywords containing
+    // commas or quotes round-trip intact
     pub fn parse_keywords(raw: String) -> Vec<String> {
-        raw.trim_matches(|c| c == '[' || c == ']')
-            .split(", ")
-            .filter(|s| !s.is_empty())
-            .map(|s| s.trim_matches('\'').to_string())
-            .collect()
+        serde_json::from_str::<Option<Vec<String>>>(&raw)
+            .ok()
+            .flatten()
+            .unwrap_or_default()
     }  
    
     pub fn insert(&mut self, conn: &Connection) -> Result<OpenEndedAnswer> {

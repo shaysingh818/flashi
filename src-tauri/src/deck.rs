@@ -39,13 +39,39 @@ impl Deck {
         }       
     }
 
+    // Parses DuckDB's VARCHAR[]::VARCHAR output, e.g. ['it\'s', plain, 'a, b'].
+    // Elements with special characters are single quoted and backslash escaped.
     pub fn parse_tags(raw: String) -> Vec<String> {
-        raw.trim_matches(|c| c == '[' || c == ']')
-          .split(", ")
-          .filter(|s| !s.is_empty())
-          .map(|s| s.trim_matches('\'').to_string())
-          .collect()
-    }   
+        let inner = raw.trim();
+        let inner = inner.strip_prefix('[').unwrap_or(inner);
+        let inner = inner.strip_suffix(']').unwrap_or(inner);
+
+        let mut tags = Vec::new();
+        let mut current = String::new();
+        let mut chars = inner.chars().peekable();
+        let mut in_quotes = false;
+
+        while let Some(c) = chars.next() {
+            match c {
+                '\\' if in_quotes => {
+                    if let Some(escaped) = chars.next() {
+                        current.push(escaped);
+                    }
+                }
+                '\'' => in_quotes = !in_quotes,
+                ',' if !in_quotes => {
+                    tags.push(std::mem::take(&mut current));
+                    if chars.peek() == Some(&' ') {
+                        chars.next();
+                    }
+                }
+                _ => current.push(c),
+            }
+        }
+        tags.push(current);
+
+        tags.into_iter().filter(|s| !s.is_empty()).collect()
+    }
 
     pub fn insert(&mut self, conn: &Connection) -> Result<()> {
 
