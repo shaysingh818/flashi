@@ -11,6 +11,7 @@ on:
       - "src-tauri/**"
       - ".github/workflows/rust-tests.yml"
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
