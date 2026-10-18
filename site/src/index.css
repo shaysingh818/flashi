@@ -1,0 +1,63 @@
+/* Same palette as the desktop app (src/index.css) so the site feels like Flashi. */
+:root {
+  --app-color-background: rgb(41 37 36);
+  --app-color-surface: rgb(28 25 23);
+  --app-color-text: #ffffff;
+  --app-color-text-muted: #a8a29e;
+  --app-color-accent: #f97316;
+  --app-color-border: #44403c;
+
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--app-color-text);
+  background-color: var(--app-color-background);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--app-color-background);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.container {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.section {
+  padding: 80px 0;
+}
+
+.section-title {
+  margin: 0 0 8px;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 700;
+}
+
+.section-subtitle {
+  margin: 0 0 40px;
+  color: var(--app-color-text-muted);
+  max-width: 60ch;
+}
+
+.accent {
+  color: var(--app-color-accent);
+}
