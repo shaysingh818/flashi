@@ -192,7 +192,7 @@ impl Session {
     }
     
     pub fn delete_session_reviews(&mut self, conn: &Connection, id: &str) -> Result<()> {
-        let result = conn.execute(DELETE_SESSION, [id]);
+        let result = conn.execute(DELETE_SESSION_REVIEWS, [id]);
         match result {
             Ok(_) => {
                 println!("[session::delete_session_reviews] Successfully removed session review's from existing session");
@@ -228,7 +228,7 @@ impl Session {
 
     pub fn delete_session_review_metrics(&mut self, conn: &Connection, id: &str) -> Result<()> {
  
-        let result = conn.execute(DELETE_SESSION_REVIEW_QUESTIONS, [id]);
+        let result = conn.execute(DELETE_SESSION_REVIEW_METRICS, [id]);
         match result {
             Ok(_) => {
                 println!("[session::delete_session_review_metrics] Successfully removed session review metrics from existing session");

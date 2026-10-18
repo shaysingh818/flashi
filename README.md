@@ -69,6 +69,17 @@ npm run tauri build
 
 The bundles are written to `src-tauri/target/release/bundle/`.
 
+### Publish a release
+
+Bump the version in `src-tauri/tauri.conf.json`, then push a matching tag:
+
+```sh
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+The `Release` workflow runs the backend tests, builds installers for Windows, macOS (Apple Silicon and Intel) and Linux, and publishes them as a GitHub release once every platform has finished.
+
 ### Run backend tests
 
 ```sh
