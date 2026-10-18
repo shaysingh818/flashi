@@ -16,9 +16,16 @@ on:
 permissions:
   contents: read
 
+# only cancel superseded PR runs; main runs always finish so they save the
+# cache that PR runs restore from
 concurrency:
   group: rust-tests-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  CARGO_TERM_COLOR: always
+  # no debug info: compiles the bundled duckdb C++ much faster and shrinks the cache
+  CARGO_PROFILE_DEV_DEBUG: 0
 
 jobs:
   test:
@@ -43,15 +50,20 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
 
-      # bundled duckdb is slow to compile, so cache target/ between runs
+      # bundled duckdb is slow to compile, so cache target/ between runs.
+      # save even when tests fail so a failing test doesn't force a full rebuild
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: src-tauri
+          cache-on-failure: true
 
       # generate_context! requires frontendDist (../dist) to exist at compile time,
       # the tests don't need the real frontend build
       - name: Create placeholder frontend dist
         run: mkdir -p ../dist
+
+      - name: Build tests
+        run: cargo test --test unit --no-run
 
       - name: Run tests
         run: cargo test --test unit
