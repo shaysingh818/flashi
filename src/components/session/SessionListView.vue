@@ -1,6 +1,6 @@
 <template>
 
-  <div class="flex flex-col p-4" v-for="(item, index) in sessionStore.sessions" :key="index">
+  <div class="flex flex-col" v-for="(item, index) in sessionStore.sessions" :key="index">
     <SessionListItem
       :id="`${item.id}`"
       :title="item.name"

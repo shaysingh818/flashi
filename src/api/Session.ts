@@ -234,8 +234,8 @@ export const sessionReviewStore = reactive({
     answerId: string,
     sessionQuestion: SessionReviewQuestion,
     openEndedAnswerValue?: string,
-    submittedMultipleChoiceAnswersValue?: string[],
-    submittedOrderedSequenceValue?: string[]): Promise<[boolean, string]> {
+    submittedMultipleChoiceAnswersValue?: { id: string | number }[],
+    submittedOrderedSequenceValue?: { item: string; index: number }[]): Promise<[boolean, string]> {
 
     let result: boolean = false;
     let msg: string = '';
@@ -305,7 +305,7 @@ export const sessionReviewStore = reactive({
       if (editResult === "Success") {
         console.log("Updated question with metadata for incorrect answer...")
       } else {        
-        console.error("Could not update question entity metadata for incorrect answer: ", questionResult); 
+        console.error("Could not update session review question metadata for incorrect answer: ", editResult); 
       }
 
       const currQuestion = await questionStore.viewQuestion(`${sessionQuestion.question_id}`);
