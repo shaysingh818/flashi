@@ -21,7 +21,9 @@
     <div class="flex items-center justify-center">
       <h2>Sessions</h2>
     </div>
-    <SessionListView />
+    <div class="p-4">
+      <SessionListView />
+    </div>
     <HoverButton icon="fa-solid fa-plus" @click="createSession" />
   </div>
 </template>
