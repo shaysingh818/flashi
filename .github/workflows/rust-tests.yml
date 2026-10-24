@@ -17,7 +17,9 @@ permissions:
   contents: read
 
 concurrency:
-  group: rust-tests-${{ github.ref }}
+  # github.workflow is the caller's name under workflow_call, so the release
+  # workflow's test run doesn't cancel (or get cancelled by) the push run
+  group: rust-tests-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:

@@ -1,10 +1,11 @@
 name: Release
 
-# Push a tag matching the version in src-tauri/tauri.conf.json to publish, e.g.
-#   git tag v0.1.0 && git push origin v0.1.0
+# Bump the version in src-tauri/tauri.conf.json and merge to main to publish.
+# Pushes to main whose version already has a v<version> tag are skipped.
 on:
   push:
-    tags: ["v*"]
+    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -14,34 +15,58 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.check.outputs.tag }}
+      should_release: ${{ steps.check.outputs.should_release }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: check
+        name: Check whether this version is already released
+        run: |
+          tag="v$(node -p "require('./src-tauri/tauri.conf.json').version")"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          if git ls-remote --exit-code --tags origin "refs/tags/$tag" > /dev/null; then
+            echo "$tag already exists, skipping release"
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_release=true" >> "$GITHUB_OUTPUT"
+          fi
+
   test:
+    needs: check-version
+    if: needs.check-version.outputs.should_release == 'true'
     uses: ./.github/workflows/rust-tests.yml
 
   # one draft release up front so the parallel builds all upload to the same place
   create-release:
-    needs: test
+    needs: [check-version, test]
     runs-on: ubuntu-latest
     outputs:
       release_id: ${{ steps.create.outputs.release_id }}
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TAG: ${{ needs.check-version.outputs.tag }}
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Check tag matches app version
+      # a failed earlier run can leave a draft behind for the same version
+      - name: Remove stale drafts
         run: |
-          version=$(node -p "require('./src-tauri/tauri.conf.json').version")
-          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
-            echo "::error::Tag $GITHUB_REF_NAME does not match tauri.conf.json version v$version"
-            exit 1
-          fi
+          gh api "repos/$GITHUB_REPOSITORY/releases" --paginate \
+            --jq ".[] | select(.draft and .tag_name == \"$TAG\") | .id" |
+          while read -r id; do
+            gh api -X DELETE "repos/$GITHUB_REPOSITORY/releases/$id"
+          done
 
+      # the tag itself is created on this commit when the release is published
       - id: create
         name: Create draft release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           id=$(gh api "repos/$GITHUB_REPOSITORY/releases" \
-            -f tag_name="$GITHUB_REF_NAME" \
-            -f name="flashi $GITHUB_REF_NAME" \
+            -f tag_name="$TAG" \
+            -f target_commitish="$GITHUB_SHA" \
+            -f name="flashi $TAG" \
             -F draft=true \
             -F generate_release_notes=true \
             --jq .id)
